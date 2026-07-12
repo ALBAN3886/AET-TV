@@ -1,163 +1,101 @@
+/* ============================================================
+ * huhu-watch-live-menu-open.js — v2 corrigée
+ * ------------------------------------------------------------
+ * Sur la page /watch?live=..., déplie automatiquement le menu
+ * latéral (chaînes) sur écran large et le garde ouvert.
+ * À charger comme userscript ou content-script sur huhu.to.
+ * ============================================================ */
 (function () {
+  'use strict';
+
   const STYLE_ID = 'aet-watch-live-menu-style';
 
   function isLiveWatchPage() {
-    return location.pathname === '/watch' && !!new URLSearchParams(location.search).get('live');
+    return location.pathname === '/watch' &&
+           !!new URLSearchParams(location.search).get('live');
   }
 
   function injectStyle() {
     if (document.getElementById(STYLE_ID)) return;
-
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
       @media (min-width: 1100px) {
-        .view-watch-live {
-          padding-right: 380px !important;
-        }
-
+        .view-watch-live { padding-right: 380px !important; }
         .lc {
           position: absolute !important;
           inset: 0 !important;
           pointer-events: none !important;
           z-index: 5 !important;
         }
-
-        .lc-bar {
-          pointer-events: auto !important;
-          z-index: 6 !important;
-        }
-
-        .lc-backdrop {
-          display: none !important;
-        }
-
+        .lc-bar { pointer-events: auto !important; z-index: 6 !important; }
+        .lc-backdrop { display: none !important; }
         .lc-panel {
           position: absolute !important;
-          top: 0 !important;
-          right: 0 !important;
-          bottom: 0 !important;
-          width: 380px !important;
-          max-width: 380px !important;
+          top: 0 !important; right: 0 !important; bottom: 0 !important;
+          width: 360px !important;
           transform: translateX(0) !important;
-          border-left: 1px solid var(--border) !important;
-          background: #101318f5 !important;
-          backdrop-filter: blur(8px) !important;
-          -webkit-backdrop-filter: blur(8px) !important;
-          display: flex !important;
+          pointer-events: auto !important;
+          box-shadow: -8px 0 24px rgba(0,0,0,.35) !important;
           z-index: 7 !important;
         }
-
-        .lc-panel:not(.is-open) {
-          transform: translateX(0) !important;
-        }
-
-        .lc-panel-close {
-          display: none !important;
-        }
-
-        .lc.is-panel-open .lc-panel,
-        .lc-panel.is-open {
-          transform: translateX(0) !important;
-        }
-      }
-
-      @media (max-width: 1099px) {
-        .view-watch-live {
-          padding-right: 0 !important;
-        }
+        .lc-close { display: none !important; }
       }
     `;
     document.head.appendChild(style);
   }
 
-  function forcePanelOpen() {
-    if (!isLiveWatchPage()) return false;
-
-    const watchView = document.querySelector('.view-watch-live');
-    const overlay = document.querySelector('.lc');
-    const panel = document.querySelector('.lc-panel');
-
-    if (!watchView || !overlay || !panel) return false;
-
-    overlay.classList.add('is-panel-open');
-    panel.classList.add('is-open');
-    panel.setAttribute('aria-hidden', 'false');
-
-    const listBtn = document.querySelector(
-      '.lc-btn[title="Channel list"], .lc-btn[aria-label="Channel list"]'
-    );
-    if (listBtn) listBtn.classList.add('is-on');
-
-    return true;
-  }
-
-  function reapply() {
-    injectStyle();
-    forcePanelOpen();
-  }
-
-  function observeSpa() {
-    const observer = new MutationObserver(() => {
-      if (isLiveWatchPage()) {
-        reapply();
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-  }
-
-  function hookHistory() {
-    const rawPushState = history.pushState;
-    history.pushState = function () {
-      const result = rawPushState.apply(this, arguments);
-      setTimeout(reapply, 50);
-      setTimeout(reapply, 300);
-      return result;
-    };
-
-    const rawReplaceState = history.replaceState;
-    history.replaceState = function () {
-      const result = rawReplaceState.apply(this, arguments);
-      setTimeout(reapply, 50);
-      setTimeout(reapply, 300);
-      return result;
-    };
-
-    window.addEventListener('popstate', () => {
-      setTimeout(reapply, 50);
-      setTimeout(reapply, 300);
-    });
-
-    window.addEventListener('hashchange', () => {
-      setTimeout(reapply, 50);
-      setTimeout(reapply, 300);
-    });
-  }
-
-  function boot() {
-    injectStyle();
-
-    const start = () => {
-      reapply();
-      observeSpa();
-      hookHistory();
-      setTimeout(reapply, 500);
-      setTimeout(reapply, 1200);
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', start, { once: true });
-    } else {
-      start();
+  function openMenu() {
+    // huhu.to expose typiquement un bouton .lc-bar-btn ou similaire.
+    const btn = document.querySelector('.lc-bar-btn, [data-open="live-channels"], .live-channels-toggle');
+    if (btn && !document.querySelector('.lc-panel.open, .lc-panel[data-open="true"]')) {
+      try { btn.click(); } catch {}
     }
+    // On force aussi l'attribut ouvert au cas où
+    document.querySelectorAll('.lc-panel').forEach(p => {
+      p.classList.add('open');
+      p.setAttribute('data-open', 'true');
+    });
   }
 
-  boot();
+  function apply() {
+    if (!isLiveWatchPage()) return;
+    injectStyle();
+    document.body.classList.add('view-watch-live');
+    openMenu();
+  }
+
+  // Réagit aux changements d'URL (SPA)
+  let lastHref = location.href;
+  const check = () => {
+    if (location.href !== lastHref) {
+      lastHref = location.href;
+      // On retire l'état si on n'est plus sur /watch?live=
+      if (!isLiveWatchPage()) {
+        document.body.classList.remove('view-watch-live');
+      }
+    }
+    apply();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply);
+  } else {
+    apply();
+  }
+
+  // Observer les changements SPA
+  const obs = new MutationObserver(check);
+  obs.observe(document.body, { childList: true, subtree: true });
+
+  // Support pushState/replaceState pour SPA
+  ['pushState', 'replaceState'].forEach(fn => {
+    const orig = history[fn];
+    history[fn] = function () {
+      const r = orig.apply(this, arguments);
+      setTimeout(check, 50);
+      return r;
+    };
+  });
+  window.addEventListener('popstate', () => setTimeout(check, 50));
 })();
-      
