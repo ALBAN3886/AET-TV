@@ -284,7 +284,7 @@
               src="https://huhu.to/"
               referrerpolicy="no-referrer"
               allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation allow-popups-to-escape-sandbox"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
               allowfullscreen>
             </iframe>
             <div class="media-watermark" aria-hidden="true">
@@ -299,7 +299,7 @@
               <div>
                 <div class="placeholder-emoji">🚧</div>
                 <h3 style="margin:0 0 8px;color:var(--text)">Le site refuse l'intégration</h3>
-                <p>Utilisez le bouton « Ouvrir dans un nouvel onglet » ci-dessous.</p>
+                <p>Ce serveur bloque l'affichage complet dans la page. Essayez une source vidéo directe ou un lien intégrable.</p>
               </div>
             </div>
           </div>
@@ -319,7 +319,7 @@
             <div class="browser-side-shortcuts">
               <button class="short" data-yt-browser="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
               <button class="short" data-yt-browser="https://www.youtube.com/playlist?list=PLFgquLnL59alCl_2TQvOiD5Vgm1hCaGSI">Exemple playlist</button>
-              <button class="short" id="browserYouTubeOpenBtn">↗ Ouvrir YouTube</button>
+              <button class="short" id="browserYouTubeOpenBtn">▶ Charger YouTube ici</button>
             </div>
             <div class="browser-side-player player-viewport" id="browserYouTubeShell">
               <div class="browser-side-placeholder" id="browserYouTubePlaceholder">
@@ -345,7 +345,7 @@
 
         <div class="browser-tools">
           <button class="btn btn-success" id="captureUrlBtn">📥 Capturer cette URL vers le lecteur</button>
-          <button class="btn btn-secondary" id="openTabBtn">↗ Ouvrir dans un nouvel onglet</button>
+          <button class="btn btn-secondary" id="openTabBtn">▶ Ouvrir ici</button>
           <button class="btn btn-secondary" id="saveCurrentPageBtn">＋ Enregistrer dans favoris</button>
           <button class="btn btn-ghost" id="copyCurrentUrlBtn">📋 Copier l'URL</button>
         </div>
@@ -363,7 +363,7 @@
             </div>
             <div class="player-actions">
               <button class="btn btn-secondary" id="copyCurrentBtn">Copier l'URL</button>
-              <button class="btn btn-secondary" id="openExternalBtn">Nouvel onglet</button>
+              <button class="btn btn-secondary" id="openExternalBtn">Ouvrir ici</button>
               <button class="btn btn-danger" id="clearPlayerBtn">Vider</button>
             </div>
           </div>
@@ -1000,7 +1000,9 @@
 
     $('openTabBtn').addEventListener('click', () => {
       const url = browserUrl.value.trim() || HUHU_ROOT;
-      window.open(url, '_blank', 'noopener');
+      navigateTo(url);
+      switchTab('browser');
+      toast('Page rechargée dans le navigateur intégré.');
     });
 
     $('saveCurrentPageBtn').addEventListener('click', () => {
@@ -1024,8 +1026,10 @@
       toast('Lecteur YouTube vidé.');
     });
     $('browserYouTubeOpenBtn').addEventListener('click', () => {
-      const url = browserYouTubeUrl.value.trim() || 'https://www.youtube.com/';
-      window.open(url, '_blank', 'noopener');
+      const url = browserYouTubeUrl.value.trim() || 'https://www.youtube.com/watch?v=jNQXAC9IVRw';
+      loadBrowserYouTube(url);
+      switchTab('browser');
+      toast('YouTube chargé dans le panneau intégré.');
     });
     browserYouTubeUrl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') loadBrowserYouTube(browserYouTubeUrl.value);
@@ -1068,9 +1072,19 @@
     });
 
     $('openExternalBtn').addEventListener('click', () => {
-      const url = currentItem?.url || streamUrl.value.trim();
+      const url = normalizeUserUrl(currentItem?.url || streamUrl.value.trim());
       if (!url) return toast('Aucune URL.');
-      window.open(url, '_blank', 'noopener');
+      const type = detectType(url);
+      if (type === 'page') {
+        navigateTo(url);
+        switchTab('browser');
+        toast('Page ouverte dans le navigateur intégré.');
+        return;
+      }
+      const title = normalizeTitle(url, currentItem?.title || streamTitle.value || '');
+      playStream({ url, title, type: 'auto' });
+      switchTab('player');
+      toast('Lecture relancée dans le lecteur intégré.');
     });
 
     // Bibliothèque
