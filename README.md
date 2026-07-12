@@ -1,24 +1,18 @@
-# AET ALBAN ELOH TECHNOLOGIE — Huhu Navigator Pro
+# AET ALBAN ELOH TECHNOLOGIE — Huhu Navigator Pro v4
 
-## Correctif principal
-Sur certains téléphones, `huhu.to` refuse l'affichage dans une iframe embarquée.
-Cette version corrige le problème avec un **double fonctionnement** :
+## Correctif appliqué
+La capture montre que l'iframe intégrée peut afficher **"huhu.to n'autorise pas la connexion"** sur mobile.
+Cette v4 ne dépend donc plus de l'iframe sur téléphone :
 
-1. **Mode intégré** : la page essaie d'afficher huhu.to dans le site.
-2. **Mode secours mobile** : si l'intégration échoue, un panneau moderne s'affiche
-   et permet d'ouvrir immédiatement la bonne page **sans taper**.
+- **Mode lancement rapide** par défaut : ouvre les bonnes sections sans saisie.
+- **Mode intégration** conservé en option pour test sur navigateurs compatibles.
+- **Lecteur intégré** séparé pour HLS / MP4 / embeds.
 
 ## Fichiers
-- `index.html` : application principale moderne et responsive.
-- `huhu-stream-home-integration.js` : lanceur flottant à injecter dans huhu.to.
-- `huhu-watch-live-menu-open.js` : helper pour garder le menu live ouvert.
-- `README.md` : explications.
-
-## Utilisation
-1. Décompresser le ZIP.
-2. Ouvrir `index.html`.
-3. Utiliser les raccourcis : TV en direct, Films, Séries, Recherche.
-4. Si l'iframe échoue sur mobile, cliquer sur **Ouvrir cette page ici**.
+- `index.html` : version principale corrigée
+- `huhu-stream-home-integration.js` : lanceur flottant AET sur huhu.to
+- `huhu-watch-live-menu-open.js` : helper live
+- `README.md`
 
 ## Signature
 Produit signé : **AET ALBAN ELOH TECHNOLOGIE**
