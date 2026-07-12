@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AET Stream — Huhu.to + YouTube intégrés</title>
-  <meta name="description" content="Lecteur de flux + navigateur huhu.to intégré avec panneau YouTube simultané. HLS, MP4/WebM et embeds YouTube/Vimeo." />
+  <title>AET Stream — Navigateur + lecteur intégrés</title>
+  <meta name="description" content="Navigateur intégré + lecteur de flux robuste. Lecture HLS, MP4/WebM et embeds YouTube/Vimeo avec meilleure détection des URL et gestion d’erreurs renforcée." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -237,9 +237,9 @@
     <section class="hero">
       <div class="hero-card">
         <div class="badge">🎬 ALBAN ELOH TV · AET Stream</div>
-        <h1>Chaînes africaines et lecture en un seul endroit</h1>
-        <p>Accès rapide aux pages TV avec des liens dédiés aux pays d'Afrique. Les URL sont capturées automatiquement et prêtes à être lues dans le lecteur intégré (HLS, MP4, YouTube, Vimeo). Un module YouTube est aussi intégré pour permettre une lecture simultanée directement dans le site.</p>
-        <div class="notice">Usage prévu : contenus dont vous avez les droits d'accès, embeds publics autorisés, IPTV légitime, démonstrations personnelles.</div>
+        <h1>Navigateur et lecteur de flux en un seul endroit</h1>
+        <p>Navigation web et lecture multimédia dans une interface plus claire. Les URL directes (<code>.m3u8</code>, <code>.mp4</code>, <code>.webm</code>, YouTube, Vimeo) sont lues dans le lecteur intégré. Les pages web classiques restent dans le navigateur intégré pour éviter les erreurs de lecture.</p>
+        <div class="notice">Usage prévu : contenus dont vous avez les droits d'accès, embeds publics autorisés, IPTV légitime et tests personnels. Les protections du site distant, du navigateur ou du serveur ne peuvent pas être contournées par ce fichier.</div>
       </div>
       <div class="hero-card hero-stats">
         <div class="stat"><div class="stat-label">Site intégré</div><div class="stat-value">huhu.to</div></div>
@@ -268,36 +268,13 @@
           <button class="btn btn-secondary" id="navHome">🏠 Accueil</button>
         </div>
 
-        <div class="browser-shortcuts">
+                <div class="browser-shortcuts">
           <button class="short" data-nav="https://huhu.to/">Accueil</button>
           <button class="short live" data-nav="https://huhu.to/live">🔴 TV en direct</button>
           <button class="short" data-nav="https://huhu.to/movies">🎬 Films</button>
           <button class="short" data-nav="https://huhu.to/series">📺 Séries</button>
           <button class="short" data-nav="https://huhu.to/search">🔎 Rechercher</button>
-          <button class="short" data-nav="https://huhu.to/live?country=ci">🇨🇮 Côte d’Ivoire</button>
-          <button class="short" data-nav="https://huhu.to/live?country=sn">🇸🇳 Sénégal</button>
-          <button class="short" data-nav="https://huhu.to/live?country=cm">🇨🇲 Cameroun</button>
-          <button class="short" data-nav="https://huhu.to/live?country=ma">🇲🇦 Maroc</button>
-          <button class="short" data-nav="https://huhu.to/live?country=ng">🇳🇬 Nigeria</button>
-          <select id="africaCountrySelect" class="country-select" aria-label="Pays d'Afrique">
-            <option value="">Pays d'Afrique</option>
-            <option value="https://huhu.to/live?country=dz">🇩🇿 Algérie</option>
-            <option value="https://huhu.to/live?country=bj">🇧🇯 Bénin</option>
-            <option value="https://huhu.to/live?country=bf">🇧🇫 Burkina Faso</option>
-            <option value="https://huhu.to/live?country=cm">🇨🇲 Cameroun</option>
-            <option value="https://huhu.to/live?country=ci">🇨🇮 Côte d’Ivoire</option>
-            <option value="https://huhu.to/live?country=cd">🇨🇩 RDC</option>
-            <option value="https://huhu.to/live?country=eg">🇪🇬 Égypte</option>
-            <option value="https://huhu.to/live?country=gh">🇬🇭 Ghana</option>
-            <option value="https://huhu.to/live?country=ke">🇰🇪 Kenya</option>
-            <option value="https://huhu.to/live?country=ml">🇲🇱 Mali</option>
-            <option value="https://huhu.to/live?country=ma">🇲🇦 Maroc</option>
-            <option value="https://huhu.to/live?country=ng">🇳🇬 Nigeria</option>
-            <option value="https://huhu.to/live?country=za">🇿🇦 Afrique du Sud</option>
-            <option value="https://huhu.to/live?country=sn">🇸🇳 Sénégal</option>
-            <option value="https://huhu.to/live?country=tg">🇹🇬 Togo</option>
-            <option value="https://huhu.to/live?country=tn">🇹🇳 Tunisie</option>
-          </select>
+          <button class="short" data-nav="https://huhu.to/favorites">⭐ Favoris</button>
         </div>
 
         <div class="browser-grid">
@@ -438,7 +415,7 @@
             <div class="placeholder" id="playerPlaceholder">
               <div class="placeholder-emoji">📺</div>
               <h3>Prêt à lire votre lien</h3>
-              <p>Collez une URL ou capturez-la depuis le navigateur huhu.to. Les flux HLS utilisent <strong>hls.js</strong> automatiquement.</p>
+              <p>Collez une URL directe de flux ou de vidéo. Les pages web simples sont redirigées vers le navigateur intégré pour éviter le message d’erreur « media could not be loaded ».</p>
             </div>
             <video id="videoPlayer" class="hidden" controls playsinline></video>
             <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -454,7 +431,7 @@
         <aside class="sidebar">
           <div class="library-card">
             <div class="section-head">
-              <div><h3>Chaînes Afrique</h3><small>Liens rapides par pays africains</small></div>
+              <div><h3>Accès rapides</h3><small>Pages utiles sans filtres pays</small></div>
             </div>
             <div class="list" id="quickList"></div>
           </div>
@@ -464,8 +441,8 @@
             <ul>
               <li><strong>HLS</strong> pour la TV live et playlists <code>.m3u8</code>.</li>
               <li><strong>Vidéo</strong> pour <code>.mp4</code> / <code>.webm</code>.</li>
-              <li><strong>Embed</strong> pour YouTube, Vimeo, ou pages complètes.</li>
-              <li>Si un flux ne démarre pas → vérifier CORS et droits d'accès.</li>
+              <li><strong>Embed</strong> pour YouTube, Vimeo, ou une URL d’intégration explicite.</li>
+              <li>Si une page n’est pas un flux direct, elle s’ouvre dans le navigateur intégré au lieu de casser le lecteur.</li>
             </ul>
           </div>
         </aside>
@@ -488,7 +465,7 @@
       </div>
     </section>
 
-    <div class="foot">ALBAN ELOH TV · AET Stream · Menu corrigé et accès Afrique prêt à héberger</div>
+    <div class="foot">ALBAN ELOH TV · AET Stream · Interface réorganisée et lecture sécurisée</div>
   </div>
 
   <script>
@@ -500,20 +477,14 @@
     const LAST_KEY = 'aet_stream_last_v2';
     const HUHU_ROOT = 'https://huhu.to';
 
-    // --- Chaînes rapides pré-remplies (raccourcis huhu.to) ---
+    // --- Accès rapides génériques ---
     const QUICK_CHANNELS = [
-      { title: 'Côte d’Ivoire',   url: 'https://huhu.to/live?country=ci', country: 'CI', category: 'Afrique de l’Ouest' },
-      { title: 'Sénégal',         url: 'https://huhu.to/live?country=sn', country: 'SN', category: 'Afrique de l’Ouest' },
-      { title: 'Cameroun',        url: 'https://huhu.to/live?country=cm', country: 'CM', category: 'Afrique centrale' },
-      { title: 'Bénin',           url: 'https://huhu.to/live?country=bj', country: 'BJ', category: 'Afrique de l’Ouest' },
-      { title: 'Togo',            url: 'https://huhu.to/live?country=tg', country: 'TG', category: 'Afrique de l’Ouest' },
-      { title: 'Mali',            url: 'https://huhu.to/live?country=ml', country: 'ML', category: 'Afrique de l’Ouest' },
-      { title: 'Maroc',           url: 'https://huhu.to/live?country=ma', country: 'MA', category: 'Afrique du Nord' },
-      { title: 'Algérie',         url: 'https://huhu.to/live?country=dz', country: 'DZ', category: 'Afrique du Nord' },
-      { title: 'Tunisie',         url: 'https://huhu.to/live?country=tn', country: 'TN', category: 'Afrique du Nord' },
-      { title: 'Nigeria',         url: 'https://huhu.to/live?country=ng', country: 'NG', category: 'Afrique de l’Ouest' },
-      { title: 'Ghana',           url: 'https://huhu.to/live?country=gh', country: 'GH', category: 'Afrique de l’Ouest' },
-      { title: 'Afrique du Sud',  url: 'https://huhu.to/live?country=za', country: 'ZA', category: 'Afrique australe' }
+      { title: 'Accueil Huhu.to',  url: 'https://huhu.to/',         country: 'WEB',  category: 'Navigation' },
+      { title: 'TV en direct',     url: 'https://huhu.to/live',     country: 'LIVE', category: 'Navigation' },
+      { title: 'Films',            url: 'https://huhu.to/movies',   country: 'VOD',  category: 'Catalogue' },
+      { title: 'Séries',           url: 'https://huhu.to/series',   country: 'VOD',  category: 'Catalogue' },
+      { title: 'Recherche',        url: 'https://huhu.to/search',   country: 'FIND', category: 'Outil' },
+      { title: 'YouTube',          url: 'https://www.youtube.com/', country: 'YT',   category: 'Externe' }
     ];
 
     // ============================================================
@@ -577,13 +548,57 @@
       } catch { return 'Flux sans titre'; }
     }
 
+    function normalizeUserUrl(url) {
+      let value = String(url || '').trim();
+      if (!value) return '';
+      if (/^huhu\.to/i.test(value)) value = 'https://' + value;
+      if (!/^https?:\/\//i.test(value) && /^[\w.-]+\.[a-z]{2,}(?:[\/:?#]|$)/i.test(value)) {
+        value = 'https://' + value;
+      }
+      return value;
+    }
+
+    function extractNestedMediaUrl(url) {
+      try {
+        const u = new URL(url);
+        const keys = ['url', 'src', 'source', 'stream', 'file', 'media', 'video', 'play'];
+        for (const key of keys) {
+          const raw = u.searchParams.get(key);
+          if (!raw) continue;
+          const candidate = normalizeUserUrl(decodeURIComponent(raw));
+          if (/^https?:\/\//i.test(candidate)) return candidate;
+        }
+      } catch {}
+      return '';
+    }
+
+    function isLikelyDirectMediaUrl(url) {
+      const value = String(url || '').toLowerCase();
+      return /\.(m3u8|mp4|webm|ogg|mp3|m4a)(\?|#|$)/.test(value) || /application\/vnd\.apple\.mpegurl/.test(value);
+    }
+
+    function isLikelyPageUrl(url) {
+      try {
+        const u = new URL(url);
+        const host = u.hostname.toLowerCase();
+        if (/youtube\.com$|youtu\.be$|vimeo\.com$/.test(host)) return false;
+        if (/\/embed(\/|$)/i.test(u.pathname)) return false;
+        if (isLikelyDirectMediaUrl(url)) return false;
+        if (/^https?:$/.test(u.protocol)) return true;
+      } catch {}
+      return false;
+    }
+
     function detectType(url) {
-      const v = String(url || '').toLowerCase();
-      if (v.includes('youtube.com') || v.includes('youtu.be')) return 'youtube';
-      if (v.includes('vimeo.com')) return 'vimeo';
-      if (v.includes('.m3u8')) return 'hls';
-      if (v.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video';
-      if (v.includes('huhu.to/watch') || v.includes('huhu.to/live') || v.includes('/embed')) return 'embed';
+      const original = normalizeUserUrl(url);
+      const nested = extractNestedMediaUrl(original);
+      const value = String(nested || original || '').toLowerCase();
+      if (value.includes('youtube.com') || value.includes('youtu.be')) return 'youtube';
+      if (value.includes('vimeo.com')) return 'vimeo';
+      if (value.includes('.m3u8')) return 'hls';
+      if (value.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video';
+      if (value.includes('/embed')) return 'embed';
+      if (isLikelyPageUrl(original)) return 'page';
       return 'video';
     }
 
@@ -687,18 +702,61 @@
       playerPlaceholder.classList.remove('hidden');
     }
 
-    function playHls(url) {
+    async function ensureHlsLibrary() {
+      if (window.Hls) return true;
+      const fallbacks = [
+        'https://unpkg.com/hls.js@1/dist/hls.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.15/hls.min.js'
+      ];
+      for (const src of fallbacks) {
+        try {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.async = true;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+          });
+          if (window.Hls) return true;
+        } catch {}
+      }
+      return !!window.Hls;
+    }
+
+    async function playHls(url) {
       videoPlayer.removeAttribute('poster');
       videoPlayer.classList.remove('hidden');
       embedPlayer.classList.add('hidden');
       playerPlaceholder.classList.add('hidden');
-      if (window.Hls && window.Hls.isSupported()) {
-        hlsInstance = new window.Hls({ enableWorker: true });
+
+      const hasHls = await ensureHlsLibrary();
+      if (hasHls && window.Hls && window.Hls.isSupported()) {
+        let networkRecovered = false;
+        let mediaRecovered = false;
+        hlsInstance = new window.Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90
+        });
         hlsInstance.loadSource(url);
         hlsInstance.attachMedia(videoPlayer);
         hlsInstance.on(window.Hls.Events.MANIFEST_PARSED, () => videoPlayer.play().catch(()=>{}));
         hlsInstance.on(window.Hls.Events.ERROR, (_, data) => {
-          if (data.fatal) toast('Erreur HLS : ' + (data.details || 'inconnue'));
+          if (!data?.fatal) return;
+          if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR && !networkRecovered) {
+            networkRecovered = true;
+            toast('Réseau instable, nouvelle tentative HLS…');
+            try { hlsInstance.startLoad(); } catch {}
+            return;
+          }
+          if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR && !mediaRecovered) {
+            mediaRecovered = true;
+            toast('Récupération du média en cours…');
+            try { hlsInstance.recoverMediaError(); } catch {}
+            return;
+          }
+          toast('Lecture HLS impossible : flux indisponible, protégé ou non compatible.');
         });
       } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         videoPlayer.src = url;
@@ -752,17 +810,33 @@
 
     function playStream(item) {
       stopPlayback();
-      if (!item?.url) return toast('URL manquante.');
-      const type = getEffectiveType(item.url, item.type || 'auto');
-      currentItem = { ...item, detectedType: type };
-      setLastPlayed(currentItem);
-      switchTab('player');
+      const requestedUrl = normalizeUserUrl(item?.url);
+      if (!requestedUrl) return toast('URL manquante.');
 
-      if (type === 'hls') { playHls(item.url); updateMeta(item, 'HLS'); }
-      else if (type === 'youtube') { playEmbed(toYouTubeEmbed(item.url)); updateMeta(item, 'YouTube'); }
-      else if (type === 'vimeo') { playEmbed(toVimeoEmbed(item.url)); updateMeta(item, 'Vimeo'); }
-      else if (type === 'embed') { playEmbed(item.url); updateMeta(item, 'Embed'); }
-      else { playVideo(item.url); updateMeta(item, 'Vidéo'); }
+      const selectedType = item.type || 'auto';
+      const resolvedUrl = extractNestedMediaUrl(requestedUrl) || requestedUrl;
+      const type = getEffectiveType(resolvedUrl, selectedType);
+      const title = normalizeTitle(requestedUrl, item?.title || '');
+
+      currentItem = { ...item, title, url: requestedUrl, resolvedUrl, detectedType: type };
+      setLastPlayed(currentItem);
+
+      if (type === 'page') {
+        navigateTo(requestedUrl);
+        updateMeta({ title, url: requestedUrl }, 'Page web');
+        switchTab('browser');
+        toast('Cette URL est une page web. Ouverture dans le navigateur intégré pour éviter l’erreur de lecture.');
+        return;
+      }
+
+      switchTab('player');
+      if (resolvedUrl !== requestedUrl) toast('Flux direct extrait depuis l’URL.');
+
+      if (type === 'hls') { playHls(resolvedUrl); updateMeta({ title, url: resolvedUrl }, 'HLS'); }
+      else if (type === 'youtube') { playEmbed(toYouTubeEmbed(resolvedUrl)); updateMeta({ title, url: resolvedUrl }, 'YouTube'); }
+      else if (type === 'vimeo') { playEmbed(toVimeoEmbed(resolvedUrl)); updateMeta({ title, url: resolvedUrl }, 'Vimeo'); }
+      else if (type === 'embed') { playEmbed(resolvedUrl); updateMeta({ title, url: resolvedUrl }, 'Embed'); }
+      else { playVideo(resolvedUrl); updateMeta({ title, url: resolvedUrl }, 'Vidéo'); }
     }
 
     // ============================================================
@@ -801,6 +875,7 @@
     }
 
     function renderQuickChannels() {
+      if (!quickList) return;
       quickList.innerHTML = QUICK_CHANNELS.map((c, i) => `
         <div class="item">
           <div class="item-top">
@@ -810,7 +885,6 @@
             </div>
           </div>
           <div class="tag-row">
-            <span class="tag live">🔴 LIVE</span>
             <span class="tag">${escapeHtml(c.country)}</span>
             <span class="tag warn">${escapeHtml(c.category)}</span>
           </div>
@@ -846,13 +920,13 @@
     //  Navigateur huhu.to intégré
     // ============================================================
     function navigateTo(url) {
-      if (!url) return;
-      if (!/^https?:\/\//i.test(url)) {
-        // recherche rapide si simple mot-clé
-        url = 'https://huhu.to/search?q=' + encodeURIComponent(url);
+      let value = normalizeUserUrl(url);
+      if (!value) return;
+      if (!/^https?:\/\//i.test(value)) {
+        value = 'https://huhu.to/search?q=' + encodeURIComponent(value);
       }
-      huhuIframe.src = url;
-      browserUrl.value = url;
+      huhuIframe.src = value;
+      browserUrl.value = value;
       browserOverlay.classList.remove('show');
     }
 
@@ -894,12 +968,15 @@
       btn.addEventListener('click', () => navigateTo(btn.dataset.nav))
     );
 
-    $('africaCountrySelect').addEventListener('change', (e) => {
-      const url = e.target.value;
-      if (!url) return;
-      navigateTo(url);
-      e.target.value = '';
-    });
+    const africaCountrySelect = $('africaCountrySelect');
+    if (africaCountrySelect) {
+      africaCountrySelect.addEventListener('change', (e) => {
+        const url = e.target.value;
+        if (!url) return;
+        navigateTo(url);
+        e.target.value = '';
+      });
+    }
 
     // Nav bar
     $('navGo').addEventListener('click', () => navigateTo(browserUrl.value.trim()));
@@ -959,8 +1036,9 @@
 
     // Lecteur
     $('playBtn').addEventListener('click', () => {
-      const url = streamUrl.value.trim();
+      const url = normalizeUserUrl(streamUrl.value);
       if (!url) return toast('Entrez une URL de flux.');
+      streamUrl.value = url;
       const title = normalizeTitle(url, streamTitle.value);
       playStream({ url, title, type: streamType.value });
     });
@@ -1052,18 +1130,20 @@
       if (delId) removeItem(delId);
     });
 
-    quickList.addEventListener('click', (e) => {
-      const qi = e.target.closest('[data-quick]')?.dataset.quick;
-      const qb = e.target.closest('[data-quick-browse]')?.dataset.quickBrowse;
-      if (qi !== undefined) {
-        const c = QUICK_CHANNELS[+qi];
-        if (c) playStream({ url: c.url, title: c.title, type: 'embed' });
-      }
-      if (qb !== undefined) {
-        const c = QUICK_CHANNELS[+qb];
-        if (c) { navigateTo(c.url); switchTab('browser'); }
-      }
-    });
+    if (quickList) {
+      quickList.addEventListener('click', (e) => {
+        const qi = e.target.closest('[data-quick]')?.dataset.quick;
+        const qb = e.target.closest('[data-quick-browse]')?.dataset.quickBrowse;
+        if (qi !== undefined) {
+          const c = QUICK_CHANNELS[+qi];
+          if (c) playStream({ url: c.url, title: c.title, type: 'auto' });
+        }
+        if (qb !== undefined) {
+          const c = QUICK_CHANNELS[+qb];
+          if (c) { navigateTo(c.url); switchTab('browser'); }
+        }
+      });
+    }
 
     document.querySelectorAll('[data-example]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1074,8 +1154,21 @@
     });
 
     streamUrl.addEventListener('input', () => {
-      const url = streamUrl.value.trim();
+      const url = normalizeUserUrl(streamUrl.value);
       if (!streamTitle.value.trim() && url) streamTitle.value = normalizeTitle(url, '');
+    });
+
+    videoPlayer.addEventListener('error', () => {
+      const current = currentItem?.resolvedUrl || currentItem?.url || '';
+      if (current && detectType(current) === 'page') {
+        toast('Cette adresse est une page web et non un flux direct.');
+        return;
+      }
+      toast('Le média n’a pas pu être chargé. Vérifiez que l’URL pointe vers un vrai flux, que le serveur autorise la lecture et que le format est compatible.');
+    });
+
+    embedPlayer.addEventListener('error', () => {
+      toast('Cette intégration externe refuse probablement l’affichage dans une iframe.');
     });
 
     // ============================================================
