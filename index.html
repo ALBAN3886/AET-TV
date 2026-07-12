@@ -4,119 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AET ALBAN ELOH TECHNOLOGIE — Huhu Navigator</title>
-  <meta name="description" content="Lanceur moderne pour huhu.to avec mode intégré, mode secours sans saisie, favoris et lecteur multimédia." />
+  <meta name="description" content="Navigateur Huhu intégré, lecteur multimédia et favoris, signé AET ALBAN ELOH TECHNOLOGIE." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
-    :root{
-      --bg:#07111f;--bg2:#0d1830;--card:rgba(13,24,48,.86);--card2:rgba(17,30,58,.92);
-      --text:#edf4ff;--muted:#97a6c7;--line:rgba(148,163,184,.18);--line2:rgba(79,142,247,.34);
-      --blue:#4f8ef7;--violet:#7c3aed;--green:#10b981;--red:#ef4444;--amber:#f59e0b;
-      --shadow:0 24px 60px rgba(0,0,0,.35);--radius:22px;
-    }
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{
-      min-height:100vh;font-family:Inter,system-ui,sans-serif;color:var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(79,142,247,.15), transparent 28%),
-        radial-gradient(circle at right bottom, rgba(124,58,237,.12), transparent 26%),
-        linear-gradient(180deg,#07111f,#0b1428 50%,#09101f 100%);
-    }
-    a{color:inherit;text-decoration:none} button,input,select{font:inherit}
-    .app{max-width:1700px;margin:0 auto;padding:18px 14px 34px}
-    .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-bottom:16px}
-    .card{background:var(--card);border:1px solid var(--line);backdrop-filter:blur(18px);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .hero-main{padding:22px 22px 18px;position:relative;overflow:hidden}
-    .hero-main:before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,142,247,.10),transparent 40%,rgba(124,58,237,.08));pointer-events:none}
-    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.24);font-weight:800;font-size:12px;color:#d7e6ff;margin-bottom:12px}
-    h1{margin:0 0 10px;font-size:32px;line-height:1.05;letter-spacing:-.03em}
-    .lead{margin:0;color:var(--muted);font-size:15px;max-width:850px}
-    .notice{margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.20);color:#fde68a;font-size:13px}
-    .hero-side{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .stat{padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-    .stat-k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-    .stat-v{font-size:18px;font-weight:900;line-height:1.15}
-
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-    .tab{border:none;cursor:pointer;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);font-weight:800}
-    .tab.active{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(79,142,247,.28)}
-
-    .pane{display:none}.pane.active{display:block}
-
-    .browser{padding:14px}
-    .toolbar{display:grid;grid-template-columns:auto auto auto minmax(220px,1fr) auto auto;gap:8px;align-items:center;margin-bottom:10px}
-    .nav-btn,.short-btn,.btn{min-height:42px;border:none;border-radius:12px;padding:0 14px;font-weight:800;cursor:pointer;transition:.18s transform,.18s opacity,.18s box-shadow}
-    .nav-btn:hover,.short-btn:hover,.btn:hover{transform:translateY(-1px)}
-    .nav-btn,.short-btn{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--line)}
-    .btn-primary{background:linear-gradient(135deg,var(--blue),#2563eb 55%,var(--violet));color:#fff;box-shadow:0 14px 28px rgba(79,142,247,.24)}
-    .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
-    .btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 14px 28px rgba(16,185,129,.18)}
-    .btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.24);color:#fecaca}
-    .btn-ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
-    .url{width:100%;min-height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--text);outline:none}
-    .url:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
-    .shortcuts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-    .short-btn.live{background:rgba(239,68,68,.15);color:#fecaca;border-color:rgba(239,68,68,.25)}
-
-    .modebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--muted)}
-    .pill.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.22);color:#bbf7d0}
-    .pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.22);color:#fde68a}
-    .pill.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fecaca}
-
-    .viewer{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#050b16;position:relative;height:calc(100vh - 320px);min-height:520px}
-    .viewer iframe{width:100%;height:100%;border:0;background:#fff}
-    .fallback{position:absolute;inset:0;padding:24px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(5,11,22,.92),rgba(10,17,31,.96));text-align:center}
-    .fallback.hidden{display:none}
-    .fallback-box{max-width:760px}
-    .fallback-emoji{font-size:56px;margin-bottom:12px}
-    .fallback h3{margin:0 0 10px;font-size:24px}
-    .fallback p{margin:0;color:var(--muted);font-size:15px}
-    .fallback-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}
-
-    .grid{display:grid;grid-template-columns:minmax(0,1.24fr) 390px;gap:16px}
-    .player-card,.side-card{padding:16px}
-    .player-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-    .player-head h2,.side-card h3{margin:0}
-    .muted{color:var(--muted);font-size:13px}
-    .field-wide,.field{display:flex;flex-direction:column;gap:6px}
-    .field-wide{margin-bottom:12px}
-    .form-grid{display:grid;grid-template-columns:1.3fr .8fr;gap:10px;margin-bottom:12px}
-    label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-    .input,.select,.search{min-height:46px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--text);outline:none}
-    .input:focus,.select:focus,.search:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
-    .quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;font-size:13px;font-weight:700}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .frame{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#020617;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-    .frame video,.frame iframe{width:100%;height:100%;border:0;background:#000}
-    .hidden{display:none !important}
-    .placeholder{padding:26px;text-align:center;max-width:680px}.placeholder .emo{font-size:56px;margin-bottom:8px}.placeholder h3{margin:0 0 8px}.placeholder p{margin:0;color:var(--muted)}
-    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-    .meta-card{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-    .meta-k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-    .meta-v{font-size:14px;font-weight:800;word-break:break-word}
-
-    .list{display:flex;flex-direction:column;gap:10px;max-height:760px;overflow:auto}
-    .item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-    .item-title{font-size:15px;font-weight:900;line-height:1.3}.item-sub{font-size:12px;color:var(--muted);margin-top:4px;word-break:break-all}
-    .tagrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 10px}.tag{padding:4px 8px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.2);color:#d8e7ff;font-size:11px;font-weight:800}.tag.live{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#fecaca}.tag.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.2);color:#bbf7d0}.tag.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.2);color:#fde68a}
-    .item-actions{display:flex;gap:8px;flex-wrap:wrap}.mini{min-height:36px;padding:0 12px;border-radius:10px;font-size:13px}
-    .empty{padding:20px;border-radius:16px;border:1px dashed var(--line);text-align:center;color:var(--muted)}
-    .foot{margin-top:18px;padding:14px 18px;border-radius:18px;text-align:center;color:#cbd6ed;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:13px}
-    .foot strong{color:#fff}
-
-    @media (max-width:1280px){.grid{grid-template-columns:1fr}.viewer{height:68vh}}
-    @media (max-width:900px){.hero{grid-template-columns:1fr}.toolbar{grid-template-columns:auto auto auto 1fr auto auto}.form-grid,.meta{grid-template-columns:1fr}.viewer{height:62vh;min-height:440px}}
-    @media (max-width:680px){
-      .app{padding:12px 10px 22px} h1{font-size:24px}.lead{font-size:14px}
-      .hero-main,.browser,.player-card,.side-card{padding:14px}.hero-side{grid-template-columns:1fr 1fr;padding:12px}
-      .toolbar{grid-template-columns:repeat(3,1fr);}.toolbar .url{grid-column:1/-1}.toolbar .btn-primary,.toolbar .btn-secondary{width:100%}
-      .shortcuts,.actions,.item-actions,.fallback-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
-      .short-btn,.btn,.mini{width:100%}.viewer{height:58vh;min-height:360px}
-    }
+    :root{--bg:#08111f;--bg2:#101a32;--card:rgba(16,26,50,.88);--card2:rgba(13,22,42,.92);--text:#eef4ff;--muted:#9eaccb;--line:rgba(148,163,184,.18);--blue:#4f8ef7;--violet:#7c3aed;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--shadow:0 24px 60px rgba(0,0,0,.36);--radius:22px}
+    *{box-sizing:border-box} html,body{margin:0;padding:0} body{font-family:Inter,system-ui,sans-serif;color:var(--text);min-height:100vh;background:radial-gradient(circle at top left,rgba(79,142,247,.14),transparent 28%),radial-gradient(circle at bottom right,rgba(124,58,237,.12),transparent 24%),linear-gradient(180deg,#06101d,#0a1426 48%,#08101c)}
+    button,input,select{font:inherit} a{text-decoration:none;color:inherit}
+    .app{max-width:1720px;margin:0 auto;padding:16px 12px 28px}
+    .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-bottom:16px}.card{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero-main{padding:22px;position:relative;overflow:hidden}.hero-main:before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,142,247,.10),transparent 40%,rgba(124,58,237,.08));pointer-events:none}.badge{display:inline-flex;gap:8px;align-items:center;padding:8px 14px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.22);font-weight:800;font-size:12px;color:#d7e6ff;margin-bottom:12px}
+    h1{margin:0 0 10px;font-size:32px;line-height:1.04;letter-spacing:-.03em}.lead{margin:0;color:var(--muted);font-size:15px;max-width:860px}.hero-side{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.stat .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.stat .v{font-size:18px;font-weight:900;line-height:1.15}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{border:none;cursor:pointer;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);font-weight:800}.tab.active{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(79,142,247,.28)}.pane{display:none}.pane.active{display:block}
+    .browser{padding:14px}.toolbar{display:grid;grid-template-columns:auto auto auto minmax(240px,1fr) auto auto;gap:8px;align-items:center;margin-bottom:10px}.nav-btn,.quick-btn,.btn{min-height:42px;border:none;border-radius:12px;padding:0 14px;font-weight:800;cursor:pointer;transition:transform .18s,opacity .18s}.nav-btn:hover,.quick-btn:hover,.btn:hover{transform:translateY(-1px)}.nav-btn,.quick-btn{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text)}
+    .btn-primary{background:linear-gradient(135deg,var(--blue),#2563eb 55%,var(--violet));color:#fff;box-shadow:0 12px 24px rgba(79,142,247,.26)}.btn-secondary{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text)}.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 12px 24px rgba(16,185,129,.18)}.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.24);color:#fecaca}.btn-ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+    .url{width:100%;min-height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--text);outline:none}.url:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
+    .row{display:flex;gap:8px;flex-wrap:wrap}.toprow{margin-bottom:10px}.pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--muted)}.pill.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.22);color:#bbf7d0}.pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.22);color:#fde68a}
+    .launcher{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}.launch-card{padding:14px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.06)}.launch-card.active{border-color:rgba(79,142,247,.45);box-shadow:0 0 0 1px rgba(79,142,247,.2) inset}.launch-ico{font-size:26px;margin-bottom:10px}.launch-title{font-size:16px;font-weight:900;margin-bottom:4px}.launch-sub{font-size:12px;color:var(--muted);min-height:34px}.launch-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .search-box{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px;margin-bottom:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .viewer{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#050b16;position:relative;height:calc(100vh - 360px);min-height:500px}.viewer iframe{width:100%;height:100%;border:0;background:#050b16}.blank-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(6,10,18,.88),rgba(6,10,18,.94));text-align:center}.blank-overlay.hidden{display:none}.blank-box{max-width:760px}.blank-ico{font-size:54px;margin-bottom:10px}.blank-box h3{margin:0 0 10px;font-size:24px}.blank-box p{margin:0;color:var(--muted);font-size:15px}.blank-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}.viewer-note{margin-top:10px;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:minmax(0,1.22fr) 390px;gap:16px}.player-card,.side-card{padding:16px}.player-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.player-head h2,.side-card h3{margin:0}.muted{color:var(--muted);font-size:13px}.field-wide,.field{display:flex;flex-direction:column;gap:6px}.field-wide{margin-bottom:12px}.form-grid{display:grid;grid-template-columns:1.3fr .8fr;gap:10px;margin-bottom:12px}label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .input,.select,.search{min-height:46px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--text);outline:none}.input:focus,.select:focus,.search:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
+    .quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;font-size:13px;font-weight:700}.actions{display:flex;gap:8px;flex-wrap:wrap}.frame{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#020617;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}.frame video,.frame iframe{width:100%;height:100%;border:0;background:#000}.hidden{display:none !important}.placeholder{padding:26px;text-align:center;max-width:680px}.placeholder .emo{font-size:56px;margin-bottom:8px}.placeholder h3{margin:0 0 8px}.placeholder p{margin:0;color:var(--muted)}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.meta-card{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.meta-k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.meta-v{font-size:14px;font-weight:800;word-break:break-word}
+    .list{display:flex;flex-direction:column;gap:10px;max-height:760px;overflow:auto}.item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.item-title{font-size:15px;font-weight:900;line-height:1.3}.item-sub{font-size:12px;color:var(--muted);margin-top:4px;word-break:break-all}.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 10px}.tag{padding:4px 8px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.2);color:#d8e7ff;font-size:11px;font-weight:800}.tag.live{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#fecaca}.tag.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.2);color:#bbf7d0}.tag.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.2);color:#fde68a}.item-actions{display:flex;gap:8px;flex-wrap:wrap}.mini{min-height:36px;padding:0 12px;border-radius:10px;font-size:13px}.empty{padding:20px;border-radius:16px;border:1px dashed var(--line);text-align:center;color:var(--muted)}
+    .foot{margin-top:18px;padding:14px 18px;border-radius:18px;text-align:center;color:#cbd6ed;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:13px}.foot strong{color:#fff}
+    @media (max-width:1280px){.grid{grid-template-columns:1fr}.launcher{grid-template-columns:repeat(3,minmax(0,1fr))}.viewer{height:66vh}}
+    @media (max-width:920px){.hero{grid-template-columns:1fr}.toolbar{grid-template-columns:auto auto auto 1fr auto auto}.form-grid,.meta{grid-template-columns:1fr}.viewer{height:60vh;min-height:420px}.launcher{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:680px){.app{padding:12px 10px 22px}h1{font-size:24px}.lead{font-size:14px}.hero-main,.browser,.player-card,.side-card{padding:14px}.hero-side{padding:12px}.toolbar{grid-template-columns:repeat(3,1fr)}.toolbar .url{grid-column:1/-1}.toolbar .btn-primary,.toolbar .btn-secondary{width:100%}.row,.actions,.blank-actions,.item-actions,.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.quick-btn,.btn,.mini,.chip{width:100%}.search-box{grid-template-columns:1fr}.viewer{height:56vh;min-height:340px}}
   </style>
 </head>
 <body>
@@ -124,21 +41,20 @@
     <section class="hero">
       <div class="card hero-main">
         <div class="badge">⚡ AET ALBAN ELOH TECHNOLOGIE</div>
-        <h1>Huhu Navigator Pro</h1>
-        <p class="lead">Version corrigée et modernisée : accès rapide à <strong>huhu.to</strong> sans taper, avec <strong>mode intégré</strong> si l’iframe fonctionne, et <strong>mode secours intelligent</strong> si le navigateur mobile bloque l’intégration.</p>
-        <div class="notice">Cette version corrige le problème « huhu.to n’autorise pas la connexion » en ajoutant un basculement automatique vers un mode de secours sans saisie.</div>
+        <h1>Huhu Navigator</h1>
+        <p class="lead">Navigation intégrée, raccourcis directs, lecteur multimédia et favoris dans une seule interface propre, fluide et mobile.</p>
       </div>
       <div class="card hero-side">
-        <div class="stat"><div class="stat-k">Marque</div><div class="stat-v">AET ALBAN ELOH TECHNOLOGIE</div></div>
-        <div class="stat"><div class="stat-k">Mode</div><div class="stat-v">Intégré + secours</div></div>
-        <div class="stat"><div class="stat-k">Lecteur</div><div class="stat-v">HLS · MP4 · Embed</div></div>
-        <div class="stat"><div class="stat-k">Usage</div><div class="stat-v">PC · Tab · Mobile</div></div>
+        <div class="stat"><div class="k">Signature</div><div class="v">AET ALBAN ELOH TECHNOLOGIE</div></div>
+        <div class="stat"><div class="k">Navigation</div><div class="v">Intégrée au site</div></div>
+        <div class="stat"><div class="k">Lecteur</div><div class="v">HLS · MP4 · Embed</div></div>
+        <div class="stat"><div class="k">Support</div><div class="v">PC · Tablette · Mobile</div></div>
       </div>
     </section>
 
     <div class="tabs">
       <button class="tab active" data-tab="browser">🌐 Navigateur Huhu</button>
-      <button class="tab" data-tab="player">▶ Lecteur intégré</button>
+      <button class="tab" data-tab="player">▶ Lecteur</button>
       <button class="tab" data-tab="library">⭐ Favoris</button>
     </div>
 
@@ -153,45 +69,52 @@
           <button class="btn btn-secondary" id="homeBtn">🏠 Accueil</button>
         </div>
 
-        <div class="shortcuts">
-          <button class="short-btn" data-url="https://huhu.to/">Accueil</button>
-          <button class="short-btn live" data-url="https://huhu.to/live">🔴 TV en direct</button>
-          <button class="short-btn" data-url="https://huhu.to/movies">🎬 Films</button>
-          <button class="short-btn" data-url="https://huhu.to/series">📺 Séries</button>
-          <button class="short-btn" data-url="https://huhu.to/search">🔎 Rechercher</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇫🇷 TV France</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇺🇸 TV USA</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇬🇧 TV UK</button>
+        <div class="row toprow">
+          <button class="quick-btn" data-url="https://huhu.to/">Accueil</button>
+          <button class="quick-btn" data-url="https://huhu.to/live">🔴 TV en direct</button>
+          <button class="quick-btn" data-url="https://huhu.to/movies">🎬 Films</button>
+          <button class="quick-btn" data-url="https://huhu.to/series">📺 Séries</button>
+          <button class="quick-btn" data-url="https://huhu.to/search">🔎 Recherche</button>
+          <button class="quick-btn" data-url="https://huhu.to/live">🇫🇷 TV France</button>
+          <button class="quick-btn" data-url="https://huhu.to/live">🇺🇸 TV USA</button>
+          <button class="quick-btn" data-url="https://huhu.to/live">🇬🇧 TV UK</button>
         </div>
 
-        <div class="modebar">
-          <span class="pill" id="modePill">Mode en attente</span>
-          <span class="pill ok">Sans saisie</span>
-          <span class="pill warn">Fallback mobile</span>
+        <div class="row toprow">
+          <span class="pill ok">Interface locale</span>
+          <span class="pill ok">Navigation sur place</span>
+          <span class="pill warn" id="enginePill">Moteur intégré</span>
+        </div>
+
+        <div class="launcher" id="launcherGrid"></div>
+
+        <div class="search-box">
+          <input id="quickSearchInput" class="input" type="text" placeholder="Recherche rapide sur Huhu" />
+          <button class="btn btn-primary" id="quickSearchBtn">Rechercher</button>
+          <button class="btn btn-secondary" id="quickSendPlayerBtn">Envoyer au lecteur</button>
         </div>
 
         <div class="viewer">
-          <iframe id="huhuFrame" src="https://huhu.to/live" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>
-          <div class="fallback hidden" id="fallbackBox">
-            <div class="fallback-box">
-              <div class="fallback-emoji">🛡️</div>
-              <h3>Le navigateur bloque l’intégration directe</h3>
-              <p>Ce mobile ou ce navigateur empêche parfois l’affichage intégré de huhu.to. Le site reste utilisable immédiatement grâce au mode secours : aucun besoin de taper, utilisez les raccourcis ci-dessous pour ouvrir la bonne section.</p>
-              <div class="fallback-actions">
-                <button class="btn btn-primary" id="openCurrentSameTabBtn">Ouvrir cette page ici</button>
-                <button class="btn btn-secondary" id="openCurrentNewTabBtn">Ouvrir dans un nouvel onglet</button>
-                <button class="btn btn-success" id="copyCurrentBrowserUrlBtn">Copier le lien</button>
-                <button class="btn btn-ghost" id="retryEmbedBtn">Réessayer l’intégration</button>
+          <iframe id="mirrorFrame" src="about:blank" referrerpolicy="no-referrer" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>
+          <div class="blank-overlay hidden" id="blankOverlay">
+            <div class="blank-box">
+              <div class="blank-ico">🧭</div>
+              <h3>Le contenu n’est pas affiché dans cette zone</h3>
+              <p>Utilisez les raccourcis et la recherche de l’interface pour continuer votre navigation dans la page, puis envoyez le lien au lecteur si besoin.</p>
+              <div class="blank-actions">
+                <button class="btn btn-primary" id="retryMirrorBtn">Recharger</button>
+                <button class="btn btn-secondary" id="sendCurrentToPlayerBtn">Envoyer au lecteur</button>
+                <button class="btn btn-ghost" id="copyCurrentUrlBtn">Copier l’URL</button>
               </div>
             </div>
           </div>
         </div>
+        <div class="viewer-note">La navigation reste dans votre interface. Les actions externes en nouvel onglet ont été supprimées.</div>
 
-        <div class="actions" style="margin-top:12px;margin-bottom:0">
-          <button class="btn btn-success" id="captureBrowserUrlBtn">📥 Capturer cette URL vers le lecteur</button>
-          <button class="btn btn-secondary" id="openBrowserNewTabBtn">↗ Ouvrir dans un nouvel onglet</button>
-          <button class="btn btn-secondary" id="openBrowserSameTabBtn">⇢ Ouvrir ici</button>
-          <button class="btn btn-ghost" id="saveBrowserFavBtn">＋ Enregistrer en favoris</button>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn btn-success" id="captureBrowserUrlBtn">📥 Envoyer cette URL au lecteur</button>
+          <button class="btn btn-secondary" id="saveBrowserFavBtn">＋ Enregistrer en favoris</button>
+          <button class="btn btn-ghost" id="copyBrowserUrlBtn">📋 Copier le lien</button>
         </div>
       </div>
     </section>
@@ -201,16 +124,14 @@
         <div class="card player-card">
           <div class="player-head">
             <div>
-              <h2>Lecteur intégré</h2>
-              <div class="muted">Flux HLS, MP4 / WebM, YouTube, Vimeo et embeds génériques.</div>
+              <h2>Lecteur</h2>
+              <div class="muted">Lecture HLS, MP4 / WebM, YouTube, Vimeo et embeds génériques.</div>
             </div>
             <div class="actions" style="margin:0">
               <button class="btn btn-secondary" id="copyPlayerUrlBtn">Copier l’URL</button>
-              <button class="btn btn-secondary" id="openPlayerNewTabBtn">Nouvel onglet</button>
               <button class="btn btn-danger" id="clearPlayerBtn">Vider</button>
             </div>
           </div>
-
           <div class="field-wide">
             <label for="streamUrl">URL du flux</label>
             <input id="streamUrl" class="input" type="url" placeholder="https://.../playlist.m3u8 ou https://huhu.to/watch?..." />
@@ -237,17 +158,13 @@
             <button class="chip" data-example="https://www.w3schools.com/html/mov_bbb.mp4">Exemple MP4</button>
             <button class="chip" data-example="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
           </div>
-          <div class="actions">
+          <div class="actions" style="margin-top:0">
             <button class="btn btn-primary" id="playBtn">▶ Lire</button>
             <button class="btn btn-success" id="savePlayerFavBtn">＋ Enregistrer</button>
             <button class="btn btn-ghost" id="resetPlayerFormBtn">Réinitialiser</button>
           </div>
           <div class="frame">
-            <div class="placeholder" id="playerPlaceholder">
-              <div class="emo">📺</div>
-              <h3>Prêt pour la lecture</h3>
-              <p>Capturez une URL depuis le navigateur Huhu ou collez directement un lien de flux.</p>
-            </div>
+            <div class="placeholder" id="playerPlaceholder"><div class="emo">📺</div><h3>Prêt pour la lecture</h3><p>Envoyez une URL depuis le navigateur ou collez un lien de flux.</p></div>
             <video id="videoPlayer" class="hidden" controls playsinline></video>
             <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
           </div>
@@ -257,20 +174,15 @@
             <div class="meta-card"><div class="meta-k">URL</div><div class="meta-v" id="metaUrl">—</div></div>
           </div>
         </div>
-
-        <aside class="side-col">
+        <aside>
           <div class="card side-card" style="margin-bottom:16px">
-            <h3>Accès rapide chaînes</h3>
-            <div class="muted" style="margin:4px 0 12px">Raccourcis sans saisie</div>
+            <h3>Raccourcis chaînes</h3>
+            <div class="muted" style="margin:4px 0 12px">Ouverture dans l’interface et envoi possible au lecteur</div>
             <div class="list" id="quickList"></div>
           </div>
           <div class="card side-card">
-            <h3>Conseils</h3>
-            <div class="muted" style="margin:8px 0 0;line-height:1.6">
-              <div>• Si l’intégration est bloquée sur mobile, utilisez <strong>Ouvrir ici</strong> ou <strong>Nouvel onglet</strong>.</div>
-              <div>• Les favoris sont stockés localement dans le navigateur.</div>
-              <div>• Pour un flux HLS, choisissez ou laissez le mode automatique.</div>
-            </div>
+            <h3>Utilisation</h3>
+            <div class="muted" style="margin-top:8px;line-height:1.7">Les cartes du navigateur chargent les sections dans votre interface. Le lecteur sert à lire les flux et les pages embed quand vous souhaitez isoler un contenu.</div>
           </div>
         </aside>
       </div>
@@ -278,11 +190,8 @@
 
     <section class="pane" id="pane-library">
       <div class="card side-card">
-        <div class="player-head" style="margin-bottom:12px">
-          <div>
-            <h2 style="margin:0">Mes favoris</h2>
-            <div class="muted" id="libraryCount">0 lien enregistré</div>
-          </div>
+        <div class="player-head">
+          <div><h2 style="margin:0">Mes favoris</h2><div class="muted" id="libraryCount">0 lien enregistré</div></div>
           <div class="actions" style="margin:0">
             <button class="btn btn-secondary mini" id="exportLibraryBtn">Exporter</button>
             <button class="btn btn-secondary mini" id="importLibraryBtn">Importer</button>
@@ -294,40 +203,50 @@
       </div>
     </section>
 
-    <div class="foot">Conçu et signé par <strong>AET ALBAN ELOH TECHNOLOGIE</strong> · Huhu Navigator Pro · version mobile corrigée</div>
+    <div class="foot">Conçu et signé par <strong>AET ALBAN ELOH TECHNOLOGIE</strong></div>
   </div>
 
   <script>
-    const STORAGE_KEY='aet_alban_huhu_library_v3';
-    const LAST_KEY='aet_alban_huhu_last_v3';
+    const STORAGE_KEY='aet_alban_huhu_library_v5';
+    const LAST_KEY='aet_alban_huhu_last_v5';
+    const MIRROR_JS='https://huhu.to/assets/index-CyRgdH9q.js';
+    const MIRROR_CSS='https://huhu.to/assets/index-in684hpW.css';
+    const LAUNCH_ITEMS=[
+      {id:'home', icon:'🏠', title:'Accueil', sub:'Page principale', url:'https://huhu.to/'},
+      {id:'live', icon:'🔴', title:'TV en direct', sub:'Section live', url:'https://huhu.to/live'},
+      {id:'movies', icon:'🎬', title:'Films', sub:'Catalogue films', url:'https://huhu.to/movies'},
+      {id:'series', icon:'📺', title:'Séries', sub:'Catalogue séries', url:'https://huhu.to/series'},
+      {id:'search', icon:'🔎', title:'Recherche', sub:'Recherche Huhu', url:'https://huhu.to/search'},
+      {id:'fr', icon:'🇫🇷', title:'TV France', sub:'Accès rapide', url:'https://huhu.to/live'},
+      {id:'us', icon:'🇺🇸', title:'TV USA', sub:'Accès rapide', url:'https://huhu.to/live'},
+      {id:'uk', icon:'🇬🇧', title:'TV UK', sub:'Accès rapide', url:'https://huhu.to/live'}
+    ];
     const QUICK_CHANNELS=[
       {title:'CANAL+ CINEMA',url:'https://huhu.to/live',country:'FR',category:'Cinéma'},
-      {title:'CANAL+ 360 4K',url:'https://huhu.to/live',country:'FR',category:'Généraliste'},
       {title:'CANAL+ LIGUE 1',url:'https://huhu.to/live',country:'FR',category:'Sport'},
-      {title:'CANAL ALPHA',url:'https://huhu.to/live',country:'FR',category:'TV'},
       {title:'CANAL SERIES HD',url:'https://huhu.to/live',country:'FR',category:'Séries'},
-      {title:'CANAL+',url:'https://huhu.to/live',country:'FR',category:'TV'},
       {title:'CANAL+ ACTION HD',url:'https://huhu.to/live',country:'FR',category:'Cinéma'},
-      {title:'CANAL D',url:'https://huhu.to/live',country:'FR',category:'TV'},
-      {title:'CANAL J',url:'https://huhu.to/live',country:'FR',category:'Jeunesse'},
       {title:'CANAL SPORT HD',url:'https://huhu.to/live',country:'FR',category:'Sport'},
       {title:'TF1',url:'https://huhu.to/live',country:'FR',category:'TV'},
-      {title:'France 2',url:'https://huhu.to/live',country:'FR',category:'TV'}
+      {title:'France 2',url:'https://huhu.to/live',country:'FR',category:'TV'},
+      {title:'M6',url:'https://huhu.to/live',country:'FR',category:'TV'}
     ];
+
     const $=id=>document.getElementById(id);
     const streamUrl=$('streamUrl'),streamTitle=$('streamTitle'),streamType=$('streamType');
     const libraryList=$('libraryList'),libraryCount=$('libraryCount'),librarySearch=$('librarySearch');
     const playerPlaceholder=$('playerPlaceholder'),videoPlayer=$('videoPlayer'),embedPlayer=$('embedPlayer');
     const metaTitle=$('metaTitle'),metaType=$('metaType'),metaUrl=$('metaUrl');
-    const browserUrl=$('browserUrl'),frame=$('huhuFrame'),fallbackBox=$('fallbackBox'),modePill=$('modePill');
-    const quickList=$('quickList');
-    let hlsInstance=null,currentItem=null,library=[]; let frameHealthy=false, frameTimer=null;
+    const browserUrl=$('browserUrl'),mirrorFrame=$('mirrorFrame'),blankOverlay=$('blankOverlay'),enginePill=$('enginePill');
+    const launcherGrid=$('launcherGrid'),quickList=$('quickList');
+    let browserCurrent='https://huhu.to/live',historyStack=['https://huhu.to/live'],historyIndex=0;
+    let hlsInstance=null,currentItem=null,library=[];
 
     function safeJsonParse(v,f){try{return JSON.parse(v)??f}catch{return f}}
     function uid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4)}
     function escapeHtml(v){return String(v).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
-    function normalizeTitle(url,title){ if(title&&title.trim()) return title.trim(); try{ const u=new URL(url); return u.pathname.split('/').filter(Boolean).pop()||u.hostname }catch{return 'Flux sans titre'} }
-    function detectType(url){ const v=String(url||'').toLowerCase(); if(v.includes('youtube.com')||v.includes('youtu.be')) return 'youtube'; if(v.includes('vimeo.com')) return 'vimeo'; if(v.includes('.m3u8')) return 'hls'; if(v.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video'; if(v.includes('huhu.to/watch')||v.includes('huhu.to/live')||v.includes('/embed')) return 'embed'; return 'video'; }
+    function normalizeTitle(url,title){if(title&&title.trim()) return title.trim(); try{const u=new URL(url); return u.pathname.split('/').filter(Boolean).pop()||u.hostname}catch{return 'Flux sans titre'}}
+    function detectType(url){const v=String(url||'').toLowerCase(); if(v.includes('youtube.com')||v.includes('youtu.be')) return 'youtube'; if(v.includes('vimeo.com')) return 'vimeo'; if(v.includes('.m3u8')) return 'hls'; if(v.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video'; if(v.includes('huhu.to/watch')||v.includes('huhu.to/live')||v.includes('/embed')) return 'embed'; return 'video'}
     function getEffectiveType(url,selected){return selected==='auto'?detectType(url):selected}
     function getLibrary(){return safeJsonParse(localStorage.getItem(STORAGE_KEY),[])}
     function saveLibrary(items){localStorage.setItem(STORAGE_KEY,JSON.stringify(items)); library=items; renderLibrary()}
@@ -335,82 +254,82 @@
     function getLastPlayed(){return safeJsonParse(localStorage.getItem(LAST_KEY),null)}
     function toast(msg){const el=document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',right:'16px',bottom:'16px',zIndex:'9999',background:'rgba(8,14,28,.96)',color:'#fff',padding:'12px 14px',borderRadius:'14px',border:'1px solid rgba(255,255,255,.10)',boxShadow:'0 20px 40px rgba(0,0,0,.35)',fontSize:'14px',maxWidth:'330px'}); document.body.appendChild(el); setTimeout(()=>el.remove(),2600)}
     function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name));window.scrollTo({top:0,behavior:'smooth'})}
+    function buildSearchUrl(q){return 'https://huhu.to/search?q='+encodeURIComponent(q||'')}
+    function normalizeBrowserInput(raw){const v=(raw||'').trim(); if(!v) return browserCurrent; return /^https?:\/\//i.test(v)?v:buildSearchUrl(v)}
+    function pushHistory(url){if(historyStack[historyIndex]===url) return; historyStack=historyStack.slice(0,historyIndex+1); historyStack.push(url); historyIndex=historyStack.length-1}
+    function setBrowserCurrent(url,push=true){browserCurrent=url; browserUrl.value=url; if(push) pushHistory(url); highlightLauncher(url)}
+    function highlightLauncher(url){document.querySelectorAll('.launch-card').forEach(card=>card.classList.remove('active')); const found=LAUNCH_ITEMS.find(x=>x.url===url); if(found){const el=document.querySelector(`.launch-card[data-id="${found.id}"]`); if(el) el.classList.add('active')}}
+    function copyText(text){return navigator.clipboard.writeText(text)}
+
+    function buildMirrorDoc(url){
+      const u = new URL(url);
+      const route = u.pathname + (u.search || '') + (u.hash || '');
+      return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#0b0b0f"><base href="https://huhu.to/"><style>html,body{margin:0;padding:0;background:#0b0b0f}#root{min-height:100vh}</style><script>history.replaceState({},'',${JSON.stringify(route)});<\/script><link rel="icon" href="https://huhu.to/assets/favicon-D1X6JocT.ico"><link rel="stylesheet" crossorigin href="${MIRROR_CSS}"><script type="module" crossorigin src="${MIRROR_JS}"><\/script></head><body><div id="root"></div></body></html>`;
+    }
+
+    function loadMirror(url){
+      const final=normalizeBrowserInput(url);
+      setBrowserCurrent(final,true);
+      mirrorFrame.srcdoc = buildMirrorDoc(final);
+      blankOverlay.classList.add('hidden');
+      enginePill.textContent='Moteur intégré';
+      enginePill.className='pill ok';
+      setTimeout(()=>{
+        try{
+          const doc=mirrorFrame.contentDocument;
+          const text=(doc && doc.body && doc.body.innerText || '').trim();
+          if(text && /n’autorise pas la connexion|refused to connect|cannot be displayed/i.test(text)){
+            blankOverlay.classList.remove('hidden');
+            enginePill.textContent='Affichage limité';
+            enginePill.className='pill warn';
+          }
+        }catch{
+          blankOverlay.classList.remove('hidden');
+          enginePill.textContent='Affichage limité';
+          enginePill.className='pill warn';
+        }
+      },2500);
+    }
+
+    function backHistory(){if(historyIndex>0){historyIndex--; const url=historyStack[historyIndex]; setBrowserCurrent(url,false); mirrorFrame.srcdoc=buildMirrorDoc(url)}}
+    function nextHistory(){if(historyIndex<historyStack.length-1){historyIndex++; const url=historyStack[historyIndex]; setBrowserCurrent(url,false); mirrorFrame.srcdoc=buildMirrorDoc(url)}}
 
     function toYouTubeEmbed(url){try{const u=new URL(url);let id=''; if(u.hostname.includes('youtu.be')) id=u.pathname.split('/').filter(Boolean)[0]||''; else if(u.searchParams.get('v')) id=u.searchParams.get('v'); else if(u.pathname.startsWith('/embed/')) id=u.pathname.split('/embed/')[1]; return id?`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`:url}catch{return url}}
     function toVimeoEmbed(url){try{const id=new URL(url).pathname.split('/').filter(Boolean).pop(); return id?`https://player.vimeo.com/video/${id}?autoplay=1`:url}catch{return url}}
-
-    function stopPlayback(){ if(hlsInstance){try{hlsInstance.destroy()}catch{} hlsInstance=null} try{videoPlayer.pause()}catch{} videoPlayer.removeAttribute('src'); videoPlayer.load?.(); embedPlayer.removeAttribute('src'); videoPlayer.classList.add('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.remove('hidden'); }
+    function stopPlayback(){if(hlsInstance){try{hlsInstance.destroy()}catch{} hlsInstance=null} try{videoPlayer.pause()}catch{} videoPlayer.removeAttribute('src'); videoPlayer.load?.(); embedPlayer.removeAttribute('src'); videoPlayer.classList.add('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.remove('hidden')}
     function updateMeta(item,label){metaTitle.textContent=item.title||'Sans titre'; metaType.textContent=label||'—'; metaUrl.textContent=item.url||'—'}
-    function playHls(url){ videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); if(window.Hls&&window.Hls.isSupported()){ hlsInstance=new Hls({enableWorker:true}); hlsInstance.loadSource(url); hlsInstance.attachMedia(videoPlayer); hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoPlayer.play().catch(()=>{})); hlsInstance.on(Hls.Events.ERROR,(_,d)=>{ if(d.fatal) toast('Erreur HLS : '+(d.details||'inconnue'))}); } else if(videoPlayer.canPlayType('application/vnd.apple.mpegurl')) { videoPlayer.src=url; videoPlayer.play().catch(()=>{}) } else toast('HLS non supporté.') }
-    function playVideo(url){ videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); videoPlayer.src=url; videoPlayer.play().catch(()=>{}) }
-    function playEmbed(url){ embedPlayer.classList.remove('hidden'); videoPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); embedPlayer.src=url }
-    function playStream(item){ stopPlayback(); if(!item?.url) return toast('URL manquante'); const type=getEffectiveType(item.url,item.type||'auto'); currentItem={...item,detectedType:type}; setLastPlayed(currentItem); switchTab('player'); if(type==='hls'){playHls(item.url);updateMeta(item,'HLS')} else if(type==='youtube'){playEmbed(toYouTubeEmbed(item.url));updateMeta(item,'YouTube')} else if(type==='vimeo'){playEmbed(toVimeoEmbed(item.url));updateMeta(item,'Vimeo')} else if(type==='embed'){playEmbed(item.url);updateMeta(item,'Embed')} else {playVideo(item.url);updateMeta(item,'Vidéo')} }
+    function playHls(url){videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); if(window.Hls&&window.Hls.isSupported()){ hlsInstance=new Hls({enableWorker:true}); hlsInstance.loadSource(url); hlsInstance.attachMedia(videoPlayer); hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoPlayer.play().catch(()=>{})); hlsInstance.on(Hls.Events.ERROR,(_,d)=>{ if(d.fatal) toast('Erreur HLS : '+(d.details||'inconnue'))}); } else if(videoPlayer.canPlayType('application/vnd.apple.mpegurl')) { videoPlayer.src=url; videoPlayer.play().catch(()=>{}) } else toast('HLS non supporté') }
+    function playVideo(url){videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); videoPlayer.src=url; videoPlayer.play().catch(()=>{})}
+    function playEmbed(url){embedPlayer.classList.remove('hidden'); videoPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); embedPlayer.src=url}
+    function playStream(item){stopPlayback(); if(!item?.url) return toast('URL manquante'); const type=getEffectiveType(item.url,item.type||'auto'); currentItem={...item,detectedType:type}; setLastPlayed(currentItem); switchTab('player'); if(type==='hls'){playHls(item.url);updateMeta(item,'HLS')} else if(type==='youtube'){playEmbed(toYouTubeEmbed(item.url));updateMeta(item,'YouTube')} else if(type==='vimeo'){playEmbed(toVimeoEmbed(item.url));updateMeta(item,'Vimeo')} else if(type==='embed'){playEmbed(item.url);updateMeta(item,'Embed')} else {playVideo(item.url);updateMeta(item,'Vidéo')}}
 
-    function renderQuickChannels(){ quickList.innerHTML=QUICK_CHANNELS.map((c,i)=>`<div class="item"><div class="item-title">${escapeHtml(c.title)}</div><div class="item-sub">${escapeHtml(c.url)}</div><div class="tagrow"><span class="tag live">LIVE</span><span class="tag">${escapeHtml(c.country)}</span><span class="tag warn">${escapeHtml(c.category)}</span></div><div class="item-actions"><button class="btn btn-primary mini" data-quick-open="${i}">🌐 Ouvrir</button><button class="btn btn-secondary mini" data-quick-play="${i}">▶ Lecteur</button><button class="btn btn-ghost mini" data-quick-save="${i}">＋ Favori</button></div></div>`).join('') }
-    function renderLibrary(){ const q=(librarySearch.value||'').toLowerCase().trim(); const filtered=library.filter(x=>!q||x.title.toLowerCase().includes(q)||x.url.toLowerCase().includes(q)); libraryCount.textContent=`${library.length} lien${library.length>1?'s':''} enregistré${library.length>1?'s':''}`; if(!filtered.length){ libraryList.innerHTML=`<div class="empty">${library.length?'Aucun résultat.':'Aucun favori enregistré.'}</div>`; return } libraryList.innerHTML=filtered.map(item=>`<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-sub">${escapeHtml(item.url)}</div><div class="tagrow"><span class="tag ok">${escapeHtml((item.type||'auto').toUpperCase())}</span>${item.country?`<span class="tag">${escapeHtml(item.country)}</span>`:''}${item.category?`<span class="tag warn">${escapeHtml(item.category)}</span>`:''}</div><div class="item-actions"><button class="btn btn-primary mini" data-play="${item.id}">▶ Lire</button><button class="btn btn-secondary mini" data-fill="${item.id}">✎ Charger</button><button class="btn btn-danger mini" data-del="${item.id}">Supprimer</button></div></div>`).join('') }
-    function addToLibrary(item){ if(library.find(x=>x.url===item.url)) return toast('Déjà dans les favoris'); library.unshift({...item,id:uid(),addedAt:Date.now()}); saveLibrary(library); toast('Ajouté aux favoris') }
-    function removeItem(id){ library=library.filter(x=>x.id!==id); saveLibrary(library); toast('Favori supprimé') }
-    function syncFormFromItem(item){ streamUrl.value=item.url||''; streamTitle.value=item.title||''; streamType.value=item.type||'auto' }
-
-    function setMode(text,kind){ modePill.textContent=text; modePill.className='pill '+(kind||'') }
-    function setFallback(show){ fallbackBox.classList.toggle('hidden',!show); if(show){ setMode('Mode secours actif', 'err') } }
-    function navigate(url){ if(!url) return; if(!/^https?:\/\//i.test(url)){ url='https://huhu.to/search?q='+encodeURIComponent(url) } browserUrl.value=url; frameHealthy=false; setMode('Tentative d’intégration…','warn'); setFallback(false); clearTimeout(frameTimer); frame.src=url; frameTimer=setTimeout(()=>{ if(!frameHealthy){ setFallback(true) } }, 3200) }
-    function openSameTab(url){ window.location.href=url }
-    function openNewTab(url){ window.open(url,'_blank','noopener') }
-    function browserCurrentUrl(){ return browserUrl.value.trim() || frame.src || 'https://huhu.to/live' }
-
-    frame.addEventListener('load',()=>{ frameHealthy=true; setMode('Intégration chargée','ok'); setFallback(false); try{ const loc=frame.contentWindow.location.href; if(loc && loc!=='about:blank') browserUrl.value=loc }catch{} })
-    frame.addEventListener('error',()=>{ frameHealthy=false; setFallback(true) })
+    function renderLauncher(){launcherGrid.innerHTML=LAUNCH_ITEMS.map(it=>`<div class="launch-card" data-id="${it.id}"><div class="launch-ico">${it.icon}</div><div class="launch-title">${it.title}</div><div class="launch-sub">${it.sub}</div><div class="launch-actions"><button class="btn btn-primary mini" data-load="${it.id}">Charger</button><button class="btn btn-secondary mini" data-fill-player="${it.id}">Lecteur</button></div></div>`).join(''); highlightLauncher(browserCurrent)}
+    function renderQuickChannels(){quickList.innerHTML=QUICK_CHANNELS.map((c,i)=>`<div class="item"><div class="item-title">${escapeHtml(c.title)}</div><div class="item-sub">${escapeHtml(c.url)}</div><div class="tagrow"><span class="tag live">LIVE</span><span class="tag">${escapeHtml(c.country)}</span><span class="tag warn">${escapeHtml(c.category)}</span></div><div class="item-actions"><button class="btn btn-primary mini" data-quick-open="${i}">Charger</button><button class="btn btn-secondary mini" data-quick-play="${i}">▶ Lecteur</button><button class="btn btn-ghost mini" data-quick-save="${i}">＋ Favori</button></div></div>`).join('')}
+    function renderLibrary(){const q=(librarySearch.value||'').toLowerCase().trim(); const filtered=library.filter(x=>!q||x.title.toLowerCase().includes(q)||x.url.toLowerCase().includes(q)); libraryCount.textContent=`${library.length} lien${library.length>1?'s':''} enregistré${library.length>1?'s':''}`; if(!filtered.length){libraryList.innerHTML=`<div class="empty">${library.length?'Aucun résultat.':'Aucun favori enregistré.'}</div>`; return} libraryList.innerHTML=filtered.map(item=>`<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-sub">${escapeHtml(item.url)}</div><div class="tagrow"><span class="tag ok">${escapeHtml((item.type||'auto').toUpperCase())}</span>${item.country?`<span class="tag">${escapeHtml(item.country)}</span>`:''}${item.category?`<span class="tag warn">${escapeHtml(item.category)}</span>`:''}</div><div class="item-actions"><button class="btn btn-primary mini" data-play="${item.id}">▶ Lire</button><button class="btn btn-secondary mini" data-fill="${item.id}">✎ Charger</button><button class="btn btn-danger mini" data-del="${item.id}">Supprimer</button></div></div>`).join('')}
+    function addToLibrary(item){if(library.find(x=>x.url===item.url)) return toast('Déjà dans les favoris'); library.unshift({...item,id:uid(),addedAt:Date.now()}); saveLibrary(library); toast('Ajouté aux favoris')}
+    function removeItem(id){library=library.filter(x=>x.id!==id); saveLibrary(library); toast('Favori supprimé')}
+    function syncFormFromItem(item){streamUrl.value=item.url||''; streamTitle.value=item.title||''; streamType.value=item.type||'auto'}
+    function sendCurrentToPlayer(){streamUrl.value=browserCurrent; streamTitle.value=normalizeTitle(browserCurrent,''); streamType.value='auto'; switchTab('player'); toast('URL envoyée au lecteur')}
 
     document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
-    document.querySelectorAll('[data-url]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.url)));
-    $('goBtn').addEventListener('click',()=>navigate(browserUrl.value.trim()));
-    browserUrl.addEventListener('keydown',e=>{ if(e.key==='Enter') navigate(browserUrl.value.trim()) });
-    $('homeBtn').addEventListener('click',()=>navigate('https://huhu.to/'));
-    $('reloadBtn').addEventListener('click',()=>navigate(browserCurrentUrl()));
-    $('backBtn').addEventListener('click',()=>{ try{ frame.contentWindow.history.back() }catch{ toast('Historique intégré indisponible ici') } });
-    $('nextBtn').addEventListener('click',()=>{ try{ frame.contentWindow.history.forward() }catch{ toast('Historique intégré indisponible ici') } });
-    $('retryEmbedBtn').addEventListener('click',()=>navigate(browserCurrentUrl()));
-    $('openCurrentSameTabBtn').addEventListener('click',()=>openSameTab(browserCurrentUrl()));
-    $('openCurrentNewTabBtn').addEventListener('click',()=>openNewTab(browserCurrentUrl()));
-    $('copyCurrentBrowserUrlBtn').addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(browserCurrentUrl()); toast('Lien copié') }catch{ toast('Copie impossible') } });
-    $('captureBrowserUrlBtn').addEventListener('click',()=>{ const url=browserCurrentUrl(); streamUrl.value=url; streamTitle.value=normalizeTitle(url,''); streamType.value='auto'; switchTab('player'); toast('URL envoyée vers le lecteur') });
-    $('openBrowserNewTabBtn').addEventListener('click',()=>openNewTab(browserCurrentUrl()));
-    $('openBrowserSameTabBtn').addEventListener('click',()=>openSameTab(browserCurrentUrl()));
-    $('saveBrowserFavBtn').addEventListener('click',()=>{ const url=browserCurrentUrl(); addToLibrary({url,title:normalizeTitle(url,''),type:'auto'}) });
+    document.querySelectorAll('[data-url]').forEach(btn=>btn.addEventListener('click',()=>loadMirror(btn.dataset.url)));
+    $('goBtn').addEventListener('click',()=>loadMirror(browserUrl.value)); browserUrl.addEventListener('keydown',e=>{if(e.key==='Enter') loadMirror(browserUrl.value)}); $('homeBtn').addEventListener('click',()=>loadMirror('https://huhu.to/')); $('reloadBtn').addEventListener('click',()=>loadMirror(browserCurrent)); $('backBtn').addEventListener('click',backHistory); $('nextBtn').addEventListener('click',nextHistory);
+    $('quickSearchBtn').addEventListener('click',()=>loadMirror(buildSearchUrl($('quickSearchInput').value.trim()))); $('quickSendPlayerBtn').addEventListener('click',()=>{const u=buildSearchUrl($('quickSearchInput').value.trim()); streamUrl.value=u; streamTitle.value='Recherche Huhu'; streamType.value='embed'; switchTab('player')});
+    $('retryMirrorBtn').addEventListener('click',()=>loadMirror(browserCurrent)); $('sendCurrentToPlayerBtn').addEventListener('click',sendCurrentToPlayer); $('copyCurrentUrlBtn').addEventListener('click',async()=>{try{await copyText(browserCurrent); toast('Lien copié')}catch{toast('Copie impossible')}});
+    $('captureBrowserUrlBtn').addEventListener('click',sendCurrentToPlayer); $('saveBrowserFavBtn').addEventListener('click',()=>addToLibrary({url:browserCurrent,title:normalizeTitle(browserCurrent,''),type:'auto'})); $('copyBrowserUrlBtn').addEventListener('click',async()=>{try{await copyText(browserCurrent); toast('Lien copié')}catch{toast('Copie impossible')}});
 
-    $('playBtn').addEventListener('click',()=>{ const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); playStream({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value}) });
-    $('savePlayerFavBtn').addEventListener('click',()=>{ const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); addToLibrary({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value}) });
-    $('resetPlayerFormBtn').addEventListener('click',()=>{ streamUrl.value=''; streamTitle.value=''; streamType.value='auto' });
-    $('clearPlayerBtn').addEventListener('click',()=>{ stopPlayback(); currentItem=null; metaTitle.textContent='Aucun flux chargé'; metaType.textContent='—'; metaUrl.textContent='—' });
-    $('copyPlayerUrlBtn').addEventListener('click',async()=>{ const url=currentItem?.url||streamUrl.value.trim(); if(!url) return toast('Aucune URL'); try{ await navigator.clipboard.writeText(url); toast('URL copiée') }catch{ toast('Copie impossible') } });
-    $('openPlayerNewTabBtn').addEventListener('click',()=>{ const url=currentItem?.url||streamUrl.value.trim(); if(!url) return toast('Aucune URL'); openNewTab(url) });
-    document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>{ streamUrl.value=btn.dataset.example; streamTitle.value='Exemple'; streamType.value='auto' }));
-    streamUrl.addEventListener('input',()=>{ const url=streamUrl.value.trim(); if(!streamTitle.value.trim()&&url) streamTitle.value=normalizeTitle(url,'') });
+    launcherGrid.addEventListener('click',e=>{const load=e.target.closest('[data-load]')?.dataset.load; const fill=e.target.closest('[data-fill-player]')?.dataset.fillPlayer; if(load){const it=LAUNCH_ITEMS.find(x=>x.id===load); if(it) loadMirror(it.url)} if(fill){const it=LAUNCH_ITEMS.find(x=>x.id===fill); if(it){streamUrl.value=it.url; streamTitle.value=it.title; streamType.value='embed'; switchTab('player')}}});
+    quickList.addEventListener('click',e=>{const a=e.target.closest('[data-quick-open]')?.dataset.quickOpen; const b=e.target.closest('[data-quick-play]')?.dataset.quickPlay; const c=e.target.closest('[data-quick-save]')?.dataset.quickSave; if(a!==undefined){const it=QUICK_CHANNELS[+a]; if(it) loadMirror(it.url)} if(b!==undefined){const it=QUICK_CHANNELS[+b]; if(it) playStream({url:it.url,title:it.title,type:'embed'})} if(c!==undefined){const it=QUICK_CHANNELS[+c]; if(it) addToLibrary({url:it.url,title:it.title,type:'auto',country:it.country,category:it.category})}});
+    mirrorFrame.addEventListener('load',()=>{setTimeout(()=>{try{const doc=mirrorFrame.contentDocument; const body=(doc&&doc.body)?doc.body.innerText:''; if(body && /n’autorise pas la connexion|refused to connect|cannot be displayed/i.test(body)){blankOverlay.classList.remove('hidden'); enginePill.textContent='Affichage limité'; enginePill.className='pill warn'} else {blankOverlay.classList.add('hidden'); enginePill.textContent='Moteur intégré'; enginePill.className='pill ok'}}catch{blankOverlay.classList.remove('hidden'); enginePill.textContent='Affichage limité'; enginePill.className='pill warn'}},2000)});
 
-    quickList.addEventListener('click',e=>{
-      const a=e.target.closest('[data-quick-open]')?.dataset.quickOpen;
-      const b=e.target.closest('[data-quick-play]')?.dataset.quickPlay;
-      const c=e.target.closest('[data-quick-save]')?.dataset.quickSave;
-      if(a!==undefined){ const it=QUICK_CHANNELS[+a]; if(it){ navigate(it.url); switchTab('browser') } }
-      if(b!==undefined){ const it=QUICK_CHANNELS[+b]; if(it){ playStream({url:it.url,title:it.title,type:'embed'}) } }
-      if(c!==undefined){ const it=QUICK_CHANNELS[+c]; if(it){ addToLibrary({url:it.url,title:it.title,type:'auto',country:it.country,category:it.category}) } }
-    });
+    $('playBtn').addEventListener('click',()=>{const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); playStream({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value})});
+    $('savePlayerFavBtn').addEventListener('click',()=>{const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); addToLibrary({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value})});
+    $('resetPlayerFormBtn').addEventListener('click',()=>{streamUrl.value=''; streamTitle.value=''; streamType.value='auto'}); $('clearPlayerBtn').addEventListener('click',()=>{stopPlayback(); currentItem=null; metaTitle.textContent='Aucun flux chargé'; metaType.textContent='—'; metaUrl.textContent='—'}); $('copyPlayerUrlBtn').addEventListener('click',async()=>{const url=currentItem?.url||streamUrl.value.trim(); if(!url) return toast('Aucune URL'); try{await copyText(url); toast('URL copiée')}catch{toast('Copie impossible')}}); document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>{streamUrl.value=btn.dataset.example; streamTitle.value='Exemple'; streamType.value='auto'})); streamUrl.addEventListener('input',()=>{const url=streamUrl.value.trim(); if(!streamTitle.value.trim()&&url) streamTitle.value=normalizeTitle(url,'')});
 
-    librarySearch.addEventListener('input',renderLibrary);
-    libraryList.addEventListener('click',e=>{
-      const playId=e.target.closest('[data-play]')?.dataset.play;
-      const fillId=e.target.closest('[data-fill]')?.dataset.fill;
-      const delId=e.target.closest('[data-del]')?.dataset.del;
-      if(playId){ const item=library.find(x=>x.id===playId); if(item) playStream(item) }
-      if(fillId){ const item=library.find(x=>x.id===fillId); if(item){ currentItem=item; syncFormFromItem(item); switchTab('player'); toast('Lien chargé dans le lecteur') } }
-      if(delId) removeItem(delId)
-    });
-    $('clearLibraryBtn').addEventListener('click',()=>{ if(!library.length) return toast('Bibliothèque vide'); if(!confirm('Supprimer tous les favoris ?')) return; saveLibrary([]); toast('Favoris supprimés') });
-    $('exportLibraryBtn').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(library,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aet-alban-huhu-favoris.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000) });
-    $('importLibraryBtn').addEventListener('click',()=>{ const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.addEventListener('change',async()=>{ const file=input.files?.[0]; if(!file) return; try{ const txt=await file.text(); const data=JSON.parse(txt); if(!Array.isArray(data)) throw new Error('Format invalide'); const merged=[...data.map(x=>({...x,id:x.id||uid()})),...library]; const seen=new Set(); const uniq=[]; for(const it of merged){ if(!seen.has(it.url)){ seen.add(it.url); uniq.push(it) } } saveLibrary(uniq); toast('Import terminé') }catch(err){ toast('Erreur import : '+err.message) } }); input.click() });
+    librarySearch.addEventListener('input',renderLibrary); libraryList.addEventListener('click',e=>{const playId=e.target.closest('[data-play]')?.dataset.play; const fillId=e.target.closest('[data-fill]')?.dataset.fill; const delId=e.target.closest('[data-del]')?.dataset.del; if(playId){const item=library.find(x=>x.id===playId); if(item) playStream(item)} if(fillId){const item=library.find(x=>x.id===fillId); if(item){currentItem=item; syncFormFromItem(item); switchTab('player'); toast('Lien chargé dans le lecteur')}} if(delId) removeItem(delId)});
+    $('clearLibraryBtn').addEventListener('click',()=>{if(!library.length) return toast('Bibliothèque vide'); if(!confirm('Supprimer tous les favoris ?')) return; saveLibrary([]); toast('Favoris supprimés')}); $('exportLibraryBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(library,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aet-alban-huhu-favoris.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000)}); $('importLibraryBtn').addEventListener('click',()=>{const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.addEventListener('change',async()=>{const file=input.files?.[0]; if(!file) return; try{const txt=await file.text(); const data=JSON.parse(txt); if(!Array.isArray(data)) throw new Error('Format invalide'); const merged=[...data.map(x=>({...x,id:x.id||uid()})),...library]; const seen=new Set(); const uniq=[]; for(const it of merged){ if(!seen.has(it.url)){seen.add(it.url); uniq.push(it)} } saveLibrary(uniq); toast('Import terminé')}catch(err){toast('Erreur import : '+err.message)}}); input.click()});
 
-    function boot(){ library=getLibrary(); renderLibrary(); renderQuickChannels(); const last=getLastPlayed(); if(last?.url){ currentItem=last; updateMeta(last,(last.type||last.detectedType||'').toUpperCase()); syncFormFromItem(last) } navigate(browserUrl.value.trim()) }
+    function boot(){library=getLibrary(); renderLibrary(); renderQuickChannels(); renderLauncher(); const last=getLastPlayed(); if(last?.url){currentItem=last; updateMeta(last,(last.type||last.detectedType||'').toUpperCase()); syncFormFromItem(last)} setBrowserCurrent(browserCurrent,false); loadMirror(browserCurrent)}
     boot();
   </script>
 </body>
