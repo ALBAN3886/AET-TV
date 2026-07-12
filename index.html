@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AET Stream — Lecteur de flux</title>
+  <meta name="description" content="Lecteur de flux personnel pour URL HLS, MP4/WebM et embeds YouTube/Vimeo." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg-2:#121933;
+      --card:rgba(18,25,51,.84);
+      --card-solid:#151d39;
+      --line:rgba(148,163,184,.18);
+      --line-2:rgba(59,130,246,.22);
+      --text:#eef2ff;
+      --muted:#9aa7c7;
+      --accent:#4f8ef7;
+      --accent-2:#7c3aed;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top left, rgba(79,142,247,.16), transparent 28%),radial-gradient(circle at bottom right, rgba(124,58,237,.14), transparent 24%),var(--bg);color:var(--text);min-height:100%}
+    body{font-size:16px;line-height:1.55}
+    button,input,select{font:inherit}
+    .app{max-width:1600px;margin:0 auto;padding:28px 22px 44px}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:22px;align-items:stretch;margin-bottom:22px}
+    .hero-card,.panel,.player-shell,.library-card,.tips-card{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero-card{padding:28px 28px 24px;position:relative;overflow:hidden}
+    .hero-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg, rgba(79,142,247,.12), transparent 45%, rgba(124,58,237,.10));pointer-events:none}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.22);color:#cfe0ff;font-size:13px;font-weight:700;margin-bottom:16px}
+    h1{margin:0 0 12px;font-size:38px;line-height:1.08;letter-spacing:-.03em}
+    .hero p{margin:0;color:var(--muted);font-size:17px;max-width:760px}
+    .hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:22px}
+    .stat{padding:18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+    .stat-label{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .stat-value{font-size:26px;font-weight:800}
+
+    .workspace{display:grid;grid-template-columns:minmax(0,1.25fr) 390px;gap:22px}
+    .player-shell{padding:20px}
+    .player-top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+    .player-title-wrap h2{margin:0;font-size:26px}
+    .player-title-wrap p{margin:6px 0 0;color:var(--muted);font-size:14px}
+    .player-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+    .form-grid{display:grid;grid-template-columns:1.4fr .8fr;gap:14px;margin-bottom:16px}
+    .field,.field-wide{display:flex;flex-direction:column;gap:8px}
+    .field-wide{margin-bottom:16px}
+    label{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+    .input, .select{
+      width:100%;min-height:54px;padding:14px 16px;border-radius:16px;border:1px solid var(--line);
+      background:rgba(11,16,32,.55);color:var(--text);outline:none;transition:border-color .2s, box-shadow .2s, transform .2s;
+    }
+    .input:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
+    .quick-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .chip{padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:14px;font-weight:600}
+    .chip:hover{border-color:var(--line-2);background:rgba(79,142,247,.10)}
+
+    .btn{border:none;cursor:pointer;border-radius:16px;min-height:50px;padding:0 18px;font-weight:800;transition:transform .18s, box-shadow .18s, opacity .18s;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),#2563eb 55%, var(--accent-2));color:white;box-shadow:0 14px 28px rgba(79,142,247,.28)}
+    .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+    .btn-success{background:linear-gradient(135deg,#10b981,#059669);color:white;box-shadow:0 14px 28px rgba(16,185,129,.22)}
+    .btn-danger{background:rgba(239,68,68,.12);color:#fecaca;border:1px solid rgba(239,68,68,.24)}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+
+    .player-frame{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#020617;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative}
+    .player-frame video,.player-frame iframe{width:100%;height:100%;border:0;background:#000}
+    .placeholder{padding:30px;text-align:center;max-width:680px}
+    .placeholder-emoji{font-size:64px;margin-bottom:12px}
+    .placeholder h3{margin:0 0 10px;font-size:24px}
+    .placeholder p{margin:0;color:var(--muted);font-size:16px}
+    .player-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+    .meta-card{padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+    .meta-card .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px}
+    .meta-card .v{font-size:16px;font-weight:700;word-break:break-word}
+
+    .sidebar{display:flex;flex-direction:column;gap:22px}
+    .library-card,.tips-card{padding:18px}
+    .section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+    .section-head h3{margin:0;font-size:21px}
+    .section-head small{color:var(--muted);font-size:13px}
+    .search{width:100%;min-height:48px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(11,16,32,.55);color:var(--text);outline:none;margin-bottom:14px}
+    .list{display:flex;flex-direction:column;gap:12px;max-height:760px;overflow:auto;padding-right:4px}
+    .item{padding:16px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+    .item-title{font-size:16px;font-weight:800;line-height:1.35}
+    .item-sub{font-size:13px;color:var(--muted);margin-top:4px;word-break:break-all}
+    .tag-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tag{padding:5px 10px;border-radius:999px;background:rgba(79,142,247,.12);color:#cfe0ff;font-size:12px;font-weight:700;border:1px solid rgba(79,142,247,.18)}
+    .tag.ok{background:rgba(16,185,129,.12);color:#bbf7d0;border-color:rgba(16,185,129,.18)}
+    .tag.warn{background:rgba(245,158,11,.12);color:#fde68a;border-color:rgba(245,158,11,.18)}
+    .item-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .mini-btn{min-height:40px;padding:0 12px;border-radius:12px;font-size:14px;font-weight:700}
+    .empty{padding:28px 16px;border-radius:18px;background:rgba(255,255,255,.03);border:1px dashed var(--line);text-align:center;color:var(--muted)}
+    .tips-card ul{padding-left:18px;margin:10px 0 0;color:var(--muted)}
+    .tips-card li{margin-bottom:10px}
+    .notice{margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.20);color:#fde68a;font-size:14px}
+    .foot{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
+    .hidden{display:none !important}
+
+    @media (max-width:1200px){
+      .workspace{grid-template-columns:1fr}
+      .sidebar{order:2}
+    }
+    @media (max-width:900px){
+      .hero{grid-template-columns:1fr}
+      .form-grid{grid-template-columns:1fr}
+      .player-meta{grid-template-columns:1fr}
+      h1{font-size:31px}
+    }
+    @media (max-width:640px){
+      .app{padding:18px 14px 30px}
+      .hero-card,.player-shell,.library-card,.tips-card{border-radius:20px}
+      .hero-card{padding:22px 18px}
+      .hero-stats{grid-template-columns:1fr;padding:18px}
+      h1{font-size:27px}
+      .hero p{font-size:15px}
+      .player-title-wrap h2{font-size:22px}
+      .quick-row,.player-actions,.item-actions{display:grid;grid-template-columns:1fr 1fr}
+      .quick-row .chip,.player-actions .btn,.item-actions .mini-btn{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="badge">🎬 Lecteur personnel de streaming</div>
+        <h1>AET Stream</h1>
+        <p>Collez vos URL autorisées pour lire rapidement des flux <strong>HLS (.m3u8)</strong>, <strong>MP4 / WebM</strong> ou des vidéos <strong>YouTube / Vimeo</strong>. Vous pouvez aussi enregistrer vos liens favoris localement dans votre navigateur.</p>
+        <div class="notice">Usage prévu : vos propres flux, embeds publics autorisés, démonstrations, IPTV légitime ou contenus dont vous avez les droits d’accès.</div>
+      </div>
+      <div class="hero-card hero-stats">
+        <div class="stat">
+          <div class="stat-label">Formats</div>
+          <div class="stat-value">HLS · MP4 · Embed</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Sauvegarde</div>
+          <div class="stat-value">Locale & privée</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Interface</div>
+          <div class="stat-value">Sombre premium</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Responsive</div>
+          <div class="stat-value">PC · tablette · mobile</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="player-shell">
+        <div class="player-top">
+          <div class="player-title-wrap">
+            <h2>Lecteur intégré</h2>
+            <p>Détection automatique du type d’URL, lecture instantanée et sauvegarde facultative.</p>
+          </div>
+          <div class="player-actions">
+            <button class="btn btn-secondary" id="copyCurrentBtn">Copier l’URL</button>
+            <button class="btn btn-secondary" id="openExternalBtn">Ouvrir dans un nouvel onglet</button>
+            <button class="btn btn-danger" id="clearPlayerBtn">Vider le lecteur</button>
+          </div>
+        </div>
+
+        <div class="field-wide">
+          <label for="streamUrl">URL du flux</label>
+          <input id="streamUrl" class="input" type="url" placeholder="Exemple : https://.../playlist.m3u8 ou https://.../video.mp4" />
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="streamTitle">Titre affiché</label>
+            <input id="streamTitle" class="input" type="text" placeholder="Nom du flux ou de la chaîne" />
+          </div>
+          <div class="field">
+            <label for="streamType">Type</label>
+            <select id="streamType" class="select">
+              <option value="auto">Détection automatique</option>
+              <option value="hls">HLS (.m3u8)</option>
+              <option value="video">Vidéo directe (MP4 / WebM)</option>
+              <option value="youtube">YouTube</option>
+              <option value="vimeo">Vimeo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="quick-row">
+          <button class="chip" data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Exemple HLS</button>
+          <button class="chip" data-example="https://www.w3schools.com/html/mov_bbb.mp4">Exemple MP4</button>
+          <button class="chip" data-example="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
+        </div>
+
+        <div class="player-actions" style="margin-bottom:18px">
+          <button class="btn btn-primary" id="playBtn">▶ Lire le flux</button>
+          <button class="btn btn-success" id="saveBtn">＋ Enregistrer dans ma bibliothèque</button>
+          <button class="btn btn-ghost" id="resetFormBtn">Réinitialiser le formulaire</button>
+        </div>
+
+        <div class="player-frame" id="playerFrame">
+          <div class="placeholder" id="playerPlaceholder">
+            <div class="placeholder-emoji">📺</div>
+            <h3>Prêt à lire votre lien</h3>
+            <p>Collez une URL valide, choisissez le type si nécessaire, puis lancez la lecture. Les flux HLS utilisent <strong>hls.js</strong> automatiquement si le navigateur en a besoin.</p>
+          </div>
+          <video id="videoPlayer" class="hidden" controls playsinline></video>
+          <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+
+        <div class="player-meta">
+          <div class="meta-card">
+            <div class="k">Titre en cours</div>
+            <div class="v" id="metaTitle">Aucun flux chargé</div>
+          </div>
+          <div class="meta-card">
+            <div class="k">Type détecté</div>
+            <div class="v" id="metaType">—</div>
+          </div>
+          <div class="meta-card">
+            <div class="k">URL active</div>
+            <div class="v" id="metaUrl">—</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="library-card">
+          <div class="section-head">
+            <div>
+              <h3>Ma bibliothèque</h3>
+              <small id="libraryCount">0 lien enregistré</small>
+            </div>
+            <button class="btn btn-danger mini-btn" id="clearLibraryBtn">Tout effacer</button>
+          </div>
+          <input id="librarySearch" class="search" type="search" placeholder="Rechercher un titre ou une URL" />
+          <div class="list" id="libraryList"></div>
+        </div>
+
+        <div class="tips-card">
+          <div class="section-head">
+            <div>
+              <h3>Bonnes pratiques</h3>
+              <small>Choix par défaut recommandés</small>
+            </div>
+          </div>
+          <ul>
+            <li><strong>HLS</strong> pour la TV, les streams live et les playlists <code>.m3u8</code>.</li>
+            <li><strong>Vidéo directe</strong> pour les fichiers <code>.mp4</code> ou <code>.webm</code>.</li>
+            <li><strong>Embed</strong> pour les URL YouTube ou Vimeo publiques.</li>
+            <li>La bibliothèque est stockée <strong>localement</strong> dans le navigateur.</li>
+            <li>Si un flux ne se lance pas, vérifiez d’abord les droits d’accès, le CORS ou la validité de l’URL.</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+
+    <div class="foot">AET Stream — site autonome prêt à héberger</div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'aet_stream_library_v1';
+    const LAST_KEY = 'aet_stream_last_v1';
+
+    const streamUrl = document.getElementById('streamUrl');
+    const streamTitle = document.getElementById('streamTitle');
+    const streamType = document.getElementById('streamType');
+    const libraryList = document.getElementById('libraryList');
+    const libraryCount = document.getElementById('libraryCount');
+    const librarySearch = document.getElementById('librarySearch');
+    const playerPlaceholder = document.getElementById('playerPlaceholder');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const embedPlayer = document.getElementById('embedPlayer');
+    const metaTitle = document.getElementById('metaTitle');
+    const metaType = document.getElementById('metaType');
+    const metaUrl = document.getElementById('metaUrl');
+
+    let hlsInstance = null;
+    let currentItem = null;
+    let library = [];
+
+    function safeJsonParse(value, fallback) {
+      try { return JSON.parse(value) ?? fallback; } catch { return fallback; }
+    }
+
+    function uid() {
+      return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    }
+
+    function getLibrary() {
+      return safeJsonParse(localStorage.getItem(STORAGE_KEY), []);
+    }
+
+    function saveLibrary(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      library = items;
+      renderLibrary();
+    }
+
+    function setLastPlayed(item) {
+      localStorage.setItem(LAST_KEY, JSON.stringify(item));
+    }
+
+    function getLastPlayed() {
+      return safeJsonParse(localStorage.getItem(LAST_KEY), null);
+    }
+
+    function normalizeTitle(url, title) {
+      if (title && title.trim()) return title.trim();
+      try {
+        const u = new URL(url);
+        const file = u.pathname.split('/').filter(Boolean).pop();
+        return file || u.hostname;
+      } catch {
+        return 'Flux sans titre';
+      }
+    }
+
+    function detectType(url) {
+      const value = url.toLowerCase();
+      if (value.includes('youtube.com') || value.includes('youtu.be')) return 'youtube';
+      if (value.includes('vimeo.com')) return 'vimeo';
+      if (value.includes('.m3u8')) return 'hls';
+      if (value.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video';
+      return 'video';
+    }
+
+    function getEffectiveType(url, selected) {
+      return selected === 'auto' ? detectType(url) : selected;
+    }
+
+    function toast(message) {
+      const el = document.createElement('div');
+      el.textContent = message;
+      Object.assign(el.style, {
+        position:'fixed', right:'18px', bottom:'18px', zIndex:'9999', background:'rgba(15,23,42,.95)',
+        color:'#fff', padding:'12px 16px', borderRadius:'14px', border:'1px solid rgba(255,255,255,.10)',
+        boxShadow:'0 20px 40px rgba(0,0,0,.35)', fontSize:'14px', maxWidth:'320px'
+      });
+      document.body.appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .25s'; }, 2200);
+      setTimeout(() => el.remove(), 2600);
+    }
+
+    function cleanupPlayer() {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      videoPlayer.pause();
+      videoPlayer.removeAttribute('src');
+      videoPlayer.load();
+      embedPlayer.src = '';
+      videoPlayer.classList.add('hidden');
+      embedPlayer.classList.add('hidden');
+      playerPlaceholder.classList.remove('hidden');
+    }
+
+    function updateMeta(item, type) {
+      metaTitle.textContent = item?.title || 'Aucun flux chargé';
+      metaType.textContent = type || '—';
+      metaUrl.textContent = item?.url || '—';
+    }
+
+    function extractYouTubeId(url) {
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+        if (u.searchParams.get('v')) return u.searchParams.get('v');
+        const parts = u.pathname.split('/');
+        return parts.includes('embed') ? parts[parts.indexOf('embed') + 1] : '';
+      } catch { return ''; }
+    }
+
+    function extractVimeoId(url) {
+      try {
+        const u = new URL(url);
+        const parts = u.pathname.split('/').filter(Boolean);
+        return parts.pop() || '';
+      } catch { return ''; }
+    }
+
+    function playStream(item) {
+      if (!item?.url) {
+        toast('Veuillez saisir une URL valide.');
+        return;
+      }
+      const type = getEffectiveType(item.url, item.type || 'auto');
+      cleanupPlayer();
+
+      if (type === 'youtube') {
+        const id = extractYouTubeId(item.url);
+        if (!id) return toast('URL YouTube non reconnue.');
+        embedPlayer.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+        embedPlayer.classList.remove('hidden');
+      } else if (type === 'vimeo') {
+        const id = extractVimeoId(item.url);
+        if (!id) return toast('URL Vimeo non reconnue.');
+        embedPlayer.src = `https://player.vimeo.com/video/${id}?autoplay=1`;
+        embedPlayer.classList.remove('hidden');
+      } else if (type === 'hls') {
+        if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+          videoPlayer.src = item.url;
+          videoPlayer.classList.remove('hidden');
+          videoPlayer.play().catch(() => {});
+        } else if (window.Hls && Hls.isSupported()) {
+          hlsInstance = new Hls();
+          hlsInstance.loadSource(item.url);
+          hlsInstance.attachMedia(videoPlayer);
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+            videoPlayer.classList.remove('hidden');
+            videoPlayer.play().catch(() => {});
+          });
+          hlsInstance.on(Hls.Events.ERROR, (_, data) => {
+            if (data?.fatal) toast('Erreur HLS : flux indisponible ou bloqué.');
+          });
+        } else {
+          return toast('Ce navigateur ne prend pas correctement HLS en charge.');
+        }
+      } else {
+        videoPlayer.src = item.url;
+        videoPlayer.classList.remove('hidden');
+        videoPlayer.play().catch(() => {});
+      }
+
+      playerPlaceholder.classList.add('hidden');
+      currentItem = { ...item, title: normalizeTitle(item.url, item.title), type };
+      updateMeta(currentItem, type.toUpperCase());
+      setLastPlayed(currentItem);
+      syncFormFromItem(currentItem);
+    }
+
+    function syncFormFromItem(item) {
+      streamUrl.value = item?.url || '';
+      streamTitle.value = item?.title || '';
+      streamType.value = item?.type || item?.detectedType || 'auto';
+    }
+
+    function collectFormItem() {
+      const url = streamUrl.value.trim();
+      const selectedType = streamType.value;
+      const title = normalizeTitle(url, streamTitle.value);
+      return {
+        id: currentItem?.id || uid(),
+        title,
+        url,
+        type: selectedType,
+        detectedType: getEffectiveType(url, selectedType),
+        createdAt: currentItem?.createdAt || new Date().toISOString()
+      };
+    }
+
+    function saveCurrent() {
+      const item = collectFormItem();
+      if (!item.url) return toast('Ajoutez d’abord une URL.');
+      const exists = library.find(x => x.url === item.url);
+      const next = exists
+        ? library.map(x => x.url === item.url ? { ...x, title: item.title, type: item.type, detectedType: item.detectedType } : x)
+        : [{ ...item }, ...library];
+      saveLibrary(next);
+      toast(exists ? 'Lien mis à jour dans la bibliothèque.' : 'Lien enregistré dans la bibliothèque.');
+    }
+
+    function removeItem(id) {
+      if (!confirm('Supprimer ce lien de la bibliothèque ?')) return;
+      saveLibrary(library.filter(item => item.id !== id));
+    }
+
+    function renderLibrary() {
+      const q = librarySearch.value.trim().toLowerCase();
+      const items = library.filter(item => !q || item.title.toLowerCase().includes(q) || item.url.toLowerCase().includes(q));
+      libraryCount.textContent = `${library.length} lien${library.length > 1 ? 's' : ''} enregistré${library.length > 1 ? 's' : ''}`;
+
+      if (!items.length) {
+        libraryList.innerHTML = `<div class="empty">${library.length ? 'Aucun résultat pour cette recherche.' : 'Aucun lien enregistré pour le moment.'}</div>`;
+        return;
+      }
+
+      libraryList.innerHTML = items.map(item => `
+        <div class="item">
+          <div class="item-top">
+            <div>
+              <div class="item-title">${escapeHtml(item.title)}</div>
+              <div class="item-sub">${escapeHtml(item.url)}</div>
+            </div>
+          </div>
+          <div class="tag-row">
+            <span class="tag">${escapeHtml((item.detectedType || getEffectiveType(item.url, item.type)).toUpperCase())}</span>
+            <span class="tag ok">${new Date(item.createdAt).toLocaleDateString('fr-FR')}</span>
+          </div>
+          <div class="item-actions">
+            <button class="btn btn-primary mini-btn" data-play="${item.id}">Lire</button>
+            <button class="btn btn-secondary mini-btn" data-fill="${item.id}">Charger</button>
+            <button class="btn btn-danger mini-btn" data-del="${item.id}">Supprimer</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, s => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s]));
+    }
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      const item = collectFormItem();
+      if (!item.url) return toast('Veuillez coller une URL.');
+      playStream(item);
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', saveCurrent);
+
+    document.getElementById('resetFormBtn').addEventListener('click', () => {
+      streamUrl.value = '';
+      streamTitle.value = '';
+      streamType.value = 'auto';
+      toast('Formulaire réinitialisé.');
+    });
+
+    document.getElementById('clearPlayerBtn').addEventListener('click', () => {
+      cleanupPlayer();
+      currentItem = null;
+      updateMeta(null, '—');
+      toast('Lecteur vidé.');
+    });
+
+    document.getElementById('copyCurrentBtn').addEventListener('click', async () => {
+      const url = currentItem?.url || streamUrl.value.trim();
+      if (!url) return toast('Aucune URL à copier.');
+      try {
+        await navigator.clipboard.writeText(url);
+        toast('URL copiée dans le presse-papiers.');
+      } catch {
+        toast('Impossible de copier automatiquement cette URL.');
+      }
+    });
+
+    document.getElementById('openExternalBtn').addEventListener('click', () => {
+      const url = currentItem?.url || streamUrl.value.trim();
+      if (!url) return toast('Aucune URL à ouvrir.');
+      window.open(url, '_blank', 'noopener');
+    });
+
+    document.getElementById('clearLibraryBtn').addEventListener('click', () => {
+      if (!library.length) return toast('La bibliothèque est déjà vide.');
+      if (!confirm('Supprimer toute la bibliothèque locale ?')) return;
+      saveLibrary([]);
+      toast('Bibliothèque supprimée.');
+    });
+
+    librarySearch.addEventListener('input', renderLibrary);
+
+    libraryList.addEventListener('click', (e) => {
+      const playId = e.target.closest('[data-play]')?.dataset.play;
+      const fillId = e.target.closest('[data-fill]')?.dataset.fill;
+      const delId = e.target.closest('[data-del]')?.dataset.del;
+      if (playId) {
+        const item = library.find(x => x.id === playId);
+        if (item) playStream(item);
+      }
+      if (fillId) {
+        const item = library.find(x => x.id === fillId);
+        if (item) {
+          syncFormFromItem(item);
+          toast('Lien chargé dans le formulaire.');
+        }
+      }
+      if (delId) removeItem(delId);
+    });
+
+    document.querySelectorAll('[data-example]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        streamUrl.value = btn.dataset.example;
+        streamTitle.value = 'Exemple';
+        streamType.value = 'auto';
+      });
+    });
+
+    streamUrl.addEventListener('input', () => {
+      const url = streamUrl.value.trim();
+      if (!streamTitle.value.trim() && url) {
+        streamTitle.value = normalizeTitle(url, '');
+      }
+    });
+
+    function boot() {
+      library = getLibrary();
+      renderLibrary();
+      const last = getLastPlayed();
+      if (last?.url) {
+        currentItem = last;
+        updateMeta(last, (last.type || last.detectedType || '').toUpperCase());
+        syncFormFromItem(last);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
