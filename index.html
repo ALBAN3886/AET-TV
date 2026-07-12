@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
     :root{
       --bg:#0b1020;
@@ -125,7 +125,7 @@
       h1{font-size:27px}
       .hero p{font-size:15px}
       .player-title-wrap h2{font-size:22px}
-      .quick-row,.player-actions,.item-actions{display:grid;grid-template-columns:1fr 1fr}
+      .quick-row,.player-actions,.item-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
       .quick-row .chip,.player-actions .btn,.item-actions .mini-btn{width:100%}
     }
   </style>
@@ -473,6 +473,9 @@
     function removeItem(id) {
       if (!confirm('Supprimer ce lien de la bibliothèque ?')) return;
       saveLibrary(library.filter(item => item.id !== id));
+      if (currentItem?.id === id) {
+        currentItem = null;
+      }
     }
 
     function renderLibrary() {
@@ -522,6 +525,7 @@
       streamUrl.value = '';
       streamTitle.value = '';
       streamType.value = 'auto';
+      currentItem = null;
       toast('Formulaire réinitialisé.');
     });
 
@@ -569,6 +573,7 @@
       if (fillId) {
         const item = library.find(x => x.id === fillId);
         if (item) {
+          currentItem = item;
           syncFormFromItem(item);
           toast('Lien chargé dans le formulaire.');
         }
