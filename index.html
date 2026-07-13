@@ -3,490 +3,235 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>AET Stream Simple</title>
-  <meta name="description" content="Lecteur simple intégré pour HLS, MP4, WebM, YouTube et Vimeo, sans navigateur embarqué." />
+  <title>AET Stream Huhu Boost</title>
+  <meta name="description" content="Version boost avec sélection Huhu.to préchargée et lecteur intégré." />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
-    :root{
-      --bg:#07101f;
-      --bg2:#0d1730;
-      --card:#121d39;
-      --card2:#18264a;
-      --line:rgba(255,255,255,.08);
-      --text:#edf2ff;
-      --muted:#9fb0d8;
-      --accent:#4f8ef7;
-      --accent2:#ff3d7f;
-      --ok:#1fd38a;
-      --warn:#ffc857;
-      --danger:#ff6b6b;
-      --shadow:0 18px 40px rgba(0,0,0,.28);
-      --radius:22px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#09142a 40%,#07101f);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    body{min-height:100vh}
-    .app{max-width:980px;margin:0 auto;padding:18px 14px 34px}
-    .hero{padding:18px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(79,142,247,.14),rgba(255,255,255,.03));border-radius:28px;box-shadow:var(--shadow)}
-    .title{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:800;letter-spacing:.2px}
-    .logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#7d5cff);box-shadow:0 12px 26px rgba(79,142,247,.35)}
-    .sub{margin:8px 0 0;color:var(--muted);line-height:1.55}
-    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:16px}
-    .card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
-    .card h2{margin:0 0 12px;font-size:17px}
-    .muted{color:var(--muted)}
-    .form{display:grid;gap:12px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}
-    input,select,textarea,button{font:inherit}
-    input,select,textarea{
-      width:100%;border:none;outline:none;padding:14px 15px;border-radius:16px;
-      background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.07)
-    }
-    textarea{min-height:92px;resize:vertical}
-    .actions{display:flex;flex-wrap:wrap;gap:10px}
-    .btn{
-      border:none;border-radius:16px;padding:13px 16px;font-weight:700;cursor:pointer;
-      color:white;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)
-    }
-    .btn.primary{background:linear-gradient(135deg,var(--accent),#6aa8ff)}
-    .btn.secondary{background:rgba(255,255,255,.06)}
-    .btn.ok{background:linear-gradient(135deg,#10b981,#34d399)}
-    .btn.warn{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#171717}
-    .btn.danger{background:linear-gradient(135deg,#ef4444,#fb7185)}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .chip{padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);cursor:pointer;color:var(--text)}
-    .player-shell{overflow:hidden}
-    .viewport{
-      position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px;overflow:hidden;
-      border:1px solid rgba(255,255,255,.08)
-    }
-    video,iframe{width:100%;height:100%;display:block;border:0;background:#000}
-    .placeholder{position:absolute;inset:0;display:grid;place-items:center;padding:26px;text-align:center;background:radial-gradient(circle at top,rgba(79,142,247,.14),transparent 45%),#030712}
-    .placeholder h3{margin:0 0 8px;font-size:22px}
-    .placeholder p{margin:0;color:#aab8d7;line-height:1.55;max-width:520px}
-    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-    .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px}
-    .stat .k{font-size:12px;color:var(--muted);margin-bottom:6px}
-    .stat .v{font-size:14px;font-weight:700;word-break:break-word}
-    .library{display:grid;gap:10px;max-height:520px;overflow:auto;padding-right:4px}
-    .item{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:18px;padding:12px}
-    .item-title{font-weight:700;margin-bottom:4px}
-    .item-url{font-size:12px;color:var(--muted);word-break:break-all}
-    .item-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .mini{padding:9px 11px;border-radius:12px;font-size:13px}
+    :root{--bg:#07101f;--bg2:#0d1730;--card:#121d39;--line:rgba(255,255,255,.08);--text:#edf2ff;--muted:#9fb0d8;--accent:#4f8ef7;--accent2:#ff3d7f;--ok:#1fd38a;--warn:#ffc857;--danger:#ff6b6b;--shadow:0 18px 40px rgba(0,0,0,.28);--radius:22px;}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg),#09142a 40%,#07101f);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif} body{min-height:100vh}
+    .app{max-width:1150px;margin:0 auto;padding:18px 14px 34px}
+    .hero{padding:18px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(79,142,247,.16),rgba(255,255,255,.03));border-radius:28px;box-shadow:var(--shadow)}
+    .title{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:800;letter-spacing:.2px} .logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#7d5cff);box-shadow:0 12px 26px rgba(79,142,247,.35)} .sub{margin:8px 0 0;color:var(--muted);line-height:1.55}
+    .top-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px} .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;text-decoration:none;color:var(--text);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:16px} .card{background:linear-gradient(180deg,var(--card),var(--bg2));border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)} .card h2{margin:0 0 12px;font-size:18px}
+    .viewport{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.08)} video,iframe{width:100%;height:100%;display:block;border:0;background:#000} .placeholder{position:absolute;inset:0;display:grid;place-items:center;padding:26px;text-align:center;background:radial-gradient(circle at top,rgba(79,142,247,.14),transparent 45%),#030712}
+    .placeholder h3{margin:0 0 8px;font-size:22px} .placeholder p{margin:0;color:#aab8d7;line-height:1.55;max-width:560px}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px} .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:12px} .stat .k{font-size:12px;color:var(--muted);margin-bottom:6px} .stat .v{font-size:14px;font-weight:700;word-break:break-word}
     .notice{margin-top:14px;padding:14px 15px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,184,0,.08);color:#ffe7a3;line-height:1.5}
-    .help{display:grid;gap:8px;margin-top:14px;color:var(--muted);font-size:14px;line-height:1.5}
-    .help strong{color:var(--text)}
-    .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(8,15,28,.96);border:1px solid rgba(255,255,255,.1);padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);z-index:9999;max-width:90vw}
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
-      .row,.meta{grid-template-columns:1fr}
-      .title{font-size:22px}
-      .app{padding:12px 12px 28px}
-    }
+    .searchbar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px} .searchbar input{width:100%;border:none;outline:none;padding:14px 15px;border-radius:16px;background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.07)}
+    .btn{border:none;border-radius:16px;padding:12px 14px;font-weight:700;cursor:pointer;color:white;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)} .btn.primary{background:linear-gradient(135deg,var(--accent),#6aa8ff)} .btn.secondary{background:rgba(255,255,255,.06)} .btn.warn{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#171717} .btn.danger{background:linear-gradient(135deg,#ef4444,#fb7185)} .btn.ok{background:linear-gradient(135deg,#10b981,#34d399)}
+    .movie-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-height:840px;overflow:auto;padding-right:4px} .movie{display:grid;grid-template-columns:82px 1fr;gap:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:10px} .movie img{width:82px;height:118px;object-fit:cover;border-radius:14px;background:#08101d} .movie-title{font-weight:800;margin:2px 0 5px;line-height:1.25} .movie-meta{font-size:12px;color:var(--muted);margin-bottom:6px} .movie-desc{font-size:13px;color:#c9d4f1;line-height:1.45;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+    .movie-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px} .src-list{display:grid;gap:10px;max-height:520px;overflow:auto;padding-right:4px} .src{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:16px;padding:12px} .src-info{min-width:0} .src-title{font-weight:700} .src-sub{font-size:12px;color:var(--muted);word-break:break-all;margin-top:4px} .src-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+    .small{font-size:12px;color:var(--muted)} .manual{display:grid;gap:10px;margin-top:14px} .manual input,.manual select{width:100%;border:none;outline:none;padding:13px 14px;border-radius:16px;background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.07)} .manual-grid{display:grid;grid-template-columns:1fr 180px;gap:10px}
+    .help{display:grid;gap:8px;margin-top:14px;color:var(--muted);font-size:14px;line-height:1.5} .help strong{color:var(--text)} .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(8,15,28,.96);border:1px solid rgba(255,255,255,.1);padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);z-index:9999;max-width:92vw}
+    @media (max-width: 980px){ .layout{grid-template-columns:1fr} .movie-grid{grid-template-columns:1fr} .meta{grid-template-columns:1fr} .manual-grid{grid-template-columns:1fr} .app{padding:12px 12px 28px} .title{font-size:22px} }
   </style>
 </head>
 <body>
   <div class="app">
     <section class="hero">
-      <div class="title"><div class="logo">▶</div><div>AET Stream Simple</div></div>
-      <p class="sub">Nouvelle version simplifiée : <strong>pas d’iframe de navigation huhu.to</strong>, uniquement un <strong>lecteur intégré</strong> pour les vrais liens vidéo. Cela évite le problème des pages films qui s’ouvrent mal ou qui refusent l’intégration.</p>
+      <div class="title"><div class="logo">▶</div><div>AET Stream Huhu Boost</div></div>
+      <p class="sub">J’ai gardé la logique de la page simple, mais j’ai remis <strong>Huhu.to</strong> de façon utile : cette version embarque une <strong>sélection Huhu déjà chargée</strong> avec ses serveurs. Vous choisissez un film, puis vous lancez un serveur directement dans le lecteur intégré.</p>
+      <div class="top-actions">
+        <a class="pill" href="https://huhu.to/" target="_blank" rel="noopener noreferrer">🏠 huhu.to Accueil</a>
+        <a class="pill" href="https://huhu.to/movies" target="_blank" rel="noopener noreferrer">🎬 huhu.to Films</a>
+        <a class="pill" href="https://huhu.to/series" target="_blank" rel="noopener noreferrer">📺 huhu.to Séries</a>
+        <a class="pill" href="https://huhu.to/live" target="_blank" rel="noopener noreferrer">🔴 huhu.to Live TV</a>
+      </div>
     </section>
 
-    <section class="grid">
-      <div class="card player-shell">
+    <section class="layout">
+      <div class="card">
+        <h2>Sélection Huhu préchargée</h2>
+        <div class="searchbar">
+          <input id="movieSearch" type="search" placeholder="Rechercher dans les films chargés maintenant" />
+          <button class="btn secondary" id="resetSearchBtn">Réinitialiser</button>
+        </div>
+        <div class="movie-grid" id="movieGrid"></div>
+        <div class="small" style="margin-top:10px">Catalogue chargé au moment de la création de ce fichier. Si Huhu change plus tard, certains liens peuvent évoluer.</div>
+      </div>
+
+      <div class="card">
         <h2>Lecteur intégré</h2>
-        <div class="viewport" id="playerFrame">
-          <div class="placeholder" id="placeholder">
-            <div>
-              <h3>Prêt à lire</h3>
-              <p>Collez un lien direct <strong>.m3u8</strong>, <strong>.mp4</strong>, <strong>.webm</strong>, ou un lien <strong>YouTube/Vimeo</strong>. Les pages web de catalogue ne sont pas lisibles directement ici.</p>
-            </div>
-          </div>
-          <video id="videoPlayer" controls playsinline class="hidden" style="display:none"></video>
+        <div class="viewport">
+          <div class="placeholder" id="placeholder"><div><h3>Choisissez un film Huhu</h3><p>Sélectionnez un film à gauche puis un serveur. Les liens directs, les embeds et certains hébergeurs compatibles se lanceront ici. Si un hébergeur bloque l’intégration, copiez le lien source.</p></div></div>
+          <video id="videoPlayer" controls playsinline style="display:none"></video>
           <iframe id="embedPlayer" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen style="display:none"></iframe>
         </div>
-
         <div class="meta">
-          <div class="stat"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun média</div></div>
-          <div class="stat"><div class="k">Type</div><div class="v" id="metaType">—</div></div>
-          <div class="stat"><div class="k">URL</div><div class="v" id="metaUrl">—</div></div>
+          <div class="stat"><div class="k">Film</div><div class="v" id="metaTitle">Aucun</div></div>
+          <div class="stat"><div class="k">Serveur</div><div class="v" id="metaType">—</div></div>
+          <div class="stat"><div class="k">Lien</div><div class="v" id="metaUrl">—</div></div>
+        </div>
+        <div class="notice">Astuce : <strong>Mixdrop</strong>, <strong>VOE</strong>, <strong>VidSonic</strong> et parfois <strong>Dood</strong> peuvent s’ouvrir directement en embed. Quand c’est possible, le bouton “Lire ici” convertit automatiquement le lien en version intégrable.</div>
+
+        <div style="margin-top:14px">
+          <h2 style="margin-bottom:10px">Sources du film sélectionné</h2>
+          <div class="src-list" id="sourceList"><div class="small">Choisissez un film pour voir ses serveurs.</div></div>
         </div>
 
-        <div class="notice">
-          Les pages de films huhu.to sont des <strong>pages de catalogue</strong>, pas des flux vidéo directs. Pour lire dans cette page, il faut le <strong>lien source réel</strong> du serveur vidéo.
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Ouvrir un flux manuellement</h2>
-        <div class="form">
-          <div>
-            <label for="streamUrl">URL du média</label>
-            <input id="streamUrl" type="url" placeholder="https://...m3u8 ou https://www.youtube.com/watch?v=..." />
+        <div class="manual">
+          <h2 style="margin:8px 0 0">Ouverture manuelle</h2>
+          <div class="manual-grid">
+            <input id="manualUrl" type="url" placeholder="Coller un lien direct ou un lien de serveur" />
+            <select id="manualType">
+              <option value="auto">Auto</option>
+              <option value="embed">Embed</option>
+              <option value="hls">HLS</option>
+              <option value="video">Vidéo</option>
+              <option value="youtube">YouTube</option>
+              <option value="vimeo">Vimeo</option>
+            </select>
           </div>
-          <div class="row">
-            <div>
-              <label for="streamTitle">Titre</label>
-              <input id="streamTitle" type="text" placeholder="Nom du film, de la chaîne ou du flux" />
-            </div>
-            <div>
-              <label for="streamType">Type</label>
-              <select id="streamType">
-                <option value="auto">Détection automatique</option>
-                <option value="hls">HLS (.m3u8)</option>
-                <option value="video">Vidéo (.mp4/.webm)</option>
-                <option value="youtube">YouTube</option>
-                <option value="vimeo">Vimeo</option>
-                <option value="embed">Lien embed</option>
-              </select>
-            </div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <button class="btn primary" id="manualPlayBtn">Lire ici</button>
+            <button class="btn secondary" id="copyCurrentBtn">Copier le lien courant</button>
+            <button class="btn danger" id="stopBtn">Arrêter</button>
           </div>
-          <div class="actions">
-            <button class="btn primary" id="playBtn">▶ Lire</button>
-            <button class="btn secondary" id="saveBtn">＋ Enregistrer</button>
-            <button class="btn secondary" id="clearBtn">Vider</button>
-            <button class="btn danger" id="stopBtn">■ Arrêter</button>
-          </div>
-        </div>
-
-        <div class="chips">
-          <button class="chip" data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Exemple HLS</button>
-          <button class="chip" data-example="https://www.w3schools.com/html/mov_bbb.mp4">Exemple MP4</button>
-          <button class="chip" data-example="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
-          <button class="chip" data-example="https://vimeo.com/76979871">Exemple Vimeo</button>
         </div>
 
         <div class="help">
-          <div><strong>À utiliser quand :</strong> vous avez déjà le lien de lecture réel du serveur.</div>
-          <div><strong>Ne marche pas avec :</strong> les pages de films, pages de recherche, ou catalogues web sans vrai flux direct.</div>
-          <div><strong>Formats pris en charge :</strong> HLS, MP4, WebM, embeds YouTube et Vimeo.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="card">
-        <h2>Bibliothèque locale</h2>
-        <div class="actions" style="margin-bottom:12px">
-          <button class="btn secondary" id="exportBtn">Exporter</button>
-          <button class="btn secondary" id="importBtn">Importer</button>
-          <button class="btn warn" id="clearLibBtn">Vider la bibliothèque</button>
-        </div>
-        <div class="library" id="libraryList"></div>
-      </div>
-
-      <div class="card">
-        <h2>Aide rapide</h2>
-        <div class="help">
-          <div>1. Ouvrez votre film sur le site source.</div>
-          <div>2. Copiez le <strong>lien du serveur vidéo</strong> ou du flux.</div>
-          <div>3. Collez ce lien ici puis appuyez sur <strong>Lire</strong>.</div>
-          <div>4. Si la lecture ne démarre pas, essayez de changer le type au lieu de laisser “Détection automatique”.</div>
-          <div>5. Si le serveur protège le média, aucun fichier HTML local ne peut forcer la lecture.</div>
+          <div><strong>Ce qui change :</strong> on n’essaie plus d’ouvrir tout le site Huhu dans une iframe cassée.</div>
+          <div><strong>Ce qui marche mieux :</strong> on prend directement les serveurs de films déjà récupérés et on les lance dans le lecteur.</div>
+          <div><strong>Limite normale :</strong> si l’hébergeur refuse l’embed ou impose ses propres protections, aucun simple HTML ne peut le forcer.</div>
         </div>
       </div>
     </section>
   </div>
 
   <script>
+    const MOVIES = [{"id": "movie.1339713", "tmdb_id": "1339713", "name": "Obsession", "originalName": "Obsession", "description": "After breaking the mysterious \"One Wish Willow\" to win his crush's heart, a hopeless romantic finds himself getting exactly what he asked for but soon discovers that some desires come at a dark, sinister price.", "releaseDate": "2026-05-13", "poster": "https://image.tmdb.org/t/p/original/bRwnj8WEKBCvmfeUNOukJPwB43K.jpg", "backdrop": "https://image.tmdb.org/t/p/original/r013C8Me2bZ0pUi0OWJRh0h7MzT.jpg", "genres": ["Horror", "Thriller"], "sources": [{"url": "https://voe.sx/e/7gfhazd3jito", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://dood.to/e/s5z8bvwvo4mx", "name": "Server A1", "languages": ["de"], "type": "url"}, {"url": "https://dood.yt/w/IDJ2TmV6Sd", "tag": "1080p", "name": "Server B1", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/3696nekwan9gn0", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/wwnTUprFyK", "tag": "1080p", "name": "Server B1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/YTipnPhTo1", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/039dnwe9fd0pnk", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/yoWvoq1Gah", "tag": "1080p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/xwlmomngs0nv03", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/abFuBIIvYP", "name": "Server B2", "languages": ["es"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1339713"}, {"id": "movie.1108427", "tmdb_id": "1108427", "name": "Moana", "originalName": "Moana", "description": "Teenage Moana answers the Ocean's call and, for the first time, voyages beyond the reef of her island of Motunui with infamous demigod Maui on an unforgettable journey to restore prosperity to her people.", "releaseDate": "2026-07-08", "poster": "https://image.tmdb.org/t/p/original/zKVgiv5qHCvCLT4A2ymJi5QeXDH.jpg", "backdrop": "https://image.tmdb.org/t/p/original/ltaMOWWmKx34SHRhPdiwrosdnmo.jpg", "genres": ["Family", "Fantasy", "Comedy", "Adventure"], "sources": [{"url": "https://mixdrop.ps/f/k0nvl0v8t3r1813", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/KUwotMCRrx", "tag": "1080p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/ENg77ehU50", "tag": "1080p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/fgpCWTqTkB", "tag": "1080p", "name": "Server B2", "languages": ["es"], "type": "url"}, {"url": "https://dood.yt/w/gGAUOeMZ3Z", "tag": "1080p", "name": "Server B2", "languages": ["es"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1108427"}, {"id": "movie.1212763", "tmdb_id": "1212763", "name": "Evil Dead Burn", "originalName": "Evil Dead Burn", "description": "After her husband's abrupt death, a woman seeks solace with her in-laws. As they transform into Deadites one by one, she comes to discover that the vows she took in life survive even in death.", "releaseDate": "2026-07-07", "poster": "https://image.tmdb.org/t/p/original/ztadKzIIR0ERYqpHteaPFtk7inP.jpg", "backdrop": "https://image.tmdb.org/t/p/original/A5Tz6ogGt4VV8NESG9oWVct5bo1.jpg", "genres": ["Horror", "Thriller"], "sources": [{"url": "https://vidsonic.net/e/6uhoef6oj4ww", "tag": "1080p", "name": "Server R2", "languages": ["de"], "type": "url"}, {"url": "https://voe.sx/e/k2qcupwdmzzu", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/r6pe7qq8tp7o93", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/dkqo4xgmh7jqven", "name": "Server E1", "languages": ["en"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1212763"}, {"id": "movie.1280738", "tmdb_id": "1280738", "name": "The Furious", "originalName": "火遮眼", "description": "After a criminal network kidnaps Wang Wei's daughter and the corrupt police refuse to assist him, Wei sets out on his own to locate her. Navin, a tenacious journalist whose wife has mysteriously vanished, is his only ally. In this explosive martial arts showdown, the unlikely duo fights the kidnappers ruthlessly driven by a furious vengeance.", "releaseDate": "2026-06-10", "poster": "https://image.tmdb.org/t/p/original/zP19YO60jwEsfKd5Qf1UvA5uJu8.jpg", "backdrop": "https://image.tmdb.org/t/p/original/1AVF2fAevpfi2HP6AEpptG1kg8R.jpg", "genres": ["Action", "Crime", "Thriller"], "sources": [{"url": "https://voe.sx/e/9cpnxdwu6ap6", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/xwo1ozppuleokjq", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/V2YIYt9gLu", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/xwl461e7fwpo8v", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/qu8HYT8O5C", "tag": "800p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/pqmBDSxSjA", "tag": "800p", "name": "Server B2", "languages": ["ru"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1280738"}, {"id": "movie.1202033", "tmdb_id": "1202033", "name": "Enola Holmes 3", "originalName": "Enola Holmes 3", "description": "Adventure follows detective Enola Holmes to Malta, where her plans to tie the knot unravel when Sherlock's disappearance plunges her into a perilous case.", "releaseDate": "2026-06-30", "poster": "https://image.tmdb.org/t/p/original/7kRYHH9H9PjBFwz1FprbHB2AAjI.jpg", "backdrop": "https://image.tmdb.org/t/p/original/jLuGZc84MvPYCQomQg9DI72mstt.jpg", "genres": ["Adventure", "Crime", "Mystery"], "sources": [{"url": "https://voe.sx/e/mojxqiknsmnu", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://vidsonic.net/e/h2mmlsx4ods6", "tag": "1080p", "name": "Server R2", "languages": ["de"], "type": "url"}, {"url": "https://dood.yt/w/NWrEfR5x7B", "tag": "1080p", "name": "Server B1", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/el63pplgflrjvz", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/m6b1PBRBuj", "tag": "1080p", "name": "Server B1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/fKaLB5tqfe", "tag": "1080p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/sFi2DjsbIr", "tag": "1080p", "name": "Server B2", "languages": ["fr"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1202033"}, {"id": "movie.1314481", "tmdb_id": "1314481", "name": "The Devil Wears Prada 2", "originalName": "The Devil Wears Prada 2", "description": "Andy Sachs returns to Runway as Miranda Priestly navigates a new media landscape and Runway's position within. The duo reconnect with former assistant Emily Charlton, now the head of a luxury brand that possesses funding which could ensure Runway's survival.", "releaseDate": "2026-04-29", "poster": "https://image.tmdb.org/t/p/original/fCAURTUx3YfsJ8k9I0UamjSILiR.jpg", "backdrop": "https://image.tmdb.org/t/p/original/Af907x5h9W1wVis8XrSd7ynTWuy.jpg", "genres": ["Comedy", "Drama"], "sources": [{"url": "https://voe.sx/e/4ordoszmqcbb", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://vidsonic.net/e/dculhjnofxa5", "tag": "1080p", "name": "Server R2", "languages": ["de"], "type": "url"}, {"url": "https://dood.yt/w/i5R4RcIcBx", "tag": "800p", "name": "Server B1", "languages": ["de"], "type": "url"}, {"url": "https://vidsonic.net/e/tdw1gxybd9y8", "tag": "1080p", "name": "Server R2", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/el6o1prxsz7lv7", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/q4SmMlzxZx", "tag": "800p", "name": "Server B1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/nxF8aOaeji", "tag": "960p", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/039lv6x8hg9r0z", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/AnxGk4jM4T", "name": "Server B2", "languages": ["es"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1314481"}, {"id": "movie.1083381", "tmdb_id": "1083381", "name": "Backrooms", "originalName": "Backrooms", "description": "A strange doorway appears in the basement of a furniture showroom.", "releaseDate": "2026-05-27", "poster": "https://image.tmdb.org/t/p/original/rhGx6E3qRNMgj3i5su2oukNHwIQ.jpg", "backdrop": "https://image.tmdb.org/t/p/original/mCpwRayjXMFzKHbjbzc5JRKfq1O.jpg", "genres": ["Horror", "Mystery", "Science Fiction"], "sources": [{"url": "https://mixdrop.ps/f/jdqrvgzghmglxo", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/j9ZVyfmdnN", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/4dvzg7n3cqqx9r8", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/mMfj7thuSi", "name": "Server B2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/ow4mrnrmal0nekg", "name": "Server E1", "languages": ["en"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1083381"}, {"id": "movie.1084244", "tmdb_id": "1084244", "name": "Toy Story 5", "originalName": "Toy Story 5", "description": "When Bonnie receives a Lilypad tablet as a gift and becomes obsessed, Buzz, Woody, Jessie and the rest of the gang's jobs become exponentially harder when they have to go head to head with the all-new threat to playtime.", "releaseDate": "2026-06-17", "poster": "https://image.tmdb.org/t/p/original/sfQtVlIHljToOwYjhe21KPGzZWK.jpg", "backdrop": "https://image.tmdb.org/t/p/original/qjTqY5coNiz6sVtPng40IzltsoN.jpg", "genres": ["Animation", "Family", "Comedy", "Adventure"], "sources": [{"url": "https://voe.sx/e/eflpjykxbinp", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://vidsonic.net/e/fm3zjhywq1of", "tag": "1080p", "name": "Server R2", "languages": ["de"], "type": "url"}, {"url": "https://voe.sx/e/rxbpfyxhip5y", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://voe.sx/e/bjwzmplasckd", "name": "Server C1", "languages": ["de"], "type": "url"}, {"url": "https://mixdrop.ps/f/wlkqkozmh0gew7g", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://vidsonic.net/e/4rhnapginhe8", "tag": "1080p", "name": "Server R2", "languages": ["en"], "type": "url"}, {"url": "https://mixdrop.ps/f/el6gxkgosklwqm", "name": "Server E1", "languages": ["en"], "type": "url"}, {"url": "https://dood.yt/w/XGg4aZhwXN", "name": "Server B2", "languages": ["pl"], "type": "url"}], "huhu_url": "https://huhu.to/item?id=movie.1084244"}];
     const $ = id => document.getElementById(id);
-    const streamUrl = $('streamUrl');
-    const streamTitle = $('streamTitle');
-    const streamType = $('streamType');
+    const movieGrid = $('movieGrid');
+    const sourceList = $('sourceList');
+    const movieSearch = $('movieSearch');
     const videoPlayer = $('videoPlayer');
     const embedPlayer = $('embedPlayer');
     const placeholder = $('placeholder');
     const metaTitle = $('metaTitle');
     const metaType = $('metaType');
     const metaUrl = $('metaUrl');
-    const libraryList = $('libraryList');
-    const LIB_KEY = 'aet_stream_simple_library_v1';
+    const manualUrl = $('manualUrl');
+    const manualType = $('manualType');
     let hls = null;
-    let current = null;
+    let selectedMovie = null;
+    let currentUrl = '';
 
-    function toast(message){
-      const el = document.createElement('div');
-      el.className = 'toast';
-      el.textContent = message;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 2400);
+    function toast(message){ const el=document.createElement('div'); el.className='toast'; el.textContent=message; document.body.appendChild(el); setTimeout(()=>el.remove(),2400); }
+    function esc(s){ return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]); }
+    function normalizeUrl(url){ let v=String(url||'').trim(); if(!v) return ''; if(!/^https?:\/\//i.test(v) && /^[\w.-]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(v)) v='https://'+v; return v; }
+    function detectType(url, forced='auto'){ if(forced!=='auto') return forced; const v=String(url||'').toLowerCase(); if(v.includes('youtube.com')||v.includes('youtu.be')) return 'youtube'; if(v.includes('vimeo.com')) return 'vimeo'; if(/\.m3u8(\?|#|$)/.test(v)) return 'hls'; if(/\.(mp4|webm|ogg)(\?|#|$)/.test(v)) return 'video'; return 'embed'; }
+    function toYouTubeEmbed(url){ try{ const u=new URL(url); let id=''; const list=u.searchParams.get('list')||''; if(u.hostname.includes('youtu.be')) id=u.pathname.split('/').filter(Boolean)[0]||''; else if(u.searchParams.get('v')) id=u.searchParams.get('v'); else if(u.pathname.startsWith('/embed/')) id=u.pathname.split('/embed/')[1]?.split('/')[0]||''; if(!id && list) return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0`; if(!id) return ''; const p=new URLSearchParams({autoplay:'1',rel:'0'}); if(list) p.set('list',list); return `https://www.youtube-nocookie.com/embed/${id}?${p.toString()}`; }catch{ return ''; } }
+    function toVimeoEmbed(url){ try{ const u=new URL(url); const id=u.pathname.split('/').filter(Boolean).pop(); return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : ''; }catch{ return ''; } }
+    function providerEmbed(url){
+      const raw = normalizeUrl(url);
+      try{
+        const u = new URL(raw);
+        const host = u.hostname.toLowerCase();
+        let path = u.pathname;
+        if(host.includes('mixdrop')) return raw.replace('/f/','/e/');
+        if(host.includes('dood')) return raw.replace('/w/','/e/');
+        if(host.includes('voe.sx') || host.includes('voe-unblock.com')) return raw;
+        if(host.includes('vidsonic.net')) return raw;
+        if(host.includes('youtube.com') || host.includes('youtu.be')) return toYouTubeEmbed(raw);
+        if(host.includes('vimeo.com')) return toVimeoEmbed(raw);
+        return raw;
+      } catch { return raw; }
     }
-
-    function normalizeUrl(url){
-      let value = String(url || '').trim();
-      if (!value) return '';
-      if (!/^https?:\/\//i.test(value) && /^[\w.-]+\.[a-z]{2,}(?:[/:?#]|$)/i.test(value)) value = 'https://' + value;
-      return value;
-    }
-
-    function inferTitle(url, title){
-      if (title && title.trim()) return title.trim();
-      try {
-        const u = new URL(url);
-        return u.pathname.split('/').filter(Boolean).pop() || u.hostname;
-      } catch { return 'Flux sans titre'; }
-    }
-
-    function detectType(url, selected = 'auto'){
-      if (selected !== 'auto') return selected;
-      const value = String(url || '').toLowerCase();
-      if (value.includes('youtube.com') || value.includes('youtu.be')) return 'youtube';
-      if (value.includes('vimeo.com')) return 'vimeo';
-      if (/\.m3u8(\?|#|$)/.test(value)) return 'hls';
-      if (/\.(mp4|webm|ogg)(\?|#|$)/.test(value)) return 'video';
-      if (/\/embed(\/|\?|$)/.test(value)) return 'embed';
-      return 'unknown';
-    }
-
-    function toYouTubeEmbed(url){
-      try {
-        const u = new URL(url);
-        let id = '';
-        const list = u.searchParams.get('list') || '';
-        if (u.hostname.includes('youtu.be')) id = u.pathname.split('/').filter(Boolean)[0] || '';
-        else if (u.searchParams.get('v')) id = u.searchParams.get('v');
-        else if (u.pathname.startsWith('/embed/')) id = u.pathname.split('/embed/')[1]?.split('/')[0] || '';
-        if (!id && list) return `https://www.youtube-nocookie.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0`;
-        if (!id) return '';
-        const params = new URLSearchParams({ autoplay:'1', rel:'0' });
-        if (list) params.set('list', list);
-        return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
-      } catch { return ''; }
-    }
-
-    function toVimeoEmbed(url){
-      try {
-        const u = new URL(url);
-        const id = u.pathname.split('/').filter(Boolean).pop();
-        return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : '';
-      } catch { return ''; }
-    }
-
-    function updateMeta(title, type, url){
-      metaTitle.textContent = title || 'Aucun média';
-      metaType.textContent = type || '—';
-      metaUrl.textContent = url || '—';
-    }
-
-    function showPlaceholder(){
-      placeholder.style.display = 'grid';
-      videoPlayer.style.display = 'none';
-      embedPlayer.style.display = 'none';
-    }
-
-    function stopPlayback(){
-      if (hls) { try { hls.destroy(); } catch {} hls = null; }
-      try { videoPlayer.pause(); } catch {}
-      videoPlayer.removeAttribute('src');
-      embedPlayer.removeAttribute('src');
-      videoPlayer.load?.();
-      current = null;
-      showPlaceholder();
-      updateMeta('Aucun média', '—', '—');
-    }
-
-    async function ensureHls(){
-      if (window.Hls) return true;
-      return false;
-    }
-
-    async function play(item){
+    function stopPlayback(){ if(hls){ try{hls.destroy();}catch{} hls=null; } try{videoPlayer.pause();}catch{} videoPlayer.removeAttribute('src'); embedPlayer.removeAttribute('src'); videoPlayer.load?.(); videoPlayer.style.display='none'; embedPlayer.style.display='none'; placeholder.style.display='grid'; currentUrl=''; metaType.textContent='—'; metaUrl.textContent='—'; }
+    function updateMeta(title, server, url){ metaTitle.textContent = title || 'Aucun'; metaType.textContent = server || '—'; metaUrl.textContent = url || '—'; currentUrl = url || ''; }
+    async function playUrl(url, title='Média', server='Serveur', forced='auto'){
       stopPlayback();
-      const url = normalizeUrl(item.url);
-      if (!url) return toast('Entrez une URL valide.');
-      const type = detectType(url, item.type);
-      const title = inferTitle(url, item.title);
-      current = { url, type, title };
-      updateMeta(title, type.toUpperCase(), url);
-
-      if (type === 'hls') {
-        placeholder.style.display = 'none';
-        videoPlayer.style.display = 'block';
-        if (window.Hls && window.Hls.isSupported()) {
-          hls = new Hls({ enableWorker:true, lowLatencyMode:true, backBufferLength:90 });
-          hls.loadSource(url);
-          hls.attachMedia(videoPlayer);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => videoPlayer.play().catch(() => {}));
-          hls.on(Hls.Events.ERROR, (_, data) => {
-            if (data?.fatal) toast('Lecture HLS impossible : flux indisponible ou protégé.');
-          });
-          return;
-        }
-        if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-          videoPlayer.src = url;
-          videoPlayer.play().catch(() => {});
-          return;
-        }
-        toast('HLS non supporté par ce navigateur.');
-        return;
+      const clean = normalizeUrl(url); if(!clean) return toast('Lien vide.');
+      manualUrl.value = clean;
+      const type = detectType(clean, forced);
+      updateMeta(title, server + ' · ' + type.toUpperCase(), clean);
+      if(type==='hls'){
+        placeholder.style.display='none'; videoPlayer.style.display='block';
+        if(window.Hls && window.Hls.isSupported()){ hls=new Hls({enableWorker:true,lowLatencyMode:true,backBufferLength:90}); hls.loadSource(clean); hls.attachMedia(videoPlayer); hls.on(Hls.Events.MANIFEST_PARSED,()=>videoPlayer.play().catch(()=>{})); hls.on(Hls.Events.ERROR,(_,data)=>{ if(data?.fatal) toast('Flux HLS indisponible ou protégé.'); }); return; }
+        if(videoPlayer.canPlayType('application/vnd.apple.mpegurl')){ videoPlayer.src=clean; videoPlayer.play().catch(()=>{}); return; }
+        toast('HLS non supporté par ce navigateur.'); return;
       }
-
-      if (type === 'video') {
-        placeholder.style.display = 'none';
-        videoPlayer.style.display = 'block';
-        videoPlayer.src = url;
-        videoPlayer.play().catch(() => {});
-        return;
-      }
-
-      if (type === 'youtube') {
-        const embed = toYouTubeEmbed(url);
-        if (!embed) return toast('Lien YouTube non reconnu.');
-        placeholder.style.display = 'none';
-        embedPlayer.style.display = 'block';
-        embedPlayer.src = embed;
-        return;
-      }
-
-      if (type === 'vimeo') {
-        const embed = toVimeoEmbed(url);
-        if (!embed) return toast('Lien Vimeo non reconnu.');
-        placeholder.style.display = 'none';
-        embedPlayer.style.display = 'block';
-        embedPlayer.src = embed;
-        return;
-      }
-
-      if (type === 'embed') {
-        placeholder.style.display = 'none';
-        embedPlayer.style.display = 'block';
-        embedPlayer.src = url;
-        return;
-      }
-
-      toast('Cette URL ressemble à une page web, pas à un flux vidéo direct.');
+      if(type==='video'){ placeholder.style.display='none'; videoPlayer.style.display='block'; videoPlayer.src=clean; videoPlayer.play().catch(()=>{}); return; }
+      const embed = providerEmbed(clean);
+      if(!embed) return toast('Impossible de fabriquer un lien embed.');
+      placeholder.style.display='none'; embedPlayer.style.display='block'; embedPlayer.src=embed;
     }
 
-    function uid(){ return Math.random().toString(36).slice(2, 10); }
-    function getLibrary(){ try { return JSON.parse(localStorage.getItem(LIB_KEY) || '[]'); } catch { return []; } }
-    function saveLibrary(list){ localStorage.setItem(LIB_KEY, JSON.stringify(list)); renderLibrary(); }
-
-    function renderLibrary(){
-      const list = getLibrary();
-      if (!list.length) {
-        libraryList.innerHTML = '<div class="muted">Aucun lien enregistré pour le moment.</div>';
-        return;
-      }
-      libraryList.innerHTML = list.map(item => `
-        <div class="item">
-          <div class="item-title">${escapeHtml(item.title || 'Sans titre')}</div>
-          <div class="item-url">${escapeHtml(item.url || '')}</div>
-          <div class="item-actions">
-            <button class="btn primary mini" data-play="${item.id}">Lire</button>
-            <button class="btn secondary mini" data-fill="${item.id}">Charger</button>
-            <button class="btn danger mini" data-del="${item.id}">Supprimer</button>
+    function renderMovies(){
+      const q = (movieSearch.value || '').trim().toLowerCase();
+      const list = MOVIES.filter(m => !q || (m.name||'').toLowerCase().includes(q) || (m.originalName||'').toLowerCase().includes(q) || (m.genres||[]).join(' ').toLowerCase().includes(q));
+      if(!list.length){ movieGrid.innerHTML = '<div class="small">Aucun film trouvé.</div>'; return; }
+      movieGrid.innerHTML = list.map((m, idx) => `
+        <article class="movie">
+          <img src="${esc(m.poster || m.backdrop || '')}" alt="${esc(m.name)}" loading="lazy" />
+          <div>
+            <div class="movie-title">${esc(m.name)}</div>
+            <div class="movie-meta">${esc((m.releaseDate||'').slice(0,4) || '—')} · ${esc((m.genres||[]).slice(0,3).join(' · '))} · ${(m.sources||[]).length} source(s)</div>
+            <div class="movie-desc">${esc(m.description || 'Pas de description disponible.')}</div>
+            <div class="movie-actions">
+              <button class="btn primary" data-select="${m.id}">Voir les serveurs</button>
+              <a class="btn secondary" href="${esc(m.huhu_url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Page Huhu</a>
+            </div>
           </div>
-        </div>
+        </article>
       `).join('');
     }
 
-    function escapeHtml(s){
-      return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+    function renderSources(movieId){
+      const movie = MOVIES.find(m => m.id === movieId); selectedMovie = movie || null;
+      if(!movie){ sourceList.innerHTML = '<div class="small">Film introuvable.</div>'; return; }
+      metaTitle.textContent = movie.name || 'Film';
+      const sources = movie.sources || [];
+      if(!sources.length){ sourceList.innerHTML = '<div class="small">Aucune source disponible.</div>'; return; }
+      sourceList.innerHTML = sources.map((s, idx) => {
+        const lang = Array.isArray(s.languages) && s.languages.length ? s.languages.join(', ') : '—';
+        return `
+          <div class="src">
+            <div class="src-info">
+              <div class="src-title">${esc(s.name || ('Serveur '+(idx+1)))}</div>
+              <div class="src-sub">Langue: ${esc(lang)}<br>${esc(s.url || '')}</div>
+            </div>
+            <div class="src-actions">
+              <button class="btn ok" data-play-source="${movie.id}::${idx}">Lire ici</button>
+              <button class="btn secondary" data-copy-source="${movie.id}::${idx}">Copier</button>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    $('playBtn').addEventListener('click', () => {
-      play({ url: streamUrl.value, title: streamTitle.value, type: streamType.value });
+    movieGrid.addEventListener('click', e => {
+      const id = e.target.closest('[data-select]')?.dataset.select;
+      if(id) renderSources(id);
     });
 
-    $('saveBtn').addEventListener('click', () => {
-      const url = normalizeUrl(streamUrl.value);
-      if (!url) return toast('Entrez une URL avant d’enregistrer.');
-      const list = getLibrary();
-      if (list.some(x => x.url === url)) return toast('Ce lien existe déjà.');
-      list.unshift({ id: uid(), url, title: inferTitle(url, streamTitle.value), type: streamType.value || 'auto' });
-      saveLibrary(list);
-      toast('Lien enregistré.');
+    sourceList.addEventListener('click', async e => {
+      const playKey = e.target.closest('[data-play-source]')?.dataset.playSource;
+      const copyKey = e.target.closest('[data-copy-source]')?.dataset.copySource;
+      if(playKey){
+        const [movieId, idx] = playKey.split('::');
+        const movie = MOVIES.find(m => m.id === movieId); if(!movie) return;
+        const src = (movie.sources||[])[Number(idx)]; if(!src) return;
+        await playUrl(src.url, movie.name, src.name || 'Serveur', 'embed');
+      }
+      if(copyKey){
+        const [movieId, idx] = copyKey.split('::');
+        const movie = MOVIES.find(m => m.id === movieId); if(!movie) return;
+        const src = (movie.sources||[])[Number(idx)]; if(!src) return;
+        try{ await navigator.clipboard.writeText(src.url || ''); toast('Lien source copié.'); }catch{ toast('Copie impossible.'); }
+      }
     });
 
-    $('clearBtn').addEventListener('click', () => {
-      streamUrl.value = '';
-      streamTitle.value = '';
-      streamType.value = 'auto';
-    });
-
+    $('manualPlayBtn').addEventListener('click', () => playUrl(manualUrl.value, selectedMovie?.name || 'Lien manuel', 'Manuel', manualType.value));
+    $('copyCurrentBtn').addEventListener('click', async () => { if(!currentUrl) return toast('Aucun lien courant.'); try{ await navigator.clipboard.writeText(currentUrl); toast('Lien courant copié.'); }catch{ toast('Copie impossible.'); } });
     $('stopBtn').addEventListener('click', () => stopPlayback());
+    $('resetSearchBtn').addEventListener('click', () => { movieSearch.value=''; renderMovies(); });
+    movieSearch.addEventListener('input', renderMovies);
+    videoPlayer.addEventListener('error', () => toast('Le média vidéo direct n’a pas pu être chargé.'));
 
-    document.querySelectorAll('[data-example]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        streamUrl.value = btn.dataset.example;
-        streamTitle.value = 'Exemple';
-        streamType.value = 'auto';
-      });
-    });
-
-    libraryList.addEventListener('click', e => {
-      const playId = e.target.closest('[data-play]')?.dataset.play;
-      const fillId = e.target.closest('[data-fill]')?.dataset.fill;
-      const delId = e.target.closest('[data-del]')?.dataset.del;
-      let list = getLibrary();
-      if (playId) {
-        const item = list.find(x => x.id === playId);
-        if (item) play(item);
-      }
-      if (fillId) {
-        const item = list.find(x => x.id === fillId);
-        if (item) {
-          streamUrl.value = item.url || '';
-          streamTitle.value = item.title || '';
-          streamType.value = item.type || 'auto';
-          toast('Lien chargé dans le formulaire.');
-        }
-      }
-      if (delId) {
-        list = list.filter(x => x.id !== delId);
-        saveLibrary(list);
-        toast('Lien supprimé.');
-      }
-    });
-
-    $('clearLibBtn').addEventListener('click', () => {
-      if (!getLibrary().length) return toast('La bibliothèque est déjà vide.');
-      if (!confirm('Supprimer toute la bibliothèque locale ?')) return;
-      saveLibrary([]);
-      toast('Bibliothèque vidée.');
-    });
-
-    $('exportBtn').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(getLibrary(), null, 2)], { type:'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'aet-stream-simple-library.json';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1200);
-    });
-
-    $('importBtn').addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'application/json';
-      input.addEventListener('change', async () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        try {
-          const text = await file.text();
-          const data = JSON.parse(text);
-          if (!Array.isArray(data)) throw new Error('format invalide');
-          const merged = [...data, ...getLibrary()].map(x => ({ id: x.id || uid(), url: normalizeUrl(x.url || ''), title: x.title || '', type: x.type || 'auto' })).filter(x => x.url);
-          const uniq = [];
-          const seen = new Set();
-          for (const it of merged) if (!seen.has(it.url)) { seen.add(it.url); uniq.push(it); }
-          saveLibrary(uniq);
-          toast('Bibliothèque importée.');
-        } catch (e) {
-          toast('Import impossible : ' + e.message);
-        }
-      });
-      input.click();
-    });
-
-    videoPlayer.addEventListener('error', () => {
-      toast('Le média n’a pas pu être chargé. Vérifiez que le lien est un vrai flux direct.');
-    });
-
-    renderLibrary();
-    showPlaceholder();
+    renderMovies();
+    if(MOVIES.length) renderSources(MOVIES[0].id);
   </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
