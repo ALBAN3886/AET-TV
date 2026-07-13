@@ -39,20 +39,20 @@
     .brand span{display:block;font-size:10px;font-weight:800;letter-spacing:.18em;opacity:.92;text-transform:uppercase;margin-top:4px}
 
     .hero{padding:16px}
-    .hero-box{position:relative;overflow:hidden;border-radius:24px;padding:18px;background:linear-gradient(135deg,#d61021 0%,#7e0812 60%,#24070a 100%);color:#fff;box-shadow:0 18px 40px rgba(125,6,16,.28)}
+    .hero-box{position:relative;overflow:hidden;border-radius:24px;padding:16px;background:linear-gradient(135deg,#d61021 0%,#7e0812 60%,#24070a 100%);color:#fff;box-shadow:0 18px 40px rgba(125,6,16,.28)}
     .hero-box:before,.hero-box:after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.10)}
     .hero-box:before{width:180px;height:180px;top:-90px;right:-60px}
     .hero-box:after{width:120px;height:120px;left:-30px;bottom:-40px}
     .hero-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);backdrop-filter:blur(10px);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-    .hero h1{margin:14px 0 8px;font-size:26px;line-height:1.02}
-    .hero p{margin:0;color:rgba(255,255,255,.88);font-size:14px;line-height:1.45;max-width:92%}
+    .hero h1{margin:12px 0 8px;font-size:22px;line-height:1.04}
+    .hero p{margin:0;color:rgba(255,255,255,.88);font-size:13px;line-height:1.42;max-width:92%}
     .hero-actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}
     .hero-btn{border:none;border-radius:14px;padding:12px 14px;font-weight:800;cursor:pointer}
     .hero-btn.primary{background:#fff;color:#a10914}
     .hero-btn.soft{background:rgba(255,255,255,.14);color:#fff}
 
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 14px}
-    .stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 12px;box-shadow:var(--shadow)}
+    .stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px 11px;box-shadow:var(--shadow)}
     .stat b{display:block;font-size:18px}
     .stat span{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
 
@@ -102,18 +102,28 @@
     .tile .ts{display:block;font-size:11px;color:var(--muted);margin-top:3px}
     .tile.dark .ts{color:rgba(255,255,255,.64)}
 
-    .player-box{position:relative;overflow:hidden;border-radius:20px;background:#0d1117;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-    .player-box video,.player-box iframe{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000}
+    .player-card{position:relative;transition:all .22s ease}
+    .player-card.floating{position:fixed;left:10px;right:10px;bottom:86px;z-index:82;margin:0;box-shadow:0 24px 54px rgba(0,0,0,.30)}
+    .player-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tool{height:38px;padding:0 12px;border:none;border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;background:#fff1f2;color:#95131d}
+    .tool.active{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff}
+    .player-box{position:relative;overflow:hidden;border-radius:20px;background:#0d1117;aspect-ratio:16/9;min-height:260px;display:flex;align-items:center;justify-content:center;--player-scale:1}
+    .player-box.web-mode{aspect-ratio:auto;height:72vh;min-height:460px}
+    .player-box video,.player-box iframe{position:absolute;inset:0;width:100%;height:100%;border:none;background:#000;transform:scale(var(--player-scale));transform-origin:center center;transition:transform .18s ease}
+    .player-box.web-mode iframe{transform-origin:top center}
     .player-box .placeholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:#fff;background:radial-gradient(circle at top,#232836 0%,#0d1117 62%)}
     .player-box .placeholder .em{font-size:32px;margin-bottom:10px}
     .player-box .placeholder h4{margin:0 0 8px;font-size:22px}
     .player-box .placeholder p{margin:0;color:rgba(255,255,255,.7);line-height:1.5}
-    .wm{position:absolute;top:10px;right:10px;z-index:2;padding:7px 10px;border-radius:999px;background:rgba(0,0,0,.44);backdrop-filter:blur(10px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .wm{position:absolute;top:10px;right:10px;z-index:2;padding:5px 8px;border-radius:999px;background:rgba(0,0,0,.38);backdrop-filter:blur(10px);color:#fff;font-size:8px;font-weight:800;letter-spacing:.10em;text-transform:uppercase}
     .hidden{display:none !important}
-    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-    .meta-item{background:#fafbfe;border:1px solid var(--line);border-radius:16px;padding:12px}
-    .meta-item .k{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
-    .meta-item .v{margin-top:5px;font-size:13px;font-weight:800;word-break:break-word}
+    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+    .meta-item{background:#fafbfe;border:1px solid var(--line);border-radius:14px;padding:9px 10px}
+    .meta-item .k{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    .meta-item .v{margin-top:4px;font-size:12.5px;font-weight:800;word-break:break-word}
+    details.manual-panel{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+    details.manual-panel summary{cursor:pointer;font-weight:800;color:var(--ink);list-style:none}
+    details.manual-panel summary::-webkit-details-marker{display:none}
 
     .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:50;width:min(560px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
     .nav-btn{border:none;background:transparent;border-radius:14px;padding:8px 6px;color:var(--muted);font-size:11px;font-weight:800;display:grid;justify-items:center;gap:4px;cursor:pointer}
@@ -138,8 +148,11 @@
     @media (max-width:420px){
       .row,.row2,.row3,.meta,.grid,.stats{grid-template-columns:1fr 1fr}
       .row3{grid-template-columns:1fr}
-      .meta{grid-template-columns:1fr}
+      .meta{grid-template-columns:repeat(3,1fr)}
       .stats{grid-template-columns:1fr 1fr 1fr}
+      .player-card.floating{left:8px;right:8px;bottom:82px}
+      .player-box{min-height:230px}
+      .player-box.web-mode{height:64vh;min-height:400px}
     }
   </style>
 </head>
@@ -149,19 +162,19 @@
       <button class="icon-btn" id="menuBtn" aria-label="menu">☰</button>
       <div class="brand">
         <strong>ALBAN ELOH TECHNOLOGIE</strong>
-        <span>Version V6 Modern Hybrid</span>
+        <span>Live · YouTube · Lecteur</span>
       </div>
       <button class="icon-btn" id="searchTopBtn" aria-label="recherche">⌕</button>
     </header>
 
     <div class="hero" id="screen-home">
       <div class="hero-box">
-        <div class="hero-kicker">● Nouvelle base V6</div>
-        <h1>TV mondiale, YouTube intégré et accès huhu dans le lecteur</h1>
-        <p>Version corrigée pour GitHub : menu plein écran, lecteur unique, chaînes IPTV, liens YouTube qui restent dans le site et accès huhu directement dans le player.</p>
+        <div class="hero-kicker">● Accueil</div>
+        <h1>TV mondiale, YouTube et huhu dans un seul lecteur</h1>
+        <p>Interface allégée, menu plein écran, lecture agrandie et navigation plus propre.</p>
         <div class="hero-actions">
           <button class="hero-btn primary" data-go="live">Ouvrir Live TV</button>
-          <button class="hero-btn soft" data-go="player">Lecteur principal</button>
+          <button class="hero-btn primary" data-go="player">Ouvrir le lecteur</button>
         </div>
       </div>
     </div>
@@ -169,7 +182,7 @@
     <div class="stats">
       <div class="stat"><b id="statWorld">…</b><span>Chaînes monde</span></div>
       <div class="stat"><b>36</b><span>Chaînes huhu</span></div>
-      <div class="stat"><b>V6</b><span>Version active</span></div>
+      <div class="stat"><b>Zoom</b><span>Mode lecteur</span></div>
     </div>
 
     <section class="screen active" id="screen-live">
@@ -250,10 +263,17 @@
     </section>
 
     <section class="screen" id="screen-player">
-      <div class="section-title"><h2>Lecteur principal</h2><small>multi-source</small></div>
-      <div class="card">
-        <div class="player-box">
-          <div class="wm">ALBAN ELOH TECHNOLOGIE</div>
+      <div class="section-title"><h2>Lecteur</h2><small>zoom · flottant</small></div>
+      <div class="card player-card" id="playerCard">
+        <div class="player-toolbar">
+          <button class="tool" id="zoomOutBtn">－ Zoom</button>
+          <button class="tool" id="zoomResetBtn">100%</button>
+          <button class="tool" id="zoomInBtn">＋ Zoom</button>
+          <button class="tool" id="floatBtn">Flottant</button>
+          <button class="tool" id="fullscreenBtn">Plein écran</button>
+        </div>
+        <div class="player-box" id="playerBox">
+          <div class="wm">AET</div>
           <div class="placeholder" id="playerPlaceholder"><div><div class="em">📺</div><h4>Lecteur prêt</h4><p>Sélectionnez une chaîne IPTV, un lien YouTube, une page huhu ou un flux manuel.</p></div></div>
           <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
           <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -270,9 +290,11 @@
         </div>
       </div>
       <div class="card">
-        <h3>Lien manuel</h3>
-        <div class="field"><input class="input" id="manualUrl" type="text" placeholder="https://... .m3u8, .mp4, YouTube, huhu.to..." /></div>
-        <button class="btn btn-red" id="manualPlayBtn" style="width:100%">Lire ce lien</button>
+        <details class="manual-panel">
+          <summary>Lien manuel</summary>
+          <div class="field"><input class="input" id="manualUrl" type="text" placeholder="https://... .m3u8, .mp4, YouTube, huhu.to..." /></div>
+          <button class="btn btn-red" id="manualPlayBtn" style="width:100%">Lire ce lien</button>
+        </details>
       </div>
     </section>
 
@@ -321,6 +343,8 @@
     let currentSearch = '';
     let currentItem = null;
     let favs = [];
+    let playerScale = 1;
+    let floatingMode = false;
 
     const YT_SHORTCUTS = [
       { title:'France 24', url:'https://www.youtube.com/watch?v=l8PMl7tUDIE' },
@@ -392,27 +416,66 @@
       if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
       try{
         const u = new URL(raw);
-        if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+        if(u.hostname.includes('youtu.be')) return (u.pathname.split('/').filter(Boolean)[0] || '').slice(0,11);
         if(u.searchParams.get('v')) return u.searchParams.get('v');
         const parts = u.pathname.split('/').filter(Boolean);
-        const i = parts.indexOf('embed'); if(i>-1 && parts[i+1]) return parts[i+1];
-        const s = parts.indexOf('shorts'); if(s>-1 && parts[s+1]) return parts[s+1];
+        const embedIndex = parts.indexOf('embed'); if(embedIndex>-1 && parts[embedIndex+1]) return parts[embedIndex+1];
+        const shortsIndex = parts.indexOf('shorts'); if(shortsIndex>-1 && parts[shortsIndex+1]) return parts[shortsIndex+1];
+        const liveIndex = parts.indexOf('live'); if(liveIndex>-1 && parts[liveIndex+1]) return parts[liveIndex+1];
       }catch{}
       return '';
     }
-    const ytEmbed = input => `https://www.youtube-nocookie.com/embed/${ytId(input)}?autoplay=1&rel=0`;
+    function isYouTubeLink(input=''){
+      const v = String(input).toLowerCase();
+      return v.includes('youtube.com') || v.includes('youtu.be');
+    }
+    const ytEmbed = input => `https://www.youtube-nocookie.com/embed/${ytId(input)}?autoplay=1&rel=0&playsinline=1`;
     const pipedSearch = q => `https://piped.video/results?search_query=${encodeURIComponent(q)}`;
     const pipedHome = 'https://piped.video/';
+    function toPipedUrl(input=''){
+      try{
+        const u = new URL(input);
+        if(u.hostname.includes('youtu.be')){
+          const id = ytId(input);
+          return id ? `https://piped.video/watch?v=${encodeURIComponent(id)}` : pipedHome;
+        }
+        if(u.hostname.includes('youtube.com')) return `https://piped.video${u.pathname}${u.search}${u.hash}`;
+      }catch{}
+      return pipedSearch(input);
+    }
+    function parseYouTubeTarget(input=''){
+      const raw = String(input).trim();
+      const id = ytId(raw);
+      if(id) return { kind:'embed', url: ytEmbed(raw), label:'YOUTUBE' };
+      if(isYouTubeLink(raw)) return { kind:'web', url: toPipedUrl(raw), label:'YOUTUBE WEB' };
+      return null;
+    }
 
     function detectType(url=''){
       const u = String(url).toLowerCase();
-      if(ytId(url)) return 'youtube';
-      if(u.includes('huhu.to/')) return 'webapp';
+      if(isYouTubeLink(url) || ytId(url)) return 'youtube';
+      if(u.includes('huhu.to/') || u.includes('piped.video')) return 'webapp';
       if(u.includes('.m3u8')) return 'hls';
       if(/\.(mp4|webm|m4v)(\?|$)/.test(u)) return 'video';
       return 'webapp';
     }
 
+    function applyPlayerScale(next){
+      if(typeof next === 'number') playerScale = Math.max(.85, Math.min(2.4, Number(next.toFixed(2))));
+      $('playerBox').style.setProperty('--player-scale', playerScale);
+      $('zoomResetBtn').textContent = `${Math.round(playerScale*100)}%`;
+    }
+    function setPlayerMode(mode='media'){
+      $('playerBox').classList.toggle('web-mode', mode === 'web');
+      if(mode === 'web' && playerScale < 1.12) applyPlayerScale(1.12);
+      if(mode !== 'web' && playerScale < 1) applyPlayerScale(1);
+    }
+    function toggleFloating(force){
+      floatingMode = typeof force === 'boolean' ? force : !floatingMode;
+      $('playerCard').classList.toggle('floating', floatingMode);
+      $('floatBtn').classList.toggle('active', floatingMode);
+      $('floatBtn').textContent = floatingMode ? 'Ancré' : 'Flottant';
+    }
     function stopPlayer(){
       if(hls){ try{ hls.destroy(); }catch{} hls = null; }
       try{ $('videoPlayer').pause(); }catch{}
@@ -421,8 +484,11 @@
       $('videoPlayer').classList.add('hidden');
       $('embedPlayer').classList.add('hidden');
       $('playerPlaceholder').classList.remove('hidden');
+      setPlayerMode('media');
+      applyPlayerScale(1);
     }
     function playHls(url){
+      setPlayerMode('media');
       $('playerPlaceholder').classList.add('hidden');
       $('embedPlayer').classList.add('hidden');
       $('videoPlayer').classList.remove('hidden');
@@ -436,13 +502,15 @@
       }else toast('HLS non supporté sur ce navigateur');
     }
     function playVideo(url){
+      setPlayerMode('media');
       $('playerPlaceholder').classList.add('hidden');
       $('embedPlayer').classList.add('hidden');
       $('videoPlayer').classList.remove('hidden');
       $('videoPlayer').src = url;
       $('videoPlayer').play().catch(()=>{});
     }
-    function playEmbed(url){
+    function playEmbed(url, mode='web'){
+      setPlayerMode(mode);
       $('playerPlaceholder').classList.add('hidden');
       $('videoPlayer').classList.add('hidden');
       $('embedPlayer').classList.remove('hidden');
@@ -458,8 +526,13 @@
       $('metaType').textContent = type.toUpperCase();
       if(type==='hls') playHls(item.url);
       else if(type==='video') playVideo(item.url);
-      else if(type==='youtube') playEmbed(ytEmbed(item.url));
-      else playEmbed(item.url);
+      else if(type==='youtube'){
+        const yt = parseYouTubeTarget(item.url);
+        $('metaType').textContent = yt?.label || 'YOUTUBE';
+        if(yt?.kind === 'embed') playEmbed(yt.url, 'media');
+        else playEmbed(yt?.url || pipedSearch(item.url), 'web');
+      }
+      else playEmbed(item.url, 'web');
       switchScreen('player');
     }
 
@@ -549,10 +622,15 @@
     function runYTSearch(raw){
       const q = String(raw||'').trim();
       if(!q) return toast('Entrez un titre, un lien ou un ID');
-      if(ytId(q)){
-        $('ytFrame').src = ytEmbed(q);
+      const yt = parseYouTubeTarget(q);
+      if(yt?.kind === 'embed'){
+        $('ytFrame').src = yt.url;
         $('ytUrl').value = q;
         toast('Vidéo YouTube chargée dans le site');
+      }else if(yt?.kind === 'web'){
+        $('ytFrame').src = yt.url;
+        $('ytUrl').value = q;
+        toast('Lien YouTube ouvert dans l\'explorateur intégré');
       }else{
         $('ytFrame').src = pipedSearch(q);
         toast('Résultats chargés dans l\'explorateur intégré');
@@ -623,13 +701,15 @@
     $('ytExplorerBtn').addEventListener('click', ()=>{ $('ytFrame').src = pipedHome; toast('Explorateur vidéo chargé dans le site'); });
     $('ytPlayBtn').addEventListener('click', ()=>{
       const u = $('ytUrl').value.trim();
-      if(!ytId(u)) return toast('Lien YouTube invalide');
-      $('ytFrame').src = ytEmbed(u);
-      toast('Lecture YouTube interne activée');
+      const yt = parseYouTubeTarget(u);
+      if(!yt) return toast('Lien YouTube invalide');
+      $('ytFrame').src = yt.url;
+      toast(yt.kind === 'embed' ? 'Lecture YouTube interne activée' : 'Lien YouTube ouvert dans l\'explorateur intégré');
     });
     $('ytSendBtn').addEventListener('click', ()=>{
       const u = $('ytUrl').value.trim();
-      if(!ytId(u)) return toast('Lien YouTube invalide');
+      const yt = parseYouTubeTarget(u);
+      if(!yt) return toast('Lien YouTube invalide');
       playItem({name:'YouTube', group:'YouTube', url:u, type:'youtube'});
     });
     $('ytShortcuts').addEventListener('click', e=>{
@@ -653,6 +733,11 @@
       if(copy){ const item = list[Number(copy.dataset.hcopy)]; if(item) copyText(item.url); }
     });
 
+    $('zoomOutBtn').addEventListener('click', ()=>applyPlayerScale(playerScale - .12));
+    $('zoomResetBtn').addEventListener('click', ()=>applyPlayerScale($('playerBox').classList.contains('web-mode') ? 1.12 : 1));
+    $('zoomInBtn').addEventListener('click', ()=>applyPlayerScale(playerScale + .12));
+    $('floatBtn').addEventListener('click', ()=>toggleFloating());
+    $('fullscreenBtn').addEventListener('click', ()=>{ const el = $('playerBox'); if(el.requestFullscreen) el.requestFullscreen().catch(()=>{}); });
     $('stopBtn').addEventListener('click', ()=>{ stopPlayer(); currentItem = null; toast('Lecture arrêtée'); });
     $('copyBtn').addEventListener('click', ()=>copyText(currentItem?.url || ''));
     $('favBtn').addEventListener('click', ()=> currentItem ? addFav(currentItem) : toast('Aucune lecture en cours'));
@@ -672,8 +757,8 @@
     renderFavs();
     renderYTShortcuts();
     renderHuhu();
+    applyPlayerScale(1);
     loadPlaylist();
   </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
