@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alban3886.github.io/AET-TV/sitemap.xml
