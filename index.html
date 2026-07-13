@@ -2,264 +2,190 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ALBAN ELOH TECHNOLOGIE — Live TV</title>
-  <meta name="description" content="Interface mobile inspirée d'une app Live TV, avec lecteur compatible HLS/MP4/WebM/YouTube, section événements et recherche YouTube intégrée." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ALBAN ELOH TECHNOLOGIE</title>
+  <meta name="description" content="ALBAN ELOH TECHNOLOGIE - Interface mobile style Yacine TV avec Live TV, Live Event, lecteur compatible et accès YouTube." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
     :root{
-      --red:#b40000;
-      --red-dark:#7f0000;
-      --red-soft:#d23a3a;
-      --paper:#ffffff;
-      --bg:#ef5858;
-      --bg-2:#ea5050;
-      --text:#1f1f1f;
-      --muted:#6f6f6f;
-      --line:#8f0c0c;
-      --pill:#efefef;
-      --shadow:0 10px 25px rgba(0,0,0,.18);
-      --radius:16px;
-      --bottom-space:88px;
+      --red:#b30000;
+      --red-dark:#8b0000;
+      --red-deep:#6f0000;
+      --white:#ffffff;
+      --soft:#f3f3f3;
+      --text:#231f20;
+      --muted:#746d6d;
+      --line:#8f0a0a;
+      --shadow:0 8px 24px rgba(0,0,0,.16);
+      --radius:15px;
+      --bottom:78px;
     }
-
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;min-height:100%;font-family:Inter,system-ui,sans-serif;background:linear-gradient(180deg,var(--bg) 0%, var(--bg-2) 100%);color:var(--text)}
-    body::before{
-      content:'';
-      position:fixed;
-      inset:0;
+    html,body{margin:0;padding:0;font-family:Inter,system-ui,sans-serif;background:#de4e4e;color:var(--text);min-height:100%}
+    body{
       background:
-        radial-gradient(circle at 15% 15%, rgba(255,255,255,.12), transparent 28%),
-        radial-gradient(circle at 80% 20%, rgba(255,255,255,.08), transparent 25%),
-        linear-gradient(135deg, rgba(255,255,255,.04) 25%, transparent 25%) 0 0/28px 28px,
-        linear-gradient(225deg, rgba(0,0,0,.03) 25%, transparent 25%) 0 0/28px 28px;
-      pointer-events:none;
-      opacity:.45;
+      radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 25%),
+      radial-gradient(circle at right 30%, rgba(255,255,255,.08), transparent 22%),
+      linear-gradient(135deg, rgba(255,255,255,.04) 25%, transparent 25%) 0 0/32px 32px,
+      linear-gradient(225deg, rgba(0,0,0,.03) 25%, transparent 25%) 0 0/32px 32px,
+      linear-gradient(180deg,#e45757 0%, #d94c4c 100%);
     }
-    button,input,select,textarea{font:inherit}
-    a{text-decoration:none;color:inherit}
-
-    .app{
-      max-width:520px;
-      min-height:100vh;
-      margin:0 auto;
-      position:relative;
-      background:transparent;
-      padding-bottom:var(--bottom-space);
-    }
+    button,input,select{font:inherit}
+    .app{max-width:520px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:var(--bottom)}
 
     .topbar{
-      position:sticky;
-      top:0;
-      z-index:30;
-      background:linear-gradient(180deg,#b00000 0%, #980000 100%);
-      color:#fff;
-      height:72px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 16px;
-      box-shadow:0 2px 0 rgba(255,255,255,.06) inset;
+      position:sticky;top:0;z-index:25;height:72px;background:linear-gradient(180deg,var(--red) 0%, var(--red-dark) 100%);
+      color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;box-shadow:0 2px 0 rgba(255,255,255,.08) inset
     }
-    .topbar-side{width:44px;display:flex;align-items:center;justify-content:center}
-    .icon-btn{
-      width:40px;height:40px;border:none;border-radius:10px;background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer
-    }
-    .icon-btn:hover{background:rgba(255,255,255,.08)}
-    .topbar-title{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;max-width:calc(100% - 120px);text-align:center}
-    .topbar-title strong{font-size:22px;line-height:1;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .topbar-title span{font-size:11px;opacity:.9;margin-top:5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+    .nav-slot{width:44px;display:flex;align-items:center;justify-content:center}
+    .icon-btn{width:40px;height:40px;border:none;border-radius:10px;background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer}
+    .icon-btn:hover{background:rgba(255,255,255,.1)}
+    .title-wrap{text-align:center;max-width:calc(100% - 110px);overflow:hidden}
+    .title-wrap strong{display:block;font-size:18px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .title-wrap span{display:block;font-size:11px;opacity:.92;margin-top:5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
 
-    .drawer-backdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:39;opacity:0;pointer-events:none;transition:opacity .2s ease
-    }
-    .drawer-backdrop.show{opacity:1;pointer-events:auto}
+    .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.34);opacity:0;pointer-events:none;transition:opacity .2s;z-index:29}
+    .drawer-mask.show{opacity:1;pointer-events:auto}
     .drawer{
-      position:fixed;left:0;top:0;bottom:0;width:min(82vw,360px);background:#b40000;color:#fff;z-index:40;
-      transform:translateX(-100%);transition:transform .25s ease;box-shadow:10px 0 30px rgba(0,0,0,.26);display:flex;flex-direction:column
+      position:fixed;left:0;top:0;bottom:0;width:min(82vw,360px);background:var(--red);color:#fff;z-index:30;
+      transform:translateX(-100%);transition:transform .25s ease;box-shadow:12px 0 24px rgba(0,0,0,.22);display:flex;flex-direction:column
     }
     .drawer.open{transform:translateX(0)}
-    .drawer-head{padding:28px 22px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
-    .drawer-brand{font-size:24px;font-weight:800;line-height:1.1;letter-spacing:.02em}
-    .drawer-sub{font-size:12px;opacity:.92;margin-top:8px}
-    .drawer-list{padding:14px 14px 24px;display:flex;flex-direction:column;gap:8px;overflow:auto}
-    .drawer-item{
-      width:100%;display:flex;align-items:center;gap:12px;padding:14px 12px;border:none;border-radius:14px;background:transparent;color:#fff;text-align:left;cursor:pointer;font-weight:600
-    }
-    .drawer-item:hover{background:rgba(255,255,255,.10)}
-    .drawer-ico{width:26px;text-align:center;font-size:18px;flex:0 0 26px}
+    .drawer-head{padding:26px 20px 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+    .brand-row{display:flex;align-items:center;gap:12px}
+    .brand-badge{width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-weight:900;font-size:16px}
+    .brand-copy strong{display:block;font-size:22px;line-height:1.05}
+    .brand-copy span{display:block;font-size:11px;opacity:.88;margin-top:4px}
+    .drawer-list{padding:12px 14px 24px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+    .drawer-item{display:flex;align-items:center;gap:12px;width:100%;border:none;background:transparent;color:#fff;padding:14px 12px;border-radius:14px;text-align:left;font-weight:600;cursor:pointer}
+    .drawer-item:hover{background:rgba(255,255,255,.1)}
+    .drawer-ico{width:28px;flex:0 0 28px;text-align:center;font-size:18px}
 
-    .screen{display:none;padding:14px 10px 18px}
+    .screen{display:none;padding:12px 9px 16px}
     .screen.active{display:block}
+    .section-title{color:#fff;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin:4px 8px 10px}
 
-    .notice-card,.search-card,.player-card,.browser-card,.youtube-card,.library-card,.empty-card,.info-card{
-      background:rgba(255,255,255,.16);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:18px;
-      padding:12px;
-      backdrop-filter:blur(4px);
-      margin-bottom:12px;
-    }
-    .notice-card{
-      background:rgba(255,255,255,.10);
-      color:#fff;
-      border-color:rgba(255,255,255,.18)
-    }
-    .notice-card strong{display:block;margin-bottom:6px}
-    .notice-card p{margin:0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.92)}
+    .hero-note{margin-bottom:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:12px;color:#fff}
+    .hero-note strong{display:block;font-size:14px;margin-bottom:4px}
+    .hero-note p{margin:0;font-size:12px;line-height:1.45;color:rgba(255,255,255,.92)}
 
-    .section-title{
-      color:#fff;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin:2px 6px 10px
-    }
-
+    .card{background:#fff;border:3px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
     .category-list{display:flex;flex-direction:column;gap:12px}
-    .category-btn{
-      width:100%;border:3px solid var(--line);border-radius:14px;background:var(--paper);color:#980000;
-      min-height:68px;padding:10px 14px;font-weight:800;font-size:20px;letter-spacing:.02em;box-shadow:var(--shadow);cursor:pointer
-    }
-    .category-btn span{display:block;font-size:11px;font-weight:700;color:#af4040;letter-spacing:.06em;margin-top:3px}
+    .category-btn{width:100%;min-height:66px;border:3px solid var(--line);border-radius:14px;background:#fff;color:#980000;font-size:19px;font-weight:800;letter-spacing:.01em;cursor:pointer}
+    .category-btn:hover{background:#fff8f8}
 
-    .event-card{
-      background:var(--paper);border:3px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px 12px;margin-bottom:14px
-    }
-    .event-head{
-      display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;margin-bottom:10px
-    }
+    .event-card{padding:14px 12px;margin-bottom:14px}
+    .event-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:10px;margin-bottom:10px}
     .team{text-align:center}
-    .flag{font-size:52px;line-height:1}
-    .team-name{margin-top:8px;color:#a00000;font-weight:700;font-size:17px}
-    .event-status{
-      align-self:center;background:var(--pill);border-radius:999px;padding:12px 20px;font-weight:800;color:#222;white-space:nowrap;font-size:20px
-    }
-    .event-meta{display:flex;justify-content:center;align-items:center;gap:8px;color:#777;font-size:15px;margin-bottom:10px}
-    .event-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#666;font-size:14px;flex-wrap:wrap}
-    .event-foot .meta-chip{display:inline-flex;align-items:center;gap:6px}
+    .flag{font-size:48px;line-height:1}
+    .team-name{margin-top:8px;font-size:16px;font-weight:700;color:#a10000}
+    .status-pill{align-self:center;background:#efefef;color:#222;border-radius:999px;padding:12px 18px;font-weight:800;font-size:18px;white-space:nowrap}
+    .event-center{display:flex;justify-content:center;align-items:center;gap:8px;color:#7b7b7b;font-size:14px;margin-bottom:10px}
+    .event-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#666;font-size:13px}
 
-    .search-card,.player-card,.browser-card,.youtube-card,.library-card,.empty-card,.info-card{background:#fff;border:3px solid rgba(127,0,0,.22);box-shadow:var(--shadow)}
-    .search-wrap{display:flex;gap:8px;align-items:center}
-    .search-input,.field-input,.field-select{
-      width:100%;min-height:48px;border-radius:12px;border:2px solid #d9d9d9;padding:0 14px;background:#fff;color:#222;outline:none
-    }
-    .field-input:focus,.field-select:focus,.search-input:focus{border-color:#c51717;box-shadow:0 0 0 4px rgba(197,23,23,.08)}
-    .btn{
-      min-height:48px;border:none;border-radius:12px;padding:0 16px;font-weight:800;cursor:pointer
-    }
-    .btn-red{background:#b40000;color:#fff}
-    .btn-red:hover{background:#930000}
-    .btn-light{background:#f1f1f1;color:#6b0000;border:2px solid #dfdfdf}
-    .btn-soft{background:#ffe5e5;color:#8d0000;border:2px solid #f0bcbc}
-    .btn-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
-    .btn-row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .block{padding:12px;margin-bottom:12px}
+    .head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+    .head h3{margin:0;font-size:17px;color:#7a0000}
+    .head small{color:#777;font-weight:700}
+    .field{margin-bottom:10px}
+    .field label{display:block;margin-bottom:6px;font-size:12px;font-weight:800;color:#7a7a7a;letter-spacing:.05em;text-transform:uppercase}
+    .input,.select{width:100%;min-height:48px;border:2px solid #ddd;border-radius:12px;padding:0 14px;background:#fff;outline:none;color:#222}
+    .input:focus,.select:focus{border-color:#c31818;box-shadow:0 0 0 4px rgba(195,24,24,.08)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .btn{min-height:46px;border:none;border-radius:12px;font-weight:800;cursor:pointer;padding:0 10px}
+    .btn-red{background:var(--red);color:#fff}
+    .btn-red:hover{background:var(--red-dark)}
+    .btn-light{background:#f4f4f4;color:#7a0000;border:2px solid #e0e0e0}
+    .btn-soft{background:#ffe8e8;color:#8b0000;border:2px solid #f3c3c3}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{border:none;background:#ffe9e9;color:#970000;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer}
 
-    .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .card-head h3{margin:0;font-size:17px;color:#7e0000}
-    .card-head small{color:#777;font-weight:600}
+    .player-box,.youtube-box,.browser-box{position:relative;border-radius:16px;overflow:hidden;background:#000;border:2px solid #ededed}
+    .player-box{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
+    .youtube-box{aspect-ratio:16/9}
+    .browser-box{height:55vh;min-height:400px;background:#fff}
+    .player-box iframe,.player-box video,.youtube-box iframe,.browser-box iframe{width:100%;height:100%;border:0}
+    .watermark{position:absolute;top:10px;right:10px;z-index:4;background:rgba(0,0,0,.62);color:#fff;border-radius:10px;padding:7px 10px;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;pointer-events:none}
+    .placeholder{padding:18px;max-width:320px;text-align:center;color:#fff}
+    .placeholder .emoji{font-size:44px;margin-bottom:10px}
+    .placeholder h4{margin:0 0 8px;font-size:19px}
+    .placeholder p{margin:0;color:rgba(255,255,255,.78);font-size:13px;line-height:1.45}
+    .meta{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+    .meta-item{background:#fafafa;border:2px solid #ededed;border-radius:12px;padding:10px 12px}
+    .meta-item .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:#888;font-weight:800;margin-bottom:4px}
+    .meta-item .v{font-size:13px;font-weight:700;color:#222;word-break:break-word}
 
-    .field-grid{display:grid;grid-template-columns:1fr;gap:10px}
-    .field label{display:block;margin-bottom:6px;font-size:12px;color:#777;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-
-    .player-frame,.youtube-frame,.browser-frame{
-      position:relative;border-radius:16px;overflow:hidden;background:#000;border:2px solid #e6e6e6
-    }
-    .player-frame{aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}
-    .youtube-frame{aspect-ratio:16/9}
-    .browser-frame{height:56vh;min-height:420px;background:#fff}
-    .player-frame iframe,.player-frame video,.youtube-frame iframe,.browser-frame iframe{width:100%;height:100%;border:0;background:#000}
-    .watermark{
-      position:absolute;top:10px;right:10px;z-index:5;background:rgba(0,0,0,.62);color:#fff;border-radius:10px;padding:7px 10px;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;pointer-events:none
-    }
-    .placeholder{padding:18px;text-align:center;color:#fff;max-width:320px}
-    .placeholder .emoji{font-size:46px;margin-bottom:10px}
-    .placeholder h4{margin:0 0 8px;font-size:20px}
-    .placeholder p{margin:0;font-size:13px;color:rgba(255,255,255,.78);line-height:1.5}
-
-    .meta-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
-    .meta-box{border-radius:12px;background:#fafafa;border:2px solid #ececec;padding:10px 12px}
-    .meta-box .k{font-size:11px;color:#808080;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
-    .meta-box .v{font-size:13px;color:#222;font-weight:700;word-break:break-word}
+    .info-note{margin-top:10px;padding:12px;border-radius:12px;background:#fff4d9;border:2px solid #f0d28f;color:#7c5b00;font-size:13px;line-height:1.45}
+    .ok-note{margin-top:10px;padding:12px;border-radius:12px;background:#ebfff0;border:2px solid #c2efcf;color:#1b6f3d;font-size:13px;line-height:1.45}
 
     .library-list{display:flex;flex-direction:column;gap:10px}
-    .library-item{border:2px solid #ececec;border-radius:14px;padding:12px;background:#fff5f5}
-    .library-item h4{margin:0 0 6px;font-size:15px;color:#830000}
-    .library-item p{margin:0 0 8px;font-size:12px;color:#666;word-break:break-word}
-    .library-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    .mini{min-height:40px;padding:0 8px;font-size:13px}
+    .fav{padding:12px;border-radius:14px;border:2px solid #ededed;background:#fff7f7}
+    .fav h4{margin:0 0 6px;font-size:15px;color:#820000}
+    .fav p{margin:0 0 8px;font-size:12px;color:#666;word-break:break-word}
 
-    .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .chip{
-      border:none;background:#ffe9e9;color:#950000;border-radius:999px;padding:10px 14px;font-weight:800;cursor:pointer
-    }
-
-    .bottom-nav{
-      position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(520px,100%);height:74px;background:#b00000;color:#fff;
-      display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -8px 24px rgba(0,0,0,.18);z-index:35
-    }
-    .bottom-item{
-      border:none;background:transparent;color:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer
-    }
-    .bottom-item.active{color:#fff}
-    .bottom-item .bi{font-size:22px;line-height:1}
-
-    .helper-text{font-size:13px;color:#666;line-height:1.5;margin:0}
-    .danger-note{margin-top:10px;padding:12px;border-radius:12px;background:#fff4d8;border:2px solid #f2d486;color:#7b5a00;font-size:13px;line-height:1.45}
-    .success-note{margin-top:10px;padding:12px;border-radius:12px;background:#ebfff2;border:2px solid #c7f0d3;color:#17663c;font-size:13px;line-height:1.45}
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(520px,100%);height:74px;background:linear-gradient(180deg,var(--red) 0%, var(--red-dark) 100%);display:grid;grid-template-columns:repeat(4,1fr);z-index:24;box-shadow:0 -8px 22px rgba(0,0,0,.18)}
+    .bottom-btn{border:none;background:transparent;color:rgba(255,255,255,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .bottom-btn.active{color:#fff}
+    .bottom-btn .ico{font-size:21px;line-height:1}
     .hidden{display:none !important}
 
     @media (min-width:640px){
-      .screen{padding:16px}
-      .field-grid.two{grid-template-columns:1fr 1fr}
-      .meta-grid{grid-template-columns:repeat(3,1fr)}
+      .screen{padding:14px}
+      .meta{grid-template-columns:repeat(3,1fr)}
     }
   </style>
 </head>
 <body>
-  <div class="drawer-backdrop" id="drawerBackdrop"></div>
+  <div class="drawer-mask" id="drawerMask"></div>
   <aside class="drawer" id="drawer">
     <div class="drawer-head">
-      <div class="drawer-brand">ALBAN ELOH<br>TECHNOLOGIE</div>
-      <div class="drawer-sub">Interface Live TV mobile, lecteur compatible et accès rapide aux sections principales.</div>
+      <div class="brand-row">
+        <div class="brand-badge">AET</div>
+        <div class="brand-copy">
+          <strong>ALBAN ELOH</strong>
+          <span>TECHNOLOGIE</span>
+        </div>
+      </div>
     </div>
     <div class="drawer-list">
-      <button class="drawer-item" data-screen-link="live-tv"><span class="drawer-ico">📺</span><span>Live TV</span></button>
-      <button class="drawer-item" data-screen-link="live-event"><span class="drawer-ico">🏆</span><span>Live Event</span></button>
-      <button class="drawer-item" data-screen-link="youtube"><span class="drawer-ico">▶️</span><span>YouTube</span></button>
-      <button class="drawer-item" data-screen-link="player"><span class="drawer-ico">🎬</span><span>Lecteur</span></button>
-      <button class="drawer-item" data-screen-link="browser"><span class="drawer-ico">🌐</span><span>Navigateur</span></button>
-      <button class="drawer-item" id="openLibraryFromDrawer"><span class="drawer-ico">⭐</span><span>Favoris</span></button>
-      <button class="drawer-item" id="fillSampleBtn"><span class="drawer-ico">⚙️</span><span>Mode normal / exemple</span></button>
-      <button class="drawer-item" id="shareAppBtn"><span class="drawer-ico">📤</span><span>Partager</span></button>
-      <button class="drawer-item" id="privacyBtn"><span class="drawer-ico">🔒</span><span>Politique d'utilisation</span></button>
+      <button class="drawer-item" data-screen="live-tv"><span class="drawer-ico">📺</span><span>Live TV</span></button>
+      <button class="drawer-item" data-screen="live-event"><span class="drawer-ico">🏆</span><span>Live Event</span></button>
+      <button class="drawer-item" data-screen="youtube"><span class="drawer-ico">▶️</span><span>YouTube</span></button>
+      <button class="drawer-item" data-screen="player"><span class="drawer-ico">🎬</span><span>Lecteur</span></button>
+      <button class="drawer-item" data-screen="browser"><span class="drawer-ico">🌐</span><span>Navigateur</span></button>
+      <button class="drawer-item" id="menuSample"><span class="drawer-ico">⚙️</span><span>Charger exemple HLS</span></button>
+      <button class="drawer-item" id="menuShare"><span class="drawer-ico">📤</span><span>Partager le site</span></button>
+      <button class="drawer-item" id="menuPolicy"><span class="drawer-ico">🔒</span><span>Politique d'utilisation</span></button>
     </div>
   </aside>
 
   <div class="app">
     <header class="topbar">
-      <div class="topbar-side">
-        <button class="icon-btn" id="menuBtn" aria-label="Ouvrir le menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <div class="nav-slot">
+        <button class="icon-btn" id="menuBtn" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="white" stroke-width="2.3" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <div class="topbar-title">
-        <strong id="appBarTitle">ALBAN ELOH TECHNOLOGIE</strong>
-        <span id="appBarSub">Live TV</span>
+      <div class="title-wrap">
+        <strong id="titleMain">ALBAN ELOH TECHNOLOGIE</strong>
+        <span id="titleSub">LIVE TV</span>
       </div>
-      <div class="topbar-side">
-        <button class="icon-btn" id="topSearchBtn" aria-label="Recherche YouTube">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="white" stroke-width="2"/><path d="M16 16l4 4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      <div class="nav-slot">
+        <button class="icon-btn" id="quickSearchBtn" aria-label="Recherche">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="white" stroke-width="2"/><path d="M16 16l4 4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </header>
 
     <section class="screen active" id="screen-live-tv">
-      <div class="notice-card">
+      <div class="hero-note">
         <strong>ALBAN ELOH TECHNOLOGIE</strong>
-        <p>Interface refaite dans un style mobile rouge et blanc, inspirée de l'apparence demandée. Le lecteur est configuré en mode normal/compatibilité pour HLS, MP4, WebM, embeds publics et vidéos YouTube.</p>
+        <p>Version 2 refaite dans un style mobile rouge/blanc beaucoup plus proche du modèle demandé, avec écran Live TV, Live Event, lecteur intégré et accès YouTube.</p>
       </div>
-
       <div class="section-title">Live TV</div>
       <div class="category-list" id="categoryList"></div>
     </section>
@@ -270,179 +196,139 @@
     </section>
 
     <section class="screen" id="screen-youtube">
-      <div class="youtube-card">
-        <div class="card-head">
-          <h3>YouTube intégré</h3>
-          <small>Recherche + lecture</small>
-        </div>
-
+      <div class="card block">
+        <div class="head"><h3>YouTube intégré</h3><small>Recherche + lecture</small></div>
         <div class="field">
-          <label for="ytSearchInput">Recherche YouTube</label>
-          <input id="ytSearchInput" class="field-input" type="text" placeholder="Ex : musique ivoirienne, tutoriel Flutter, émission live" />
+          <label for="ytSearch">Recherche</label>
+          <input class="input" id="ytSearch" type="text" placeholder="Ex : musique, football, formation" />
         </div>
-
-        <div class="btn-row">
-          <button class="btn btn-red" id="ytSearchBtn">Rechercher ici</button>
-          <button class="btn btn-light" id="ytSearchTabBtn">Ouvrir dans un onglet</button>
+        <div class="row">
+          <button class="btn btn-red" id="ytSearchBtn">Rechercher</button>
+          <button class="btn btn-light" id="ytSearchTabBtn">Nouvel onglet</button>
         </div>
-
-        <div class="danger-note">Certaines pages YouTube de recherche peuvent refuser l'affichage direct dans une iframe selon les règles du service. La lecture des vidéos via URL YouTube reste prise en charge dans le lecteur intégré.</div>
+        <div class="info-note">Selon les règles de YouTube, certaines pages de recherche peuvent ne pas s'afficher dans l'iframe. La lecture directe des vidéos YouTube reste prise en charge dans le lecteur.</div>
       </div>
 
-      <div class="youtube-card">
-        <div class="card-head">
-          <h3>Lecture d'une vidéo YouTube</h3>
-          <small>URL ou ID</small>
+      <div class="card block">
+        <div class="head"><h3>Lire une vidéo YouTube</h3><small>URL ou ID</small></div>
+        <div class="field">
+          <label for="ytUrl">Lien YouTube</label>
+          <input class="input" id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." />
         </div>
-        <div class="field-grid two">
-          <div class="field">
-            <label for="ytVideoInput">Lien YouTube</label>
-            <input id="ytVideoInput" class="field-input" type="text" placeholder="https://www.youtube.com/watch?v=..." />
-          </div>
-          <div class="field">
-            <label for="ytVideoTitle">Titre</label>
-            <input id="ytVideoTitle" class="field-input" type="text" placeholder="Titre de la vidéo" />
-          </div>
+        <div class="field">
+          <label for="ytTitle">Titre</label>
+          <input class="input" id="ytTitle" type="text" placeholder="Titre de la vidéo" />
         </div>
-        <div class="btn-row">
-          <button class="btn btn-red" id="ytPlayBtn">Lire la vidéo</button>
-          <button class="btn btn-soft" id="ytSendPlayerBtn">Envoyer vers lecteur</button>
+        <div class="row">
+          <button class="btn btn-red" id="ytPlayBtn">Lire ici</button>
+          <button class="btn btn-soft" id="ytSendBtn">Envoyer au lecteur</button>
         </div>
-        <div class="chip-row">
-          <button class="chip" data-yt-demo="https://www.youtube.com/watch?v=jNQXAC9IVRw">Démo 1</button>
-          <button class="chip" data-yt-demo="https://www.youtube.com/watch?v=ysz5S6PUM-U">Démo 2</button>
+        <div class="chips">
+          <button class="chip" data-yt="https://www.youtube.com/watch?v=jNQXAC9IVRw">Démo 1</button>
+          <button class="chip" data-yt="https://www.youtube.com/watch?v=ysz5S6PUM-U">Démo 2</button>
         </div>
       </div>
 
-      <div class="youtube-card">
-        <div class="card-head">
-          <h3>Aperçu YouTube</h3>
-          <small>embed</small>
-        </div>
-        <div class="youtube-frame">
-          <iframe id="ytStandaloneFrame" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?rel=0"></iframe>
+      <div class="card block">
+        <div class="head"><h3>Aperçu vidéo</h3><small>Embed</small></div>
+        <div class="youtube-box">
+          <iframe id="ytFrame" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?rel=0" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
       </div>
     </section>
 
     <section class="screen" id="screen-player">
-      <div class="player-card">
-        <div class="card-head">
-          <h3>Lecteur principal</h3>
-          <small>Mode normal / compatibilité</small>
+      <div class="card block">
+        <div class="head"><h3>Lecteur principal</h3><small>Compatibilité standard</small></div>
+        <div class="field">
+          <label for="streamTitle">Titre</label>
+          <input class="input" id="streamTitle" type="text" placeholder="Nom du flux ou de la chaîne" />
         </div>
-
-        <div class="field-grid">
-          <div class="field">
-            <label for="streamTitle">Titre</label>
-            <input id="streamTitle" class="field-input" type="text" placeholder="Nom de la chaîne ou du contenu" />
-          </div>
-          <div class="field">
-            <label for="streamUrl">URL</label>
-            <input id="streamUrl" class="field-input" type="url" placeholder="https://.../playlist.m3u8 ou https://youtube.com/watch?v=..." />
-          </div>
-          <div class="field">
-            <label for="streamType">Type</label>
-            <select id="streamType" class="field-select">
-              <option value="auto">Détection automatique</option>
-              <option value="hls">HLS .m3u8</option>
-              <option value="video">Vidéo MP4 / WebM</option>
-              <option value="youtube">YouTube</option>
-              <option value="embed">Embed / iframe</option>
-            </select>
-          </div>
+        <div class="field">
+          <label for="streamUrl">URL</label>
+          <input class="input" id="streamUrl" type="url" placeholder="https://.../playlist.m3u8 ou https://youtube.com/watch?v=..." />
         </div>
-
-        <div class="btn-row three">
+        <div class="field">
+          <label for="streamType">Type</label>
+          <select class="select" id="streamType">
+            <option value="auto">Détection automatique</option>
+            <option value="hls">HLS</option>
+            <option value="video">Vidéo MP4/WebM</option>
+            <option value="youtube">YouTube</option>
+            <option value="embed">Embed</option>
+          </select>
+        </div>
+        <div class="row3">
           <button class="btn btn-red" id="playBtn">Lire</button>
-          <button class="btn btn-light" id="saveBtn">Enregistrer</button>
+          <button class="btn btn-light" id="saveBtn">Favori</button>
           <button class="btn btn-soft" id="resetBtn">Vider</button>
         </div>
-
-        <div class="chip-row">
+        <div class="chips">
           <button class="chip" data-sample="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Exemple HLS</button>
           <button class="chip" data-sample="https://www.w3schools.com/html/mov_bbb.mp4">Exemple MP4</button>
           <button class="chip" data-sample="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
         </div>
-
-        <div class="player-frame" style="margin-top:12px">
+        <div class="player-box" style="margin-top:12px">
           <div class="watermark">ALBAN ELOH TECHNOLOGIE</div>
           <div class="placeholder" id="playerPlaceholder">
             <div class="emoji">📺</div>
             <h4>Lecteur prêt</h4>
-            <p>Collez un lien public pris en charge puis lancez la lecture. HLS utilise automatiquement hls.js si nécessaire.</p>
+            <p>Collez un lien compatible puis lancez la lecture. Les flux HLS utilisent automatiquement hls.js.</p>
           </div>
           <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
-          <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
-
-        <div class="btn-row" style="margin-top:10px">
-          <button class="btn btn-light" id="openExternalBtn">Ouvrir le lien</button>
-          <button class="btn btn-soft" id="copyUrlBtn">Copier l'URL</button>
+        <div class="row" style="margin-top:10px">
+          <button class="btn btn-light" id="openBtn">Ouvrir lien</button>
+          <button class="btn btn-soft" id="copyBtn">Copier URL</button>
         </div>
-
-        <div class="meta-grid">
-          <div class="meta-box"><div class="k">Titre en cours</div><div class="v" id="metaTitle">Aucun</div></div>
-          <div class="meta-box"><div class="k">Type détecté</div><div class="v" id="metaType">—</div></div>
-          <div class="meta-box"><div class="k">Lien actif</div><div class="v" id="metaUrl">—</div></div>
+        <div class="meta">
+          <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
+          <div class="meta-item"><div class="k">Type</div><div class="v" id="metaType">—</div></div>
+          <div class="meta-item"><div class="k">URL</div><div class="v" id="metaUrl">—</div></div>
         </div>
-
-        <div class="success-note">Mode normal activé : lecture standard, ouverture externe en secours, mémorisation locale des favoris, interface mobile et contrôle direct des liens publics compatibles.</div>
+        <div class="ok-note">La lecture est configurée en mode normal et compatible pour les liens publics pris en charge. Les blocages DRM, géographiques ou serveur restent dépendants des services tiers.</div>
       </div>
 
-      <div class="library-card">
-        <div class="card-head">
-          <h3>Favoris</h3>
-          <small id="libraryCount">0 élément</small>
+      <div class="card block">
+        <div class="head"><h3>Favoris</h3><small id="favCount">0 élément</small></div>
+        <div class="row">
+          <button class="btn btn-light" id="exportFavBtn">Exporter</button>
+          <button class="btn btn-soft" id="clearFavBtn">Vider</button>
         </div>
-        <div class="btn-row">
-          <button class="btn btn-light" id="exportBtn">Exporter</button>
-          <button class="btn btn-soft" id="clearLibraryBtn">Vider les favoris</button>
-        </div>
-        <div class="library-list" id="libraryList" style="margin-top:10px"></div>
+        <div class="library-list" id="favList" style="margin-top:10px"></div>
       </div>
     </section>
 
     <section class="screen" id="screen-browser">
-      <div class="browser-card">
-        <div class="card-head">
-          <h3>Navigateur intégré</h3>
-          <small>Web / recherche</small>
+      <div class="card block">
+        <div class="head"><h3>Navigateur intégré</h3><small>Web / YouTube</small></div>
+        <div class="field">
+          <label for="browserUrl">Adresse ou mot-clé</label>
+          <input class="input" id="browserUrl" type="text" value="https://www.youtube.com/" />
         </div>
-        <div class="search-wrap">
-          <input id="browserUrlInput" class="search-input" type="text" value="https://www.youtube.com/results?search_query=actualit%C3%A9" />
+        <div class="row">
           <button class="btn btn-red" id="browserGoBtn">Aller</button>
+          <button class="btn btn-light" id="browserTabBtn">Nouvel onglet</button>
         </div>
-        <div class="btn-row">
-          <button class="btn btn-light" id="browserYouTubeBtn">YouTube</button>
-          <button class="btn btn-soft" id="browserOpenTabBtn">Nouvel onglet</button>
+        <div class="browser-box" style="margin-top:12px">
+          <iframe id="browserFrame" src="https://www.youtube.com/" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
         </div>
-        <div class="browser-frame" style="margin-top:12px">
-          <iframe id="browserFrame" src="https://www.youtube.com/results?search_query=actualit%C3%A9" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-        </div>
-        <p class="helper-text" style="margin-top:10px">Si une page bloque l'affichage intégré, utilisez le bouton d'ouverture dans un nouvel onglet.</p>
-      </div>
-
-      <div class="info-card">
-        <div class="card-head">
-          <h3>Politique d'utilisation</h3>
-          <small>important</small>
-        </div>
-        <p class="helper-text">Cette version améliore l'interface, la compatibilité de lecture et l'accès aux sections. En revanche, elle ne contourne pas les protections techniques, les restrictions de diffusion, les DRM ni les blocages imposés par les services tiers.</p>
+        <div class="info-note">Si le site bloque l'intégration, utilisez le bouton d'ouverture externe.</div>
       </div>
     </section>
 
     <nav class="bottom-nav">
-      <button class="bottom-item active" data-nav="live-tv"><span class="bi">📺</span><span>Live TV</span></button>
-      <button class="bottom-item" data-nav="live-event"><span class="bi">🏆</span><span>Live Event</span></button>
-      <button class="bottom-item" data-nav="youtube"><span class="bi">▶️</span><span>YouTube</span></button>
-      <button class="bottom-item" data-nav="player"><span class="bi">🎬</span><span>Player</span></button>
+      <button class="bottom-btn active" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
+      <button class="bottom-btn" data-nav="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
+      <button class="bottom-btn" data-nav="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
+      <button class="bottom-btn" data-nav="player"><span class="ico">🎬</span><span>Player</span></button>
     </nav>
   </div>
 
   <script>
-    const STORAGE_KEY = 'alban_eloh_technologie_favorites_v1';
-    const LAST_KEY = 'alban_eloh_technologie_last_v1';
+    const STORAGE_KEY = 'aet_yacine_v2_fav';
+    const LAST_KEY = 'aet_yacine_v2_last';
 
     const CATEGORIES = [
       'beIN SPORTS MAX',
@@ -455,203 +341,98 @@
       'MBC CHANNELS',
       'FRANCE CHANNELS',
       'TURKISH CHANNELS',
-      'KIDS',
+      'KIDS CHANNELS',
       'DOCUMENTARY CHANNELS'
     ];
 
     const EVENTS = [
-      {
-        leftFlag:'🇳🇴',
-        leftTeam:'النرويج',
-        status:'انتهت المباراة',
-        rightFlag:'🏴',
-        rightTeam:'إنجلترا',
-        competition:'كأس العالم',
-        commentator:'حسن العيدروس',
-        channel:'beIN MAX 1'
-      },
-      {
-        leftFlag:'🇦🇷',
-        leftTeam:'الأرجنتين',
-        status:'انتهت المباراة',
-        rightFlag:'🇨🇭',
-        rightTeam:'سويسرا',
-        competition:'كأس العالم',
-        commentator:'عصام الشوالي',
-        channel:'beIN MAX 2'
-      }
+      { leftFlag:'🇳🇴', left:'النرويج', status:'انتهت المباراة', rightFlag:'🏴', right:'إنجلترا', cup:'كأس العالم', com:'حسن العيدروس', ch:'beIN MAX 1' },
+      { leftFlag:'🇦🇷', left:'الأرجنتين', status:'انتهت المباراة', rightFlag:'🇨🇭', right:'سويسرا', cup:'كأس العالم', com:'عصام الشوالي', ch:'beIN MAX 2' }
     ];
 
     const $ = (id) => document.getElementById(id);
-    const screens = Array.from(document.querySelectorAll('.screen'));
-    const navButtons = Array.from(document.querySelectorAll('.bottom-item'));
-    const drawerLinkButtons = Array.from(document.querySelectorAll('[data-screen-link]'));
-
-    const appBarTitle = $('appBarTitle');
-    const appBarSub = $('appBarSub');
-    const drawer = $('drawer');
-    const drawerBackdrop = $('drawerBackdrop');
-    const streamTitle = $('streamTitle');
-    const streamUrl = $('streamUrl');
-    const streamType = $('streamType');
-    const playerPlaceholder = $('playerPlaceholder');
-    const videoPlayer = $('videoPlayer');
-    const embedPlayer = $('embedPlayer');
-    const libraryList = $('libraryList');
-    const libraryCount = $('libraryCount');
-    const browserUrlInput = $('browserUrlInput');
-    const browserFrame = $('browserFrame');
-    const ytSearchInput = $('ytSearchInput');
-    const ytVideoInput = $('ytVideoInput');
-    const ytVideoTitle = $('ytVideoTitle');
-    const ytStandaloneFrame = $('ytStandaloneFrame');
-    const metaTitle = $('metaTitle');
-    const metaType = $('metaType');
-    const metaUrl = $('metaUrl');
+    const screens = [...document.querySelectorAll('.screen')];
+    const bottomBtns = [...document.querySelectorAll('.bottom-btn')];
+    const drawerBtns = [...document.querySelectorAll('.drawer-item[data-screen]')];
 
     let hls = null;
-    let favorites = [];
-    let currentItem = null;
+    let favs = [];
+    let current = null;
 
-    function escapeHtml(v){
-      return String(v).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
-    }
-
-    function safeJsonParse(value, fallback){
-      try { return JSON.parse(value) ?? fallback; } catch { return fallback; }
-    }
-
-    function uid(){
-      return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-5);
-    }
-
+    function safeParse(v, fallback){ try { return JSON.parse(v) ?? fallback; } catch { return fallback; } }
+    function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); }
+    function esc(v){ return String(v).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])); }
     function toast(message){
       const el = document.createElement('div');
       el.textContent = message;
-      Object.assign(el.style, {
-        position:'fixed', left:'50%', transform:'translateX(-50%)', bottom:'90px', zIndex:'99',
-        background:'rgba(34,34,34,.94)', color:'#fff', padding:'12px 16px', borderRadius:'12px',
-        fontSize:'14px', fontWeight:'700', boxShadow:'0 12px 28px rgba(0,0,0,.25)', maxWidth:'88%', textAlign:'center'
-      });
+      Object.assign(el.style, {position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'88px',background:'rgba(28,28,28,.95)',color:'#fff',padding:'12px 16px',borderRadius:'12px',fontWeight:'700',fontSize:'14px',zIndex:'99',boxShadow:'0 10px 24px rgba(0,0,0,.25)',maxWidth:'88%',textAlign:'center'});
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 2200);
     }
 
-    function openDrawer(){
-      drawer.classList.add('open');
-      drawerBackdrop.classList.add('show');
-    }
+    function openDrawer(){ $('drawer').classList.add('open'); $('drawerMask').classList.add('show'); }
+    function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerMask').classList.remove('show'); }
 
-    function closeDrawer(){
-      drawer.classList.remove('open');
-      drawerBackdrop.classList.remove('show');
-    }
-
-    function screenMeta(name){
+    function setHeader(screen){
       const map = {
-        'live-tv': ['ALBAN ELOH TECHNOLOGIE', 'Live TV'],
-        'live-event': ['LIVE EVENT', 'Matchs'],
-        'youtube': ['ALBAN ELOH TECHNOLOGIE', 'YouTube'],
-        'player': ['ALBAN ELOH TECHNOLOGIE', 'Lecteur'],
-        'browser': ['ALBAN ELOH TECHNOLOGIE', 'Navigateur']
+        'live-tv':['ALBAN ELOH TECHNOLOGIE','LIVE TV'],
+        'live-event':['LIVE EVENT','MATCHS'],
+        'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],
+        'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],
+        'browser':['ALBAN ELOH TECHNOLOGIE','NAVIGATEUR']
       };
-      return map[name] || ['ALBAN ELOH TECHNOLOGIE', 'Live TV'];
+      const [a,b] = map[screen] || map['live-tv'];
+      $('titleMain').textContent = a;
+      $('titleSub').textContent = b;
     }
 
     function switchScreen(name){
-      screens.forEach(screen => screen.classList.toggle('active', screen.id === 'screen-' + name));
-      navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.nav === name));
-      const [title, sub] = screenMeta(name);
-      appBarTitle.textContent = title;
-      appBarSub.textContent = sub;
+      screens.forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+      bottomBtns.forEach(b => b.classList.toggle('active', b.dataset.nav === name));
+      setHeader(name);
       closeDrawer();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top:0, behavior:'smooth' });
     }
 
     function renderCategories(){
-      $('categoryList').innerHTML = CATEGORIES.map(label => `
-        <button class="category-btn" data-category="${escapeHtml(label)}">
-          ${escapeHtml(label)}
-          <span>Appuyer pour préparer la lecture</span>
-        </button>
-      `).join('');
+      $('categoryList').innerHTML = CATEGORIES.map(x => `<button class="category-btn" data-cat="${esc(x)}">${esc(x)}</button>`).join('');
     }
 
     function renderEvents(){
-      $('eventList').innerHTML = EVENTS.map(item => `
-        <article class="event-card">
-          <div class="event-head">
-            <div class="team">
-              <div class="flag">${escapeHtml(item.leftFlag)}</div>
-              <div class="team-name">${escapeHtml(item.leftTeam)}</div>
-            </div>
-            <div class="event-status">${escapeHtml(item.status)}</div>
-            <div class="team">
-              <div class="flag">${escapeHtml(item.rightFlag)}</div>
-              <div class="team-name">${escapeHtml(item.rightTeam)}</div>
-            </div>
+      $('eventList').innerHTML = EVENTS.map(x => `
+        <div class="card event-card">
+          <div class="event-grid">
+            <div class="team"><div class="flag">${esc(x.leftFlag)}</div><div class="team-name">${esc(x.left)}</div></div>
+            <div class="status-pill">${esc(x.status)}</div>
+            <div class="team"><div class="flag">${esc(x.rightFlag)}</div><div class="team-name">${esc(x.right)}</div></div>
           </div>
-          <div class="event-meta"><span>🏆</span><span>${escapeHtml(item.competition)}</span></div>
-          <div class="event-foot">
-            <span class="meta-chip">🎙️ ${escapeHtml(item.commentator)}</span>
-            <span class="meta-chip">📺 ${escapeHtml(item.channel)}</span>
-          </div>
-        </article>
+          <div class="event-center"><span>🏆</span><span>${esc(x.cup)}</span></div>
+          <div class="event-foot"><span>🎙️ ${esc(x.com)}</span><span>📺 ${esc(x.ch)}</span></div>
+        </div>
       `).join('');
     }
 
-    function getFavorites(){
-      return safeJsonParse(localStorage.getItem(STORAGE_KEY), []);
-    }
-
-    function saveFavorites(items){
-      favorites = items;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-      renderFavorites();
-    }
+    function getFavs(){ return safeParse(localStorage.getItem(STORAGE_KEY), []); }
+    function saveFavs(list){ favs = list; localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); renderFavs(); }
+    function setLast(item){ localStorage.setItem(LAST_KEY, JSON.stringify(item)); }
+    function getLast(){ return safeParse(localStorage.getItem(LAST_KEY), null); }
 
     function normalizeTitle(url, title){
       if (title && title.trim()) return title.trim();
-      try {
-        const u = new URL(url);
-        const part = u.pathname.split('/').filter(Boolean).pop();
-        return part || u.hostname;
-      } catch {
-        return 'Contenu sans titre';
-      }
+      try { const u = new URL(url); return u.pathname.split('/').filter(Boolean).pop() || u.hostname; }
+      catch { return 'Contenu'; }
     }
 
     function detectType(url){
-      const value = String(url || '').toLowerCase();
-      if (value.includes('youtube.com') || value.includes('youtu.be')) return 'youtube';
-      if (value.includes('.m3u8')) return 'hls';
-      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(value)) return 'video';
+      const v = String(url || '').toLowerCase();
+      if (v.includes('youtube.com') || v.includes('youtu.be')) return 'youtube';
+      if (v.includes('.m3u8')) return 'hls';
+      if (/\.(mp4|webm|ogg)(\?|#|$)/i.test(v)) return 'video';
       return 'embed';
     }
 
-    function effectiveType(url, selected){
-      return selected === 'auto' ? detectType(url) : selected;
-    }
-
-    function stopPlayback(){
-      if (hls) { try { hls.destroy(); } catch {} hls = null; }
-      try { videoPlayer.pause(); } catch {}
-      videoPlayer.removeAttribute('src');
-      videoPlayer.load?.();
-      embedPlayer.removeAttribute('src');
-      videoPlayer.classList.add('hidden');
-      embedPlayer.classList.add('hidden');
-      playerPlaceholder.classList.remove('hidden');
-    }
-
-    function updateMeta(item, type){
-      metaTitle.textContent = item?.title || 'Aucun';
-      metaType.textContent = type || '—';
-      metaUrl.textContent = item?.url || '—';
-    }
-
-    function youtubeIdFromUrl(input){
-      const raw = String(input || '').trim();
+    function ytId(url){
+      const raw = String(url || '').trim();
       if (!raw) return '';
       if (/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
       try {
@@ -663,320 +444,261 @@
       return '';
     }
 
-    function youtubeEmbedUrl(input){
-      const id = youtubeIdFromUrl(input);
-      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : input;
+    function ytEmbed(url){
+      const id = ytId(url);
+      return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : url;
+    }
+
+    function stopPlayer(){
+      if (hls) { try { hls.destroy(); } catch {} hls = null; }
+      try { $('videoPlayer').pause(); } catch {}
+      $('videoPlayer').removeAttribute('src');
+      $('videoPlayer').load?.();
+      $('embedPlayer').removeAttribute('src');
+      $('videoPlayer').classList.add('hidden');
+      $('embedPlayer').classList.add('hidden');
+      $('playerPlaceholder').classList.remove('hidden');
+    }
+
+    function updateMeta(item, type){
+      $('metaTitle').textContent = item?.title || 'Aucun';
+      $('metaType').textContent = type || '—';
+      $('metaUrl').textContent = item?.url || '—';
     }
 
     function playHls(url){
-      videoPlayer.classList.remove('hidden');
-      embedPlayer.classList.add('hidden');
-      playerPlaceholder.classList.add('hidden');
+      $('videoPlayer').classList.remove('hidden');
+      $('embedPlayer').classList.add('hidden');
+      $('playerPlaceholder').classList.add('hidden');
       if (window.Hls && window.Hls.isSupported()) {
-        hls = new window.Hls({ enableWorker:true, lowLatencyMode:true, backBufferLength:90 });
+        hls = new Hls({ enableWorker:true, lowLatencyMode:true });
         hls.loadSource(url);
-        hls.attachMedia(videoPlayer);
-        hls.on(window.Hls.Events.MANIFEST_PARSED, () => videoPlayer.play().catch(() => {}));
-        hls.on(window.Hls.Events.ERROR, (_, data) => {
-          if (data?.fatal) toast('Erreur HLS ou flux non autorisé.');
-        });
-      } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-        videoPlayer.src = url;
-        videoPlayer.play().catch(() => {});
+        hls.attachMedia($('videoPlayer'));
+        hls.on(Hls.Events.MANIFEST_PARSED, () => $('videoPlayer').play().catch(() => {}));
+        hls.on(Hls.Events.ERROR, (_, data) => { if (data?.fatal) toast('Erreur HLS ou lecture refusée.'); });
+      } else if ($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')) {
+        $('videoPlayer').src = url;
+        $('videoPlayer').play().catch(() => {});
       } else {
-        toast('HLS non pris en charge par ce navigateur.');
+        toast('HLS non pris en charge.');
       }
     }
 
-    function playDirectVideo(url){
-      videoPlayer.classList.remove('hidden');
-      embedPlayer.classList.add('hidden');
-      playerPlaceholder.classList.add('hidden');
-      videoPlayer.src = url;
-      videoPlayer.play().catch(() => {});
+    function playVideo(url){
+      $('videoPlayer').classList.remove('hidden');
+      $('embedPlayer').classList.add('hidden');
+      $('playerPlaceholder').classList.add('hidden');
+      $('videoPlayer').src = url;
+      $('videoPlayer').play().catch(() => {});
     }
 
     function playEmbed(url){
-      embedPlayer.classList.remove('hidden');
-      videoPlayer.classList.add('hidden');
-      playerPlaceholder.classList.add('hidden');
-      embedPlayer.src = url;
+      $('embedPlayer').classList.remove('hidden');
+      $('videoPlayer').classList.add('hidden');
+      $('playerPlaceholder').classList.add('hidden');
+      $('embedPlayer').src = url;
     }
 
     function playItem(item){
-      stopPlayback();
-      if (!item?.url) {
-        toast('Ajoutez une URL valide.');
-        return;
-      }
-      const type = effectiveType(item.url, item.type || 'auto');
-      currentItem = { ...item, detectedType:type };
-      localStorage.setItem(LAST_KEY, JSON.stringify(currentItem));
-      if (type === 'hls') {
-        playHls(item.url);
-        updateMeta(item, 'HLS');
-      } else if (type === 'video') {
-        playDirectVideo(item.url);
-        updateMeta(item, 'VIDÉO');
-      } else if (type === 'youtube') {
-        playEmbed(youtubeEmbedUrl(item.url));
-        updateMeta(item, 'YOUTUBE');
-      } else {
-        playEmbed(item.url);
-        updateMeta(item, 'EMBED');
-      }
+      stopPlayer();
+      if (!item?.url) return toast('URL manquante.');
+      const type = item.type === 'auto' ? detectType(item.url) : item.type;
+      current = { ...item, detectedType:type };
+      setLast(current);
+      if (type === 'hls') { playHls(item.url); updateMeta(item, 'HLS'); }
+      else if (type === 'video') { playVideo(item.url); updateMeta(item, 'VIDÉO'); }
+      else if (type === 'youtube') { playEmbed(ytEmbed(item.url)); updateMeta(item, 'YOUTUBE'); }
+      else { playEmbed(item.url); updateMeta(item, 'EMBED'); }
       switchScreen('player');
     }
 
-    function addFavorite(item){
-      const exists = favorites.find(x => x.url === item.url);
-      if (exists) { toast('Déjà enregistré.'); return; }
-      favorites.unshift({ ...item, id:uid(), savedAt:Date.now() });
-      saveFavorites(favorites);
+    function addFav(item){
+      if (favs.some(x => x.url === item.url)) return toast('Déjà enregistré.');
+      favs.unshift({ ...item, id:uid() });
+      saveFavs(favs);
       toast('Ajouté aux favoris.');
     }
 
-    function deleteFavorite(id){
-      saveFavorites(favorites.filter(item => item.id !== id));
-      toast('Favori supprimé.');
-    }
-
-    function renderFavorites(){
-      libraryCount.textContent = `${favorites.length} élément${favorites.length > 1 ? 's' : ''}`;
-      if (!favorites.length) {
-        libraryList.innerHTML = '<div class="empty-card"><p class="helper-text">Aucun favori enregistré pour le moment.</p></div>';
-        return;
-      }
-      libraryList.innerHTML = favorites.map(item => `
-        <div class="library-item">
-          <h4>${escapeHtml(item.title)}</h4>
-          <p>${escapeHtml(item.url)}</p>
-          <div class="library-actions">
-            <button class="btn btn-red mini" data-play-id="${item.id}">Lire</button>
-            <button class="btn btn-light mini" data-load-id="${item.id}">Charger</button>
-            <button class="btn btn-soft mini" data-del-id="${item.id}">Supprimer</button>
+    function renderFavs(){
+      $('favCount').textContent = `${favs.length} élément${favs.length > 1 ? 's' : ''}`;
+      if (!favs.length) { $('favList').innerHTML = '<div class="fav"><p style="margin:0;color:#666;font-size:13px">Aucun favori enregistré.</p></div>'; return; }
+      $('favList').innerHTML = favs.map(x => `
+        <div class="fav">
+          <h4>${esc(x.title)}</h4>
+          <p>${esc(x.url)}</p>
+          <div class="row3">
+            <button class="btn btn-red" data-play="${x.id}">Lire</button>
+            <button class="btn btn-light" data-load="${x.id}">Charger</button>
+            <button class="btn btn-soft" data-del="${x.id}">Suppr.</button>
           </div>
         </div>
       `).join('');
     }
 
     function copyText(text){
-      if (!text) { toast('Aucune donnée à copier.'); return; }
-      navigator.clipboard.writeText(text)
-        .then(() => toast('Copié.'))
-        .catch(() => toast('Copie impossible.'));
+      if (!text) return toast('Rien à copier.');
+      navigator.clipboard.writeText(text).then(() => toast('Copié.')).catch(() => toast('Copie impossible.'));
     }
 
-    function openExternal(url){
-      if (!url) { toast('Lien manquant.'); return; }
-      window.open(url, '_blank', 'noopener');
-    }
+    function openExternal(url){ if (!url) return toast('Lien manquant.'); window.open(url, '_blank', 'noopener'); }
 
-    function browserNavigate(value){
-      const raw = String(value || '').trim();
-      if (!raw) return;
-      const url = /^https?:\/\//i.test(raw) ? raw : `https://www.youtube.com/results?search_query=${encodeURIComponent(raw)}`;
-      browserUrlInput.value = url;
-      browserFrame.src = url;
+    function browserGo(raw){
+      const value = String(raw || '').trim();
+      if (!value) return;
+      const url = /^https?:\/\//i.test(value) ? value : `https://www.youtube.com/results?search_query=${encodeURIComponent(value)}`;
+      $('browserUrl').value = url;
+      $('browserFrame').src = url;
       switchScreen('browser');
     }
 
-    function fillPlayer(title, url = '', type = 'auto'){
-      streamTitle.value = title || '';
-      streamUrl.value = url || '';
-      streamType.value = type;
-      switchScreen('player');
-      if (!url) toast('Titre préparé. Ajoutez maintenant l\'URL du flux.');
-    }
-
-    function exportFavorites(){
-      const blob = new Blob([JSON.stringify(favorites, null, 2)], { type:'application/json' });
+    function exportFavs(){
+      const blob = new Blob([JSON.stringify(favs, null, 2)], { type:'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'alban-eloh-technologie-favoris.json';
       a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1200);
-    }
-
-    function loadLast(){
-      const last = safeJsonParse(localStorage.getItem(LAST_KEY), null);
-      if (!last?.url) return;
-      currentItem = last;
-      updateMeta(last, (last.detectedType || last.type || '').toUpperCase());
-      streamTitle.value = last.title || '';
-      streamUrl.value = last.url || '';
-      streamType.value = last.type || 'auto';
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }
 
     $('menuBtn').addEventListener('click', openDrawer);
-    drawerBackdrop.addEventListener('click', closeDrawer);
-    $('topSearchBtn').addEventListener('click', () => {
-      switchScreen('youtube');
-      setTimeout(() => ytSearchInput.focus(), 100);
-    });
+    $('drawerMask').addEventListener('click', closeDrawer);
+    drawerBtns.forEach(btn => btn.addEventListener('click', () => switchScreen(btn.dataset.screen)));
+    bottomBtns.forEach(btn => btn.addEventListener('click', () => switchScreen(btn.dataset.nav)));
+    $('quickSearchBtn').addEventListener('click', () => { switchScreen('youtube'); setTimeout(() => $('ytSearch').focus(), 100); });
 
-    navButtons.forEach(btn => btn.addEventListener('click', () => switchScreen(btn.dataset.nav)));
-    drawerLinkButtons.forEach(btn => btn.addEventListener('click', () => switchScreen(btn.dataset.screenLink)));
-
-    $('openLibraryFromDrawer').addEventListener('click', () => switchScreen('player'));
-    $('privacyBtn').addEventListener('click', () => {
-      switchScreen('browser');
-      toast('Consultez la politique d\'utilisation en bas de la page navigateur.');
-    });
-    $('shareAppBtn').addEventListener('click', async () => {
-      const data = {
-        title:'ALBAN ELOH TECHNOLOGIE',
-        text:'Interface Live TV mobile avec lecteur et YouTube.',
-        url:location.href
-      };
-      if (navigator.share) {
-        try { await navigator.share(data); } catch {}
-      } else {
-        copyText(location.href);
-      }
-    });
-
-    $('fillSampleBtn').addEventListener('click', () => {
-      streamTitle.value = 'Exemple HLS';
-      streamUrl.value = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
-      streamType.value = 'hls';
+    $('menuSample').addEventListener('click', () => {
+      $('streamTitle').value = 'Exemple HLS';
+      $('streamUrl').value = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+      $('streamType').value = 'hls';
       switchScreen('player');
       toast('Exemple chargé.');
     });
 
+    $('menuShare').addEventListener('click', async () => {
+      const data = { title:'ALBAN ELOH TECHNOLOGIE', text:'Version mobile style Yacine TV.', url:location.href };
+      if (navigator.share) { try { await navigator.share(data); } catch {} }
+      else copyText(location.href);
+    });
+
+    $('menuPolicy').addEventListener('click', () => {
+      switchScreen('browser');
+      toast('Consultez la note d\'utilisation du navigateur intégré.');
+    });
+
     $('categoryList').addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-category]');
+      const btn = e.target.closest('[data-cat]');
       if (!btn) return;
-      fillPlayer(btn.dataset.category, '', 'auto');
+      $('streamTitle').value = btn.dataset.cat;
+      $('streamUrl').value = '';
+      $('streamType').value = 'auto';
+      switchScreen('player');
+      toast('Catégorie sélectionnée. Ajoutez le lien du flux.');
     });
 
-    document.querySelectorAll('[data-sample]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const url = btn.dataset.sample;
-        const title = normalizeTitle(url, 'Exemple');
-        const type = detectType(url);
-        streamTitle.value = title;
-        streamUrl.value = url;
-        streamType.value = type;
-      });
-    });
-
-    document.querySelectorAll('[data-yt-demo]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        ytVideoInput.value = btn.dataset.ytDemo;
-        ytVideoTitle.value = 'Démo YouTube';
-        ytStandaloneFrame.src = youtubeEmbedUrl(btn.dataset.ytDemo);
-      });
-    });
+    document.querySelectorAll('[data-sample]').forEach(btn => btn.addEventListener('click', () => {
+      const url = btn.dataset.sample;
+      $('streamUrl').value = url;
+      $('streamTitle').value = normalizeTitle(url, 'Exemple');
+      $('streamType').value = detectType(url);
+    }));
 
     $('ytSearchBtn').addEventListener('click', () => {
-      const query = ytSearchInput.value.trim();
-      if (!query) return toast('Entrez un mot-clé.');
-      browserNavigate(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
+      const q = $('ytSearch').value.trim();
+      if (!q) return toast('Entrez une recherche.');
+      browserGo(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`);
+    });
+    $('ytSearchTabBtn').addEventListener('click', () => {
+      const q = $('ytSearch').value.trim();
+      if (!q) return toast('Entrez une recherche.');
+      openExternal(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`);
     });
 
-    $('ytSearchTabBtn').addEventListener('click', () => {
-      const query = ytSearchInput.value.trim();
-      if (!query) return toast('Entrez un mot-clé.');
-      openExternal(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`);
-    });
+    document.querySelectorAll('[data-yt]').forEach(btn => btn.addEventListener('click', () => {
+      $('ytUrl').value = btn.dataset.yt;
+      $('ytTitle').value = 'Vidéo YouTube';
+      $('ytFrame').src = ytEmbed(btn.dataset.yt);
+    }));
 
     $('ytPlayBtn').addEventListener('click', () => {
-      const url = ytVideoInput.value.trim();
-      if (!url) return toast('Ajoutez un lien YouTube.');
-      const embed = youtubeEmbedUrl(url);
-      if (!youtubeIdFromUrl(url)) return toast('Lien YouTube invalide.');
-      ytStandaloneFrame.src = embed;
-      if (!ytVideoTitle.value.trim()) ytVideoTitle.value = 'Vidéo YouTube';
+      const url = $('ytUrl').value.trim();
+      if (!ytId(url)) return toast('Lien YouTube invalide.');
+      $('ytFrame').src = ytEmbed(url);
+      if (!$('ytTitle').value.trim()) $('ytTitle').value = 'Vidéo YouTube';
     });
 
-    $('ytSendPlayerBtn').addEventListener('click', () => {
-      const url = ytVideoInput.value.trim();
-      if (!url) return toast('Ajoutez un lien YouTube.');
-      const title = ytVideoTitle.value.trim() || 'Vidéo YouTube';
-      streamTitle.value = title;
-      streamUrl.value = url;
-      streamType.value = 'youtube';
-      playItem({ title, url, type:'youtube' });
-    });
-
-    $('playBtn').addEventListener('click', () => {
-      const url = streamUrl.value.trim();
-      if (!url) return toast('Ajoutez une URL.');
-      const item = {
-        title: normalizeTitle(url, streamTitle.value),
-        url,
-        type: streamType.value
-      };
+    $('ytSendBtn').addEventListener('click', () => {
+      const url = $('ytUrl').value.trim();
+      if (!ytId(url)) return toast('Lien YouTube invalide.');
+      const item = { title:$('ytTitle').value.trim() || 'Vidéo YouTube', url, type:'youtube' };
+      $('streamTitle').value = item.title;
+      $('streamUrl').value = item.url;
+      $('streamType').value = 'youtube';
       playItem(item);
     });
 
-    $('saveBtn').addEventListener('click', () => {
-      const url = streamUrl.value.trim();
-      if (!url) return toast('Ajoutez une URL avant l\'enregistrement.');
-      addFavorite({
-        title: normalizeTitle(url, streamTitle.value),
-        url,
-        type: streamType.value
-      });
+    $('playBtn').addEventListener('click', () => {
+      const url = $('streamUrl').value.trim();
+      if (!url) return toast('Ajoutez une URL.');
+      playItem({ title:normalizeTitle(url, $('streamTitle').value), url, type:$('streamType').value });
     });
-
+    $('saveBtn').addEventListener('click', () => {
+      const url = $('streamUrl').value.trim();
+      if (!url) return toast('Ajoutez une URL avant l\'enregistrement.');
+      addFav({ title:normalizeTitle(url, $('streamTitle').value), url, type:$('streamType').value });
+    });
     $('resetBtn').addEventListener('click', () => {
-      stopPlayback();
-      streamTitle.value = '';
-      streamUrl.value = '';
-      streamType.value = 'auto';
+      stopPlayer();
+      $('streamTitle').value = '';
+      $('streamUrl').value = '';
+      $('streamType').value = 'auto';
       updateMeta(null, '—');
-      currentItem = null;
+      current = null;
       toast('Lecteur vidé.');
     });
+    $('openBtn').addEventListener('click', () => openExternal(current?.url || $('streamUrl').value.trim()));
+    $('copyBtn').addEventListener('click', () => copyText(current?.url || $('streamUrl').value.trim()));
 
-    $('copyUrlBtn').addEventListener('click', () => copyText(currentItem?.url || streamUrl.value.trim()));
-    $('openExternalBtn').addEventListener('click', () => openExternal(currentItem?.url || streamUrl.value.trim()));
-
-    libraryList.addEventListener('click', (e) => {
-      const playId = e.target.closest('[data-play-id]')?.dataset.playId;
-      const loadId = e.target.closest('[data-load-id]')?.dataset.loadId;
-      const delId = e.target.closest('[data-del-id]')?.dataset.delId;
-      if (playId) {
-        const item = favorites.find(x => x.id === playId);
-        if (item) playItem(item);
-      }
+    $('favList').addEventListener('click', (e) => {
+      const playId = e.target.closest('[data-play]')?.dataset.play;
+      const loadId = e.target.closest('[data-load]')?.dataset.load;
+      const delId = e.target.closest('[data-del]')?.dataset.del;
+      if (playId) { const item = favs.find(x => x.id === playId); if (item) playItem(item); }
       if (loadId) {
-        const item = favorites.find(x => x.id === loadId);
-        if (item) {
-          streamTitle.value = item.title || '';
-          streamUrl.value = item.url || '';
-          streamType.value = item.type || 'auto';
-          switchScreen('player');
-          toast('Favori chargé.');
-        }
+        const item = favs.find(x => x.id === loadId); if (!item) return;
+        $('streamTitle').value = item.title || '';
+        $('streamUrl').value = item.url || '';
+        $('streamType').value = item.type || 'auto';
+        switchScreen('player');
+        toast('Favori chargé.');
       }
-      if (delId) deleteFavorite(delId);
+      if (delId) { saveFavs(favs.filter(x => x.id !== delId)); toast('Favori supprimé.'); }
     });
 
-    $('exportBtn').addEventListener('click', exportFavorites);
-    $('clearLibraryBtn').addEventListener('click', () => {
-      if (!favorites.length) return toast('Aucun favori à supprimer.');
+    $('exportFavBtn').addEventListener('click', exportFavs);
+    $('clearFavBtn').addEventListener('click', () => {
+      if (!favs.length) return toast('Aucun favori.');
       if (!confirm('Vider tous les favoris ?')) return;
-      saveFavorites([]);
+      saveFavs([]);
     });
 
-    $('browserGoBtn').addEventListener('click', () => browserNavigate(browserUrlInput.value));
-    $('browserYouTubeBtn').addEventListener('click', () => browserNavigate('https://www.youtube.com/'));
-    $('browserOpenTabBtn').addEventListener('click', () => openExternal(browserUrlInput.value.trim()));
-    browserUrlInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') browserNavigate(browserUrlInput.value);
-    });
+    $('browserGoBtn').addEventListener('click', () => browserGo($('browserUrl').value));
+    $('browserTabBtn').addEventListener('click', () => openExternal($('browserUrl').value.trim()));
+    $('browserUrl').addEventListener('keydown', (e) => { if (e.key === 'Enter') browserGo($('browserUrl').value); });
 
     function boot(){
       renderCategories();
       renderEvents();
-      favorites = getFavorites();
-      renderFavorites();
-      loadLast();
+      favs = getFavs();
+      renderFavs();
+      const last = getLast();
+      if (last?.url) {
+        current = last;
+        $('streamTitle').value = last.title || '';
+        $('streamUrl').value = last.url || '';
+        $('streamType').value = last.type || 'auto';
+        updateMeta(last, (last.detectedType || last.type || '').toUpperCase());
+      }
     }
-
     boot();
   </script>
 </body>
