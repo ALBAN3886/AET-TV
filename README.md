@@ -1,34 +1,22 @@
-# ALBAN ELOH TECHNOLOGIE — v4 Live TV Mondiale
+# ALBAN ELOH TECHNOLOGIE — V5
 
-Application web mobile complète : Live TV mondiale, YouTube fonctionnel, huhu.to intégré, lecteur multi-format.
+## Changements demandés appliqués
 
-## 🌍 Fonctionnalités
+- Source des chaînes du monde changée vers : `https://iptv-org.github.io/iptv/index.country.m3u`
+- Menu transformé en **plein écran**
+- YouTube configuré avec **vrais liens d'ouverture**
+- huhu.to intégré en **accès rapide externe** + copie de lien
 
-- **Live TV Mondiale** : chargement automatique de la playlist IPTV mondiale (Free-TV/IPTV)
-- **93+ pays** disponibles avec drapeaux et compteurs
-- **Recherche instantanée** de chaînes et pays
-- **Filtres rapides** par pays populaires
-- **Lecteur intégré** : HLS (.m3u8), MP4, WebM, YouTube, Twitch, embed
-- **YouTube** : recherche, lecture directe, chaînes populaires en direct 24/7
-- **huhu.to** : accès rapide films / séries / live avec navigateur intégré
-- **Favoris** : sauvegarde locale de vos chaînes préférées
-- **Live Event** : cartes match style Yacine TV
-- **Cache 6 h** de la playlist pour vitesse et économie de données
+## Important concernant huhu.to
 
-## 📦 Contenu du repo
+Si huhu.to refuse l'ouverture dans une iframe ou renvoie un code de protection côté serveur, le site doit être ouvert normalement dans un onglet. Cette version ajoute donc les raccourcis, l'ouverture directe et le menu plein écran, sans essayer de contourner les protections du site tiers.
 
-- `index.html` — application complète (Vanilla JS + HLS.js)
-- `_headers` — désactive le cache Netlify pour toujours servir la version fraîche
-- `netlify.toml` — configuration Netlify
-- `README.md` — ce fichier
+## Déploiement GitHub
 
-## 🚀 Déploiement
+Remplacez à la racine du repo :
+- `index.html`
+- `_headers`
+- `netlify.toml`
+- `README.md`
 
-Remplacez les fichiers à la **racine** du repo `AET-TV`, branche `main`.
-Netlify redéploiera automatiquement sur la **même URL**.
-
-## 🎯 Sources
-
-- Playlist IPTV : https://github.com/Free-TV/IPTV
-- YouTube (officiel)
-- huhu.to (accès public)
+Netlify gardera la **même URL** si ce repo GitHub est déjà lié au site existant.
