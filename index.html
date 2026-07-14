@@ -244,6 +244,7 @@
           <button class="btn btn-light" id="openCountriesBtn">Playlists</button>
         </div>
         <div class="warn">Playlist mondiale mise à jour en direct. Si certains flux ne répondent pas, cela vient du diffuseur de la chaîne, pas du site.</div>
+        <div class="hint" id="worldStatus" style="margin-top:8px">Initialisation…</div>
       </div>
       <div class="card">
         <div class="section-title"><h2>Pays rapides</h2><small>accès direct</small></div>
@@ -256,6 +257,7 @@
       <div class="card playlist-panel">
         <div class="playlist-source"><div><b>AET</b><small>playlists et pays actualisés automatiquement</small></div><button class="btn btn-light" id="refreshCountriesBtn">Actualiser</button></div>
         <div class="field"><input class="input" id="countrySearch" type="text" placeholder="Chercher un pays" /></div>
+        <div class="hint" id="worldStatus2" style="margin-top:8px">Initialisation…</div>
       </div>
       <div class="dark-list" id="countriesList"></div>
     </section>
@@ -483,7 +485,28 @@
     function setTheme(theme){ settings.theme = theme; document.body.classList.toggle('theme-dark', theme==='dark'); saveSettings(); toast(theme==='dark' ? 'Thème sombre activé' : 'Thème clair activé'); }
     function setLanguage(lang){ settings.language = lang; document.documentElement.lang = lang; saveSettings(); toast(lang==='fr' ? 'Interface en français' : 'Interface en anglais'); }
     function detectType(url=''){ const u=String(url).toLowerCase(); if(u.includes('youtube.com')||u.includes('youtu.be')) return 'unsupported'; if(u.includes('.m3u8')) return 'hls'; if(/\.(mp4|webm|m4v)(\?|$)/.test(u)) return 'video'; return 'webapp'; }
-    function parseM3U(text){ const lines=String(text).split(/\r?\n/); const list=[]; let meta=null; for(const line of lines){ if(line.startsWith('#EXTINF:')){ const name=line.split(',').slice(1).join(',').trim()||'Chaîne'; const group=(line.match(/group-title="([^"]+)"/)||[])[1]||'Autres'; meta={name,group}; } else if(meta && line && !line.startsWith('#')){ list.push({...meta,url:line.trim()}); meta=null; } } return list; }
+    function parseM3U(text){
+      const lines = String(text).split(/\r?\n/);
+      const list = [];
+      let pendingName = null, pendingGroup = null;
+      for(const raw of lines){
+        const line = raw.trim();
+        if(!line) continue;
+        if(line.startsWith('#EXTINF')){
+          const groupMatch = line.match(/group-title="([^"]*)"/i);
+          pendingGroup = (groupMatch && groupMatch[1] && groupMatch[1].trim()) ? groupMatch[1].trim() : 'Autres';
+          const afterComma = line.split(',').slice(1).join(',').trim();
+          pendingName = afterComma || 'Chaîne';
+        } else if(line.startsWith('#')){
+          // ligne de métadonnées non gérée (#EXTGRP, #EXTM3U...) : on l'ignore sans casser le flux
+          continue;
+        } else {
+          if(pendingName){ list.push({ name: pendingName, group: pendingGroup || 'Autres', url: line }); }
+          pendingName = null; pendingGroup = null;
+        }
+      }
+      return list;
+    }
     function countryCounts(){ const map={}; channels.forEach(c=>{ if(!c.group || c.group==='Undefined' || c.group==='Autres') return; map[c.group]=(map[c.group]||0)+1; }); let arr=Object.entries(map).map(([name,count])=>({name,count})).sort((a,b)=>a.name.localeCompare(b.name)); const i=arr.findIndex(x=>x.name==='Togo'); if(i>-1){ const [t]=arr.splice(i,1); arr.unshift(t); } return arr; }
     function currentBaseList(){ if(liveMode==='all') return channels; if(liveMode==='recent') return recents; if(liveMode==='favorites') return favs; return channels.filter(c=>c.group===currentFilter); }
     function renderCountryChips(){ const groups=['Togo', ...countryCounts().map(x=>x.name).filter(g=>g!=='Togo').slice(0,11)]; $('countryChips').innerHTML = groups.filter(Boolean).map(g=>`<button class="chip ${(liveMode==='country' && currentFilter===g)?'active':''}" data-group="${g}">${g}</button>`).join(''); }
@@ -502,33 +525,43 @@
     function playVideo(url){ setPlayerMode('media'); $('playerBox').classList.add('playing'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').classList.add('hidden'); $('videoPlayer').classList.remove('hidden'); $('videoPlayer').onerror=()=>{ toast('Lecture impossible'); stopPlayer(); }; $('videoPlayer').src=url; if(settings.autoplay) $('videoPlayer').play().catch(()=>{}); }
     function playEmbed(url){ setPlayerMode('web'); $('playerBox').classList.add('playing'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').classList.add('hidden'); $('embedPlayer').classList.remove('hidden'); $('embedPlayer').src=url; }
     function playItem(item){ if(!item?.url) return toast('URL manquante'); const type=item.type || detectType(item.url); if(type==='unsupported') return toast('YouTube a été retiré du site'); stopPlayer(); currentItem={...item, detectedType:type}; $('metaTitle').textContent=item.name||'Sans titre'; $('metaCountry').textContent=item.group||'—'; $('metaType').textContent = type==='webapp' ? 'WEB' : type.toUpperCase(); switchScreen('player'); if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else playEmbed(item.url); addRecent(currentItem); }
+    function setWorldStatus(msg){ ['worldStatus','worldStatus2'].forEach(id=>{ const el=$(id); if(el) el.textContent = msg; }); }
     function setReloadState(on){ ['refreshCountriesBtn','reloadPlaylistBtn'].forEach(id=>{ const btn=$(id); if(!btn) return; btn.classList.toggle('loading', !!on); btn.disabled=!!on; btn.textContent = on ? 'Chargement…' : (id==='refreshCountriesBtn' ? 'Actualiser' : 'Recharger'); }); }
-    function primeChannels(){ if(channels.length) return; channels = FALLBACK_CHANNELS.slice(); if(channels.some(x=>x.group===settings.defaultCountry)) currentFilter=settings.defaultCountry; renderCountries(); renderChannels(); populateCountryOptions(); updateCountryBadge(); }
+    function primeChannels(){ if(channels.length) return; channels = FALLBACK_CHANNELS.slice(); if(channels.some(x=>x.group===settings.defaultCountry)) currentFilter=settings.defaultCountry; renderCountries(); renderChannels(); populateCountryOptions(); updateCountryBadge(); setWorldStatus(`Playlist de secours: ${channels.length} chaînes.`); }
     async function loadPlaylist(force=false){
       if(channels.length && !force){ renderCountries(); renderChannels(); return; }
       primeChannels();
       setReloadState(true);
+      setWorldStatus('Téléchargement de la playlist mondiale…');
       try{
         const controller=new AbortController();
-        const timer=setTimeout(()=>controller.abort(), 9000);
-        const res=await fetch(PLAYLIST_URL,{cache:'no-store',signal:controller.signal});
+        const timer=setTimeout(()=>controller.abort(), 20000);
+        const url = PLAYLIST_URL + (PLAYLIST_URL.includes('?') ? '&' : '?') + '_=' + Date.now();
+        const res=await fetch(url,{cache:'no-store',signal:controller.signal});
         clearTimeout(timer);
         if(!res.ok) throw new Error('HTTP '+res.status);
-        const parsed=parseM3U(await res.text()).filter(x=>x.url);
-        if(parsed.length<200) throw new Error('Playlist incomplète');
+        const text = await res.text();
+        setWorldStatus('Analyse de la playlist ('+Math.round(text.length/1024)+' Ko)…');
+        const parsed=parseM3U(text).filter(x=>x && x.url);
+        if(parsed.length < 50) throw new Error('Playlist trop courte ou vide ('+parsed.length+' entrées)');
         channels=parsed;
         settings.lastPlaylistUpdate=Date.now();
         saveSettings();
+        const nbCountries = countryCounts().length;
+        setWorldStatus(`Playlist en direct chargée : ${channels.length} chaînes / ${nbCountries} pays.`);
         toast('Playlist actualisée');
       }catch(e){
-        // Toute panne réseau (timeout, coupure, connexion lente) tombe ici : on
-        // repasse sur la liste de secours locale, sans jamais laisser planter le reste.
+        // Toute panne réseau (timeout, coupure, connexion lente, CORS) tombe ici :
+        // on repasse sur la liste de secours locale, sans jamais laisser planter le reste,
+        // et on affiche la raison exacte pour pouvoir diagnostiquer depuis le mobile.
         try{
           if(!channels.length) channels=FALLBACK_CHANNELS.slice();
           settings.lastPlaylistUpdate=Date.now();
           saveSettings();
-          toast('Flux distant lent, mode secours actif');
-        }catch(e2){ if(!channels.length) channels=FALLBACK_CHANNELS.slice(); }
+          const reason = (e && e.name==='AbortError') ? 'délai dépassé (réseau lent)' : (e && e.message) ? e.message : 'erreur inconnue';
+          setWorldStatus(`Direct indisponible (${reason}) — mode secours actif : ${channels.length} chaînes.`);
+          toast('Flux distant indisponible, mode secours actif');
+        }catch(e2){ if(!channels.length) channels=FALLBACK_CHANNELS.slice(); setWorldStatus('Erreur d\'affichage — mode secours actif.'); }
       }finally{
         // Ce bloc s'exécute TOUJOURS : le bouton ne peut plus rester bloqué sur "Chargement...".
         try{
@@ -537,7 +570,7 @@
           renderChannels();
           populateCountryOptions();
           updateCountryBadge();
-        }catch(e3){ /* on ignore une erreur d'affichage pour quand même débloquer le bouton */ }
+        }catch(e3){ console.error('[AET world] render finally', e3); }
         setReloadState(false);
       }
     }
