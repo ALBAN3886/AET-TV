@@ -1,65 +1,32 @@
-/* ============================================================
- * huhu-stream-home-integration.js — v4
- * ------------------------------------------------------------
- * Userscript optionnel pour huhu.to
- * Ajoute une carte AET sur la page d'accueil avec favoris locaux.
- * ============================================================ */
-(function () {
+/* AET ALBAN ELOH TECHNOLOGIE — Huhu Quick Launcher v4 */
+(function(){
   'use strict';
-
-  const ROOT_ID = 'aet-home-card-v4';
-  const STORAGE_KEY = 'aet_v4_fav';
-
-  function safeJsonParse(value, fallback) {
-    try { return JSON.parse(value) ?? fallback; } catch { return fallback; }
-  }
-
-  function getFavorites() {
-    return safeJsonParse(localStorage.getItem(STORAGE_KEY), []);
-  }
-
-  function createCard() {
-    if (document.getElementById(ROOT_ID)) return;
-
-    const host = document.querySelector('main') || document.body;
-    if (!host) return;
-
-    const favorites = getFavorites();
-    const card = document.createElement('section');
-    card.id = ROOT_ID;
-    card.style.cssText = [
-      'margin:16px 0',
-      'padding:16px',
-      'border-radius:18px',
-      'background:linear-gradient(135deg,#8e0610,#b30814)',
-      'color:#fff',
-      'box-shadow:0 10px 24px rgba(0,0,0,.18)'
-    ].join(';');
-
-    card.innerHTML = `
-      <div style="font-weight:800;font-size:18px;margin-bottom:8px">ALBAN ELOH TECHNOLOGIE</div>
-      <div style="font-size:13px;opacity:.92;margin-bottom:12px">Panneau rapide AET V4</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-        <a href="/" style="background:#fff;color:#8e0610;padding:10px 14px;border-radius:999px;font-weight:800;text-decoration:none">Ouvrir le site</a>
-      </div>
-      <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Favoris détectés : ${favorites.length}</div>
-      <div style="display:grid;gap:8px">
-        ${favorites.slice(0, 5).map(item => `
-          <div style="background:rgba(255,255,255,.12);padding:10px 12px;border-radius:12px">
-            <div style="font-weight:700">${String(item.name || item.title || 'Sans titre').replace(/</g,'&lt;')}</div>
-            <div style="font-size:12px;opacity:.85;word-break:break-all">${String(item.url || '').replace(/</g,'&lt;')}</div>
-          </div>
-        `).join('') || '<div style="font-size:13px;opacity:.9">Aucun favori local trouvé.</div>'}
-      </div>
-    `;
-
-    host.prepend(card);
-  }
-
-  function boot() {
-    createCard();
-  }
-
-  boot();
-  setInterval(boot, 2000);
+  const ID='aet-alban-fab-v4';
+  if(document.getElementById(ID)) return;
+  const style=document.createElement('style');
+  style.textContent=`
+    #${ID}{position:fixed;right:14px;bottom:14px;z-index:999999;font-family:Inter,system-ui,sans-serif}
+    #${ID} .fab{width:60px;height:60px;border:none;border-radius:18px;cursor:pointer;background:linear-gradient(135deg,#4f8ef7,#7c3aed);color:#fff;font-weight:900;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+    #${ID} .panel{position:absolute;right:0;bottom:74px;width:min(92vw,370px);display:none;padding:14px;border-radius:18px;background:rgba(8,14,28,.96);color:#eef4ff;border:1px solid rgba(148,163,184,.18);box-shadow:0 24px 60px rgba(0,0,0,.4);backdrop-filter:blur(12px)}
+    #${ID}.open .panel{display:block}
+    #${ID} .title{font-weight:900;font-size:14px;margin-bottom:10px}
+    #${ID} .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    #${ID} .btn{min-height:40px;border:none;border-radius:12px;padding:0 12px;font-weight:800;cursor:pointer}
+    #${ID} .primary{background:linear-gradient(135deg,#4f8ef7,#7c3aed);color:#fff}
+    #${ID} .ghost{background:rgba(255,255,255,.06);color:#eef4ff;border:1px solid rgba(148,163,184,.18)}
+    #${ID} .field{margin:10px 0 8px} #${ID} input{width:100%;min-height:42px;border-radius:12px;border:1px solid rgba(148,163,184,.18);background:rgba(255,255,255,.05);color:#fff;padding:0 12px;outline:none}
+    #${ID} .note{margin-top:8px;font-size:12px;color:#9aa7c7}
+  `;
+  document.head.appendChild(style);
+  const box=document.createElement('div'); box.id=ID;
+  box.innerHTML=`<div class="panel"><div class="title">AET ALBAN ELOH TECHNOLOGIE</div><div class="grid"><button class="btn primary" data-go="https://huhu.to/live">TV Live</button><button class="btn ghost" data-go="https://huhu.to/movies">Films</button><button class="btn ghost" data-go="https://huhu.to/series">Séries</button><button class="btn ghost" data-copy="1">Copier URL</button></div><div class="field"><input id="aetInput" type="url" placeholder="Coller une URL huhu / HLS / MP4" /></div><div class="grid"><button class="btn primary" data-open-input="1">Ouvrir</button><button class="btn ghost" data-open-home="1">Accueil Huhu</button></div><div class="note">Lanceur rapide flottant signé AET</div></div><button class="fab">AET</button>`;
+  document.body.appendChild(box);
+  box.querySelector('.fab').addEventListener('click',()=>box.classList.toggle('open'));
+  box.addEventListener('click',async(e)=>{
+    const route=e.target.closest('[data-go]')?.dataset.go;
+    if(route) location.href=route;
+    if(e.target.closest('[data-copy]')){ try{ await navigator.clipboard.writeText(location.href); }catch{} }
+    if(e.target.closest('[data-open-input]')){ const v=box.querySelector('#aetInput').value.trim(); if(v) location.href=v; }
+    if(e.target.closest('[data-open-home]')) location.href='https://huhu.to/';
+  });
 })();
