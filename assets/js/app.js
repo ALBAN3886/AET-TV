@@ -469,8 +469,10 @@ const loadCatalog = async (force = false) => {
       if (response.ok) text = await response.text();
     } catch {}
     if (!text.includes('#EXTINF')) {
-      const proxyResponse = await fetch(CORS_PROXY + encodeURIComponent(PLAYLIST_URL));
-      text = await proxyResponse.text();
+      try {
+        const proxyResponse = await fetch(CORS_PROXY + encodeURIComponent(PLAYLIST_URL));
+        if (proxyResponse.ok) text = await proxyResponse.text();
+      } catch {}
     }
     const parsed = parseM3U(text).slice(0, 320);
     if (!parsed.length) throw new Error('Catalogue vide');
@@ -1005,7 +1007,20 @@ const boot = async () => {
   applySettings();
   wireEvents();
   updateProfilePanel();
-  await Promise.all([loadCatalog(), registerPwa()]);
+
+  try {
+    await loadCatalog();
+  } catch (error) {
+    console.error('Chargement du catalogue impossible :', error);
+    notify('Catalogue indisponible pour le moment. Nouvelle tentative possible dans les réglages.', 'error');
+  }
+
+  try {
+    await registerPwa();
+  } catch (error) {
+    console.error('PWA indisponible :', error);
+  }
+
   buildHero();
   renderSections();
   preloadHeroAssets();
@@ -1021,4 +1036,5 @@ const boot = async () => {
 boot().catch((error) => {
   console.error(error);
   notify('Erreur critique durant le démarrage de AET TV.', 'error');
+  els.splash.classList.add('is-hidden');
 });
