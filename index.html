@@ -2,321 +2,625 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AET ALBAN ELOH TECHNOLOGIE — Huhu Navigator Pro v4</title>
-  <meta name="description" content="Navigateur Huhu moderne avec mode lanceur rapide mobile, mode intégré optionnel, favoris et lecteur HLS/MP4/embed." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>ALBAN ELOH TECHNOLOGIE — V5</title>
+  <meta name="description" content="ALBAN ELOH TECHNOLOGIE V5 - chaînes du monde entier, menu plein écran, YouTube réel, accès huhu.to." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
   <style>
-    :root{--bg:#08111f;--bg2:#0d1730;--card:rgba(13,23,48,.86);--card2:rgba(18,29,58,.92);--txt:#eef4ff;--muted:#9cabca;--line:rgba(148,163,184,.18);--blue:#4f8ef7;--violet:#7c3aed;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--radius:22px;--shadow:0 24px 60px rgba(0,0,0,.36)}
-    *{box-sizing:border-box} html,body{margin:0;padding:0} body{font-family:Inter,system-ui,sans-serif;color:var(--txt);min-height:100vh;background:radial-gradient(circle at top left,rgba(79,142,247,.14),transparent 28%),radial-gradient(circle at bottom right,rgba(124,58,237,.12),transparent 24%),linear-gradient(180deg,#06101d,#0a1426 48%,#08101c)}
-    button,input,select{font:inherit} a{text-decoration:none;color:inherit}
-    .app{max-width:1720px;margin:0 auto;padding:16px 12px 28px}
-    .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-bottom:16px}.card{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .hero-main{padding:22px;position:relative;overflow:hidden}.hero-main:before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(79,142,247,.10),transparent 40%,rgba(124,58,237,.08));pointer-events:none}
-    .badge{display:inline-flex;gap:8px;align-items:center;padding:8px 14px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.22);font-weight:800;font-size:12px;color:#d7e6ff;margin-bottom:12px}
-    h1{margin:0 0 10px;font-size:32px;line-height:1.04;letter-spacing:-.03em}.lead{margin:0;color:var(--muted);font-size:15px;max-width:860px}.notice{margin-top:12px;padding:11px 12px;border-radius:14px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.20);color:#fde68a;font-size:13px}
-    .hero-side{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{padding:14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.stat .k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.stat .v{font-size:18px;font-weight:900;line-height:1.15}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{border:none;cursor:pointer;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted);font-weight:800}.tab.active{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;border-color:transparent;box-shadow:0 10px 22px rgba(79,142,247,.28)}
-    .pane{display:none}.pane.active{display:block}
-    .browser{padding:14px}.toolbar{display:grid;grid-template-columns:auto auto auto minmax(240px,1fr) auto auto;gap:8px;align-items:center;margin-bottom:10px}.nav-btn,.short-btn,.btn{min-height:42px;border:none;border-radius:12px;padding:0 14px;font-weight:800;cursor:pointer;transition:transform .18s,opacity .18s}.nav-btn:hover,.short-btn:hover,.btn:hover{transform:translateY(-1px)}.nav-btn,.short-btn{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--txt)}
-    .btn-primary{background:linear-gradient(135deg,var(--blue),#2563eb 55%,var(--violet));color:#fff;box-shadow:0 12px 24px rgba(79,142,247,.26)}.btn-secondary{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--txt)}.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 12px 24px rgba(16,185,129,.18)}.btn-danger{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.24);color:#fecaca}.btn-ghost{background:transparent;color:var(--muted);border:1px dashed var(--line)}
-    .url{width:100%;min-height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--txt);outline:none}.url:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
-    .shortcut-row,.mode-row,.actions{display:flex;gap:8px;flex-wrap:wrap}.shortcut-row{margin-bottom:10px}.mode-row{margin-bottom:12px}.actions{margin-top:12px}.pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--muted)}.pill.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.22);color:#bbf7d0}.pill.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.22);color:#fde68a}.pill.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.24);color:#fecaca}.seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{min-height:38px;border:none;border-radius:999px;padding:0 14px;font-weight:800;cursor:pointer;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted)}.seg button.active{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;border-color:transparent}
-    .launcher{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.launch-card{padding:14px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.06)}.launch-card.active{border-color:rgba(79,142,247,.45);box-shadow:0 0 0 1px rgba(79,142,247,.2) inset}.launch-ico{font-size:26px;margin-bottom:10px}.launch-title{font-size:16px;font-weight:900;margin-bottom:4px}.launch-sub{font-size:12px;color:var(--muted);min-height:34px}.launch-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-    .search-box{display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:8px;margin-top:12px;padding:14px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-    .viewer-wrap{margin-top:12px}.viewer-wrap.hidden,.launcher-wrap.hidden{display:none}.viewer{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#050b16;height:calc(100vh - 360px);min-height:500px;position:relative}.viewer iframe{width:100%;height:100%;border:0;background:#fff}.viewer-note{position:absolute;left:12px;right:12px;bottom:12px;padding:10px 12px;border-radius:14px;background:rgba(8,14,28,.82);border:1px solid rgba(255,255,255,.08);color:#d7e6ff;font-size:12px}
-    .blank-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(6,10,18,.88),rgba(6,10,18,.94));text-align:center}.blank-overlay.hidden{display:none}.blank-box{max-width:760px}.blank-ico{font-size:54px;margin-bottom:10px}.blank-box h3{margin:0 0 10px;font-size:24px}.blank-box p{margin:0;color:var(--muted);font-size:15px}.blank-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px}
-    .grid{display:grid;grid-template-columns:minmax(0,1.22fr) 390px;gap:16px}.player-card,.side-card{padding:16px}.player-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.player-head h2,.side-card h3{margin:0}.muted{color:var(--muted);font-size:13px}.field-wide,.field{display:flex;flex-direction:column;gap:6px}.field-wide{margin-bottom:12px}.form-grid{display:grid;grid-template-columns:1.3fr .8fr;gap:10px;margin-bottom:12px}label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-    .input,.select,.search{min-height:46px;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:rgba(8,14,28,.62);color:var(--txt);outline:none}.input:focus,.select:focus,.search:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(79,142,247,.14)}
-    .quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);cursor:pointer;font-size:13px;font-weight:700}.frame{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#020617;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center}.frame video,.frame iframe{width:100%;height:100%;border:0;background:#000}.hidden{display:none !important}.placeholder{padding:26px;text-align:center;max-width:680px}.placeholder .emo{font-size:56px;margin-bottom:8px}.placeholder h3{margin:0 0 8px}.placeholder p{margin:0;color:var(--muted)}
-    .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.meta-card{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.meta-k{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.meta-v{font-size:14px;font-weight:800;word-break:break-word}
-    .list{display:flex;flex-direction:column;gap:10px;max-height:760px;overflow:auto}.item{padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}.item-title{font-size:15px;font-weight:900;line-height:1.3}.item-sub{font-size:12px;color:var(--muted);margin-top:4px;word-break:break-all}.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 10px}.tag{padding:4px 8px;border-radius:999px;background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.2);color:#d8e7ff;font-size:11px;font-weight:800}.tag.live{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.24);color:#fecaca}.tag.ok{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.2);color:#bbf7d0}.tag.warn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.2);color:#fde68a}.item-actions{display:flex;gap:8px;flex-wrap:wrap}.mini{min-height:36px;padding:0 12px;border-radius:10px;font-size:13px}.empty{padding:20px;border-radius:16px;border:1px dashed var(--line);text-align:center;color:var(--muted)}
-    .foot{margin-top:18px;padding:14px 18px;border-radius:18px;text-align:center;color:#cbd6ed;background:rgba(255,255,255,.03);border:1px solid var(--line);font-size:13px}.foot strong{color:#fff}
-    @media (max-width:1280px){.grid{grid-template-columns:1fr}.launcher{grid-template-columns:repeat(3,minmax(0,1fr))}.viewer{height:66vh}}
-    @media (max-width:920px){.hero{grid-template-columns:1fr}.toolbar{grid-template-columns:auto auto auto 1fr auto auto}.form-grid,.meta{grid-template-columns:1fr}.viewer{height:60vh;min-height:420px}.launcher{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:680px){.app{padding:12px 10px 22px}h1{font-size:24px}.lead{font-size:14px}.hero-main,.browser,.player-card,.side-card{padding:14px}.hero-side{padding:12px}.toolbar{grid-template-columns:repeat(3,1fr)}.toolbar .url{grid-column:1/-1}.toolbar .btn-primary,.toolbar .btn-secondary{width:100%}.shortcut-row,.actions,.blank-actions,.item-actions,.quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}.short-btn,.btn,.mini,.chip{width:100%}.search-box{grid-template-columns:1fr}.viewer{height:56vh;min-height:340px}}
+    :root{
+      --red:#bf111b;
+      --red-dark:#7d0000;
+      --red-soft:#e35d5d;
+      --gold:#ffb703;
+      --bg1:#e75a58;
+      --bg2:#d83f3f;
+      --paper:#ffffff;
+      --text:#1f1f1f;
+      --muted:#767676;
+      --line:#e8e8e8;
+      --success:#0f9d58;
+      --shadow-sm:0 3px 10px rgba(0,0,0,.08);
+      --shadow:0 12px 28px rgba(0,0,0,.16);
+      --radius:16px;
+      --bottom:74px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;min-height:100%;font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text)}
+    body{
+      background:
+        radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 28%),
+        linear-gradient(135deg, rgba(255,255,255,.04) 25%, transparent 25%) 0 0/28px 28px,
+        linear-gradient(225deg, rgba(0,0,0,.03) 25%, transparent 25%) 0 0/28px 28px,
+        linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+    }
+    button,input,select{font:inherit}
+    .app{max-width:560px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:var(--bottom)}
+
+    .topbar{
+      position:sticky;top:0;z-index:60;height:64px;
+      display:grid;grid-template-columns:44px 1fr 44px;align-items:center;
+      padding:0 10px;color:#fff;
+      background:linear-gradient(180deg,var(--red) 0%, var(--red-dark) 100%);
+      box-shadow:0 3px 18px rgba(0,0,0,.2)
+    }
+    .icon-btn{width:40px;height:40px;border:none;border-radius:12px;background:transparent;color:#fff;display:grid;place-items:center;cursor:pointer}
+    .icon-btn:hover,.icon-btn:active{background:rgba(255,255,255,.14)}
+    .brand{text-align:center;overflow:hidden}
+    .brand strong{display:block;font-size:14px;font-weight:800;line-height:1.15;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand span{display:block;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-top:4px;opacity:.94}
+
+    .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:69}
+    .drawer-mask.show{opacity:1;pointer-events:auto}
+    .drawer{
+      position:fixed;inset:0;z-index:70;background:linear-gradient(180deg,var(--red) 0%, var(--red-dark) 100%);color:#fff;
+      transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column
+    }
+    .drawer.open{transform:none}
+    .drawer-head{padding:26px 18px 18px;border-bottom:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+    .drawer-head .id{display:flex;gap:14px;align-items:flex-start}
+    .drawer-badge{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-weight:900;font-size:18px}
+    .drawer-head h2{margin:0;font-size:22px;line-height:1.05;font-weight:900}
+    .drawer-head p{margin:7px 0 0;font-size:12px;opacity:.9;max-width:260px}
+    .drawer-close{width:42px;height:42px;border:none;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
+    .drawer-body{padding:12px 14px 30px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+    .drawer-item{width:100%;display:flex;align-items:center;gap:14px;padding:16px 14px;border:none;background:rgba(255,255,255,.08);color:#fff;border-radius:16px;text-align:left;font-size:15px;font-weight:700;cursor:pointer}
+    .drawer-item:hover,.drawer-item:active{background:rgba(255,255,255,.14)}
+    .drawer-item .ico{font-size:20px;width:24px;text-align:center}
+    .drawer-mini{padding:10px 14px;font-size:13px;font-weight:700;border-radius:12px;background:rgba(255,255,255,.12)}
+
+    .screen{display:none;padding:14px 12px 18px;animation:fade .22s ease}
+    .screen.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+    .glass{
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:16px;color:#fff;padding:12px 14px;margin-bottom:12px
+    }
+    .glass strong{font-size:12px;letter-spacing:.06em}
+    .glass p{margin:5px 0 0;font-size:12px;line-height:1.45;opacity:.95}
+    .stats{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--red-dark);padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900}
+
+    .search-wrap{position:relative;margin-bottom:12px}
+    .search-input{width:100%;height:48px;border:none;border-radius:14px;padding:0 44px 0 44px;background:#fff;box-shadow:var(--shadow-sm);font-size:15px;outline:none}
+    .search-input:focus{box-shadow:0 0 0 3px rgba(255,255,255,.36), var(--shadow-sm)}
+    .search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--red)}
+    .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;border-radius:10px;background:transparent;color:#888;cursor:pointer;display:none}
+    .search-clear.show{display:grid;place-items:center}
+
+    .section-title{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;margin:8px 4px 12px}
+    .section-count{background:#fff;color:var(--red-dark);padding:5px 9px;border-radius:999px;font-size:10px;font-weight:900}
+
+    .chips{display:flex;gap:8px;overflow:auto;padding:2px 0 12px;scrollbar-width:none}
+    .chips::-webkit-scrollbar{display:none}
+    .chip{flex:0 0 auto;border:none;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.24);color:#fff;padding:9px 14px;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap}
+    .chip.active{background:#fff;color:var(--red-dark);border-color:#fff}
+
+    .card{background:#fff;border-radius:20px;padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+    .card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+    .card-h h3{margin:0;font-size:16px;color:var(--red-dark);font-weight:900}
+    .card-h small{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+    .channels-grid{display:grid;grid-template-columns:1fr;gap:10px}
+    .channel{background:#fff;border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm);cursor:pointer;border:2px solid transparent;position:relative}
+    .channel:hover,.channel:active{border-color:var(--red);transform:translateY(-1px)}
+    .logo{width:52px;height:52px;border-radius:14px;background:#f5f5f5;overflow:hidden;display:grid;place-items:center;flex:0 0 52px;color:var(--red-dark);font-size:22px;font-weight:900}
+    .logo img{width:100%;height:100%;object-fit:contain;background:#fff}
+    .cinf{flex:1;min-width:0}
+    .cname{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+    .cmeta{margin-top:3px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .badge{background:#fef2f2;color:var(--red-dark);padding:3px 7px;border-radius:8px;font-weight:800;font-size:10px}
+    .live{position:absolute;top:8px;right:8px;background:var(--red);color:#fff;padding:3px 7px;border-radius:6px;font-size:9px;font-weight:900;letter-spacing:.05em}
+
+    .country-list{display:flex;flex-direction:column;gap:10px}
+    .country-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:3px solid var(--red-dark);border-radius:16px;padding:14px 16px;color:var(--red-dark);font-size:16px;font-weight:900;cursor:pointer;box-shadow:var(--shadow-sm)}
+    .country-left{display:flex;align-items:center;gap:12px}
+    .country-flag{font-size:25px}
+    .count{background:var(--red-dark);color:#fff;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:900}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .field{margin-bottom:10px}
+    .field label{display:block;margin-bottom:6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+    .input,.select{width:100%;min-height:44px;border:2px solid var(--line);border-radius:12px;padding:0 12px;background:#fff;outline:none}
+    .input:focus,.select:focus{border-color:var(--red)}
+    .btn{min-height:44px;border:none;border-radius:12px;padding:0 12px;font-weight:900;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    .btn-red{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff}
+    .btn-light{background:#f5f5f5;color:var(--red-dark);border:2px solid var(--line)}
+    .btn-soft{background:#ffe8e8;color:var(--red-dark);border:2px solid #f2c6c6}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#f59e0b);color:#3f2d00}
+
+    .quick-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .tile{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;border:none;border-radius:14px;padding:14px 12px;text-align:left;cursor:pointer;box-shadow:var(--shadow-sm)}
+    .tile.dark{background:linear-gradient(135deg,#1f2937,#111827)}
+    .tile .ti{font-size:22px;display:block;margin-bottom:8px}
+    .tile .tt{display:block;font-size:13px;font-weight:900}
+    .tile .ts{display:block;font-size:11px;opacity:.84;margin-top:3px}
+
+    .player-box{position:relative;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .player-box iframe,.player-box video{width:100%;height:100%;border:0;background:#000}
+    .wm{position:absolute;top:10px;right:10px;z-index:4;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none}
+    .placeholder{padding:20px;text-align:center;color:#fff;max-width:330px}
+    .placeholder .em{font-size:44px;margin-bottom:10px}.placeholder h4{margin:0 0 8px;font-size:18px}.placeholder p{margin:0;font-size:13px;color:rgba(255,255,255,.84);line-height:1.5}
+    .loading{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;font-size:13px}
+    .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    .hidden{display:none !important}
+    .meta{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
+    .meta-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fafafa}
+    .meta-item .k{font-size:10px;font-weight:900;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+    .meta-item .v{font-size:12.5px;font-weight:700;word-break:break-word}
+
+    .event-card{background:#fff;border:3px solid var(--red-dark);border-radius:16px;padding:14px 12px;box-shadow:var(--shadow-sm);margin-bottom:12px}
+    .event-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px}.event-team{text-align:center}.event-team .fl{font-size:40px}.event-team .nm{font-size:14px;font-weight:800;color:var(--red-dark);margin-top:6px}.status-pill{background:#efefef;color:#222;padding:10px 14px;border-radius:999px;font-size:14px;font-weight:900;text-align:center}.event-meta{display:flex;justify-content:center;gap:8px;color:#666;font-size:12px;margin-bottom:8px}.event-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#666;font-size:12px}
+
+    .info{margin-top:8px;padding:10px 12px;border-radius:12px;background:#fff8e7;border:1px solid #f4d58d;color:#7c5a00;font-size:12px;line-height:1.45}
+    .success{margin-top:8px;padding:10px 12px;border-radius:12px;background:#edfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:12px;line-height:1.45}
+    .empty{background:#fff;border-radius:16px;padding:28px 18px;text-align:center;color:var(--muted)}
+    .empty .em{font-size:42px;margin-bottom:8px}.empty h4{margin:0 0 6px;font-size:16px;color:var(--text)}.empty p{margin:0;font-size:13px}
+
+    .fav-list{display:flex;flex-direction:column;gap:10px}.fav-item{background:#fff7f7;border:2px solid #f2cccc;border-radius:14px;padding:12px}.fav-item h4{margin:0 0 4px;font-size:14px;color:var(--red-dark)}.fav-item p{margin:0 0 8px;font-size:11px;color:#888;word-break:break-all}
+
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);height:70px;background:#fff;display:grid;grid-template-columns:repeat(5,1fr);z-index:58;box-shadow:0 -8px 24px rgba(0,0,0,.14);border-top:1px solid var(--line)}
+    .bottom-btn{border:none;background:transparent;color:#7c7c7c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer;position:relative}.bottom-btn.active{color:var(--red-dark)}.bottom-btn.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;background:var(--red);border-radius:0 0 4px 4px}.bottom-btn .ico{font-size:19px}
+
+    @media (min-width:640px){.channels-grid{grid-template-columns:1fr 1fr}.meta{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
-  <div class="app">
-    <section class="hero">
-      <div class="card hero-main">
-        <div class="badge">⚡ AET ALBAN ELOH TECHNOLOGIE</div>
-        <h1>Huhu Navigator Pro v4</h1>
-        <p class="lead">Correction définitive du problème visible sur votre capture : au lieu d’afficher une iframe blanche ou bloquée sur mobile, cette version passe par un <strong>mode lanceur rapide</strong> qui ouvre directement les bonnes sections de <strong>huhu.to</strong> sans jamais taper.</p>
-        <div class="notice">Sur téléphone, le mode recommandé est maintenant <strong>Lancement rapide</strong>. Le mode <strong>Intégration</strong> reste disponible en option pour test sur navigateurs compatibles.</div>
+  <div class="drawer-mask" id="drawerMask"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div class="id">
+        <div class="drawer-badge">AET</div>
+        <div>
+          <h2>ALBAN ELOH<br>TECHNOLOGIE</h2>
+          <p>Version V5 · menu plein écran · IPTV mondiale · YouTube réel · accès huhu.to</p>
+        </div>
       </div>
-      <div class="card hero-side">
-        <div class="stat"><div class="k">Signature</div><div class="v">AET ALBAN ELOH TECHNOLOGIE</div></div>
-        <div class="stat"><div class="k">Correctif</div><div class="v">Mobile anti-écran blanc</div></div>
-        <div class="stat"><div class="k">Navigation</div><div class="v">Sans saisie</div></div>
-        <div class="stat"><div class="k">Lecteur</div><div class="v">HLS · MP4 · Embed</div></div>
-      </div>
-    </section>
-
-    <div class="tabs">
-      <button class="tab active" data-tab="browser">🌐 Navigateur Huhu</button>
-      <button class="tab" data-tab="player">▶ Lecteur intégré</button>
-      <button class="tab" data-tab="library">⭐ Favoris</button>
+      <button class="drawer-close" id="drawerClose">✕</button>
     </div>
+    <div class="drawer-body">
+      <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
+      <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
+      <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
+      <button class="drawer-item" data-screen="huhu"><span class="ico">🎬</span><span>huhu.to</span></button>
+      <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
+      <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
+      <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
+      <div class="drawer-mini">Source TV mondiale : iptv-org index.country.m3u</div>
+      <div class="drawer-mini">huhu.to : accès rapide par ouverture externe si le site refuse l’intégration</div>
+      <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
+      <button class="drawer-item" id="shareBtn"><span class="ico">📤</span><span>Partager</span></button>
+    </div>
+  </aside>
 
-    <section class="pane active" id="pane-browser">
-      <div class="card browser">
-        <div class="toolbar">
-          <button class="nav-btn" id="backBtn">◀</button>
-          <button class="nav-btn" id="nextBtn">▶</button>
-          <button class="nav-btn" id="reloadBtn">⟳</button>
-          <input id="browserUrl" class="url" type="url" value="https://huhu.to/live" spellcheck="false" />
-          <button class="btn btn-primary" id="goBtn">Aller</button>
-          <button class="btn btn-secondary" id="homeBtn">🏠 Accueil</button>
-        </div>
+  <div class="app">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="brand"><strong id="titleMain">ALBAN ELOH TECHNOLOGIE</strong><span id="titleSub">CHAÎNES DU MONDE</span></div>
+      <button class="icon-btn" id="searchTopBtn" aria-label="Recherche">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </header>
 
-        <div class="shortcut-row">
-          <button class="short-btn" data-url="https://huhu.to/">Accueil</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🔴 TV en direct</button>
-          <button class="short-btn" data-url="https://huhu.to/movies">🎬 Films</button>
-          <button class="short-btn" data-url="https://huhu.to/series">📺 Séries</button>
-          <button class="short-btn" data-url="https://huhu.to/search">🔎 Recherche</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇫🇷 TV France</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇺🇸 TV USA</button>
-          <button class="short-btn" data-url="https://huhu.to/live">🇬🇧 TV UK</button>
-        </div>
+    <section class="screen active" id="screen-live-tv">
+      <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong><p>Source mise à jour : iptv-org index.country.m3u</p></div><div class="pill" id="totalCount">…</div></div>
+      <div class="search-wrap">
+        <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input class="search-input" id="channelSearch" type="text" placeholder="Rechercher une chaîne ou un pays" />
+        <button class="search-clear" id="searchClear">✕</button>
+      </div>
+      <div class="chips" id="filterChips"></div>
+      <div class="section-title"><span id="listTitle">Toutes les chaînes</span><span class="section-count" id="shownCount">0</span></div>
+      <div id="channelsWrap"></div>
+    </section>
 
-        <div class="mode-row">
-          <div class="seg">
-            <button id="modeLauncherBtn" class="active">Mode lancement rapide</button>
-            <button id="modeIntegratedBtn">Mode intégration</button>
-          </div>
-          <span class="pill ok" id="modePill">Mode mobile recommandé actif</span>
-        </div>
+    <section class="screen" id="screen-countries">
+      <div class="glass stats"><div><strong>🌍 Navigation par pays</strong><p>Choisissez un pays pour voir ses chaînes</p></div><div class="pill" id="countryCount">…</div></div>
+      <div class="search-wrap">
+        <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input class="search-input" id="countrySearch" type="text" placeholder="Rechercher un pays" />
+      </div>
+      <div class="country-list" id="countryWrap"></div>
+    </section>
 
-        <div class="launcher-wrap" id="launcherWrap">
-          <div class="launcher" id="launcherGrid"></div>
-          <div class="search-box">
-            <input id="quickSearchInput" class="input" type="text" placeholder="Recherche rapide sur huhu.to" />
-            <button class="btn btn-primary" id="quickSearchHereBtn">Ouvrir ici</button>
-            <button class="btn btn-secondary" id="quickSearchTabBtn">Nouvel onglet</button>
-          </div>
-        </div>
-
-        <div class="viewer-wrap hidden" id="viewerWrap">
-          <div class="viewer">
-            <iframe id="huhuFrame" src="about:blank" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen></iframe>
-            <div class="blank-overlay hidden" id="blankOverlay">
-              <div class="blank-box">
-                <div class="blank-ico">🛡️</div>
-                <h3>Intégration bloquée par le navigateur</h3>
-                <p>Le chargement intégré de huhu.to est parfois refusé sur mobile. Utilisez le mode lancement rapide pour ouvrir la bonne page sans saisie, ou ouvrez la page courante directement.</p>
-                <div class="blank-actions">
-                  <button class="btn btn-primary" id="openCurrentHereBtn">Ouvrir cette page ici</button>
-                  <button class="btn btn-secondary" id="openCurrentTabBtn">Ouvrir dans un nouvel onglet</button>
-                  <button class="btn btn-ghost" id="backLauncherBtn">Revenir au mode rapide</button>
-                </div>
-              </div>
-            </div>
-            <div class="viewer-note">Astuce : si vous voyez une page blanche ou « n’autorise pas la connexion », revenez sur <strong>Mode lancement rapide</strong>.</div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="btn btn-success" id="captureBrowserUrlBtn">📥 Envoyer cette URL au lecteur</button>
-          <button class="btn btn-secondary" id="openBrowserNewTabBtn">↗ Ouvrir dans un nouvel onglet</button>
-          <button class="btn btn-secondary" id="openBrowserSameTabBtn">⇢ Ouvrir ici</button>
-          <button class="btn btn-ghost" id="saveBrowserFavBtn">＋ Enregistrer en favoris</button>
-        </div>
+    <section class="screen" id="screen-youtube">
+      <div class="glass stats"><div><strong>▶️ YouTube réel</strong><p>Recherche et ouverture directe</p></div><div class="pill">OPEN</div></div>
+      <div class="card">
+        <div class="card-h"><h3>Recherche YouTube</h3><small>Onglet réel</small></div>
+        <div class="field"><input class="input" id="ytSearch" type="text" placeholder="Ex : football, musique, film, actualité" /></div>
+        <div class="row"><button class="btn btn-red" id="ytSearchBtn">Rechercher</button><button class="btn btn-light" id="ytHomeBtn">Ouvrir YouTube</button></div>
+        <div class="info">La recherche YouTube s’ouvre en vrai lien YouTube dans un nouvel onglet pour éviter les blocages d’intégration.</div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Lire une vidéo</h3><small>URL ou ID</small></div>
+        <div class="field"><label>Lien YouTube</label><input class="input" id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." /></div>
+        <div class="row"><button class="btn btn-red" id="ytPlayBtn">Lire ici</button><button class="btn btn-soft" id="ytSendBtn">Vers lecteur</button></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Aperçu</h3><small>Embed</small></div>
+        <div class="player-box" style="aspect-ratio:16/9"><iframe id="ytFrame" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?rel=0" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Raccourcis YouTube</h3><small>Ouverture directe</small></div>
+        <div class="quick-tiles" id="ytTiles"></div>
       </div>
     </section>
 
-    <section class="pane" id="pane-player">
-      <div class="grid">
-        <div class="card player-card">
-          <div class="player-head">
-            <div>
-              <h2>Lecteur intégré</h2>
-              <div class="muted">Lit HLS, MP4 / WebM, YouTube, Vimeo et embeds génériques.</div>
-            </div>
-            <div class="actions" style="margin:0">
-              <button class="btn btn-secondary" id="copyPlayerUrlBtn">Copier l’URL</button>
-              <button class="btn btn-secondary" id="openPlayerNewTabBtn">Nouvel onglet</button>
-              <button class="btn btn-danger" id="clearPlayerBtn">Vider</button>
-            </div>
-          </div>
-          <div class="field-wide">
-            <label for="streamUrl">URL du flux</label>
-            <input id="streamUrl" class="input" type="url" placeholder="https://.../playlist.m3u8 ou https://huhu.to/watch?..." />
-          </div>
-          <div class="form-grid">
-            <div class="field">
-              <label for="streamTitle">Titre affiché</label>
-              <input id="streamTitle" class="input" type="text" placeholder="Nom de la chaîne ou du contenu" />
-            </div>
-            <div class="field">
-              <label for="streamType">Type</label>
-              <select id="streamType" class="select">
-                <option value="auto">Détection automatique</option>
-                <option value="hls">HLS (.m3u8)</option>
-                <option value="video">Vidéo directe</option>
-                <option value="youtube">YouTube</option>
-                <option value="vimeo">Vimeo</option>
-                <option value="embed">Embed / Iframe</option>
-              </select>
-            </div>
-          </div>
-          <div class="quick">
-            <button class="chip" data-example="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">Exemple HLS</button>
-            <button class="chip" data-example="https://www.w3schools.com/html/mov_bbb.mp4">Exemple MP4</button>
-            <button class="chip" data-example="https://www.youtube.com/watch?v=jNQXAC9IVRw">Exemple YouTube</button>
-          </div>
-          <div class="actions" style="margin-top:0">
-            <button class="btn btn-primary" id="playBtn">▶ Lire</button>
-            <button class="btn btn-success" id="savePlayerFavBtn">＋ Enregistrer</button>
-            <button class="btn btn-ghost" id="resetPlayerFormBtn">Réinitialiser</button>
-          </div>
-          <div class="frame">
-            <div class="placeholder" id="playerPlaceholder"><div class="emo">📺</div><h3>Prêt pour la lecture</h3><p>Envoyez une URL depuis le navigateur Huhu ou collez un lien de flux.</p></div>
-            <video id="videoPlayer" class="hidden" controls playsinline></video>
-            <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-          </div>
-          <div class="meta">
-            <div class="meta-card"><div class="meta-k">Titre</div><div class="meta-v" id="metaTitle">Aucun flux chargé</div></div>
-            <div class="meta-card"><div class="meta-k">Type</div><div class="meta-v" id="metaType">—</div></div>
-            <div class="meta-card"><div class="meta-k">URL</div><div class="meta-v" id="metaUrl">—</div></div>
-          </div>
+    <section class="screen" id="screen-huhu">
+      <div class="glass stats"><div><strong>🎬 huhu.to</strong><p>Accès rapide films, séries, live et recherche</p></div><div class="pill">HUHU</div></div>
+      <div class="card">
+        <div class="card-h"><h3>Accès rapide huhu.to</h3><small>officiel</small></div>
+        <div class="quick-tiles">
+          <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span><span class="ts">ouvrir</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/live"><span class="ti">📡</span><span class="tt">TV live</span><span class="ts">ouvrir</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/movies"><span class="ti">🎬</span><span class="tt">Films</span><span class="ts">ouvrir</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/series"><span class="ti">📺</span><span class="tt">Séries</span><span class="ts">ouvrir</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/search"><span class="ti">🔎</span><span class="tt">Recherche</span><span class="ts">ouvrir</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/trending"><span class="ti">🔥</span><span class="tt">Tendance</span><span class="ts">ouvrir</span></button>
         </div>
-        <aside>
-          <div class="card side-card" style="margin-bottom:16px">
-            <h3>Raccourcis chaînes</h3>
-            <div class="muted" style="margin:4px 0 12px">Ouverture rapide sans saisie</div>
-            <div class="list" id="quickList"></div>
-          </div>
-          <div class="card side-card">
-            <h3>Conseil important</h3>
-            <div class="muted" style="margin-top:8px;line-height:1.7">Sur votre capture, le navigateur affiche déjà le refus dans la zone intégrée. Cette v4 corrige cela en mettant le <strong>mode rapide</strong> en priorité. Le site reste donc utilisable même quand l’iframe ne l’est pas.</div>
-          </div>
-        </aside>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Ouverture manuelle</h3><small>URL directe</small></div>
+        <div class="field"><input class="input" id="huhuUrl" type="text" value="https://huhu.to/" /></div>
+        <div class="row"><button class="btn btn-red" id="huhuOpenBtn">Ouvrir le lien</button><button class="btn btn-light" id="huhuCopyBtn">Copier</button></div>
+        <div class="info">Je peux intégrer un accès rapide à huhu.to, mais je ne peux pas mettre en place un contournement forcé d’un refus d’accès ou d’un code 444. Si le site bloque l’iframe ou l’accès direct, il faut l’ouvrir normalement dans un onglet.</div>
+        <div class="success">Le menu plein écran et les raccourcis huhu.to sont maintenant ajoutés.</div>
       </div>
     </section>
 
-    <section class="pane" id="pane-library">
-      <div class="card side-card">
-        <div class="player-head">
-          <div><h2 style="margin:0">Mes favoris</h2><div class="muted" id="libraryCount">0 lien enregistré</div></div>
-          <div class="actions" style="margin:0">
-            <button class="btn btn-secondary mini" id="exportLibraryBtn">Exporter</button>
-            <button class="btn btn-secondary mini" id="importLibraryBtn">Importer</button>
-            <button class="btn btn-danger mini" id="clearLibraryBtn">Tout effacer</button>
-          </div>
+    <section class="screen" id="screen-player">
+      <div class="card">
+        <div class="card-h"><h3 id="playerTitle">Lecteur principal</h3><small id="playerType">Prêt</small></div>
+        <div class="player-box">
+          <div class="wm">ALBAN ELOH TECHNOLOGIE</div>
+          <div class="placeholder" id="playerPlaceholder"><div class="em">📺</div><h4>Lecteur prêt</h4><p>Sélectionnez une chaîne du monde, une vidéo YouTube ou un lien HLS/MP4.</p></div>
+          <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
+          <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <div class="loading hidden" id="playerLoading"><div class="spinner"></div><div>Chargement…</div></div>
         </div>
-        <input id="librarySearch" class="search" type="search" placeholder="Rechercher un titre ou une URL" />
-        <div class="list" id="libraryList" style="max-height:none;margin-top:12px"></div>
+        <div class="meta">
+          <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
+          <div class="meta-item"><div class="k">Pays</div><div class="v" id="metaCountry">—</div></div>
+          <div class="meta-item"><div class="k">Type</div><div class="v" id="metaType">—</div></div>
+        </div>
+        <div class="row3" style="margin-top:12px"><button class="btn btn-red" id="favBtn">⭐ Favori</button><button class="btn btn-light" id="copyBtn">📋 Copier</button><button class="btn btn-soft" id="stopBtn">⏹ Stop</button></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Lien manuel</h3><small>HLS / MP4 / YouTube</small></div>
+        <div class="field"><input class="input" id="manualUrl" type="url" placeholder="https://.../playlist.m3u8 ou YouTube" /></div>
+        <button class="btn btn-red" id="manualPlayBtn" style="width:100%">Lire ce lien</button>
       </div>
     </section>
 
-    <div class="foot">Conçu et signé par <strong>AET ALBAN ELOH TECHNOLOGIE</strong> · Huhu Navigator Pro v4 · correctif mobile anti-iframe</div>
+    <section class="screen" id="screen-live-event">
+      <div class="glass stats"><div><strong>🏆 Live Event</strong><p>Style Yacine TV conservé</p></div><div class="pill">2 matchs</div></div>
+      <div id="eventWrap"></div>
+    </section>
+
+    <section class="screen" id="screen-favorites">
+      <div class="glass stats"><div><strong>⭐ Mes favoris</strong><p>Chaînes enregistrées localement</p></div><div class="pill" id="favCount">0</div></div>
+      <div class="fav-list" id="favWrap"></div>
+    </section>
+
+    <nav class="bottom-nav">
+      <button class="bottom-btn active" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
+      <button class="bottom-btn" data-nav="countries"><span class="ico">🌍</span><span>Pays</span></button>
+      <button class="bottom-btn" data-nav="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
+      <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>huhu.to</span></button>
+      <button class="bottom-btn" data-nav="player"><span class="ico">🎥</span><span>Lecteur</span></button>
+    </nav>
   </div>
 
   <script>
-    const STORAGE_KEY='aet_alban_huhu_library_v4';
-    const LAST_KEY='aet_alban_huhu_last_v4';
-    const isTouchMobile = matchMedia('(max-width: 920px)').matches || navigator.maxTouchPoints > 0;
-    const LAUNCH_ITEMS=[
-      {id:'home', icon:'🏠', title:'Accueil', sub:'Page principale Huhu', url:'https://huhu.to/'},
-      {id:'live', icon:'🔴', title:'TV en direct', sub:'Section live', url:'https://huhu.to/live'},
-      {id:'movies', icon:'🎬', title:'Films', sub:'Catalogue films', url:'https://huhu.to/movies'},
-      {id:'series', icon:'📺', title:'Séries', sub:'Catalogue séries', url:'https://huhu.to/series'},
-      {id:'search', icon:'🔎', title:'Recherche', sub:'Recherche Huhu', url:'https://huhu.to/search'},
-      {id:'fr', icon:'🇫🇷', title:'TV France', sub:'Accès rapide France', url:'https://huhu.to/live'},
-      {id:'us', icon:'🇺🇸', title:'TV USA', sub:'Accès rapide USA', url:'https://huhu.to/live'},
-      {id:'uk', icon:'🇬🇧', title:'TV UK', sub:'Accès rapide UK', url:'https://huhu.to/live'}
+    const PLAYLIST_URL = 'https://iptv-org.github.io/iptv/index.country.m3u';
+    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    const CACHE_KEY = 'aet_v5_playlist';
+    const CACHE_TIME_KEY = 'aet_v5_playlist_time';
+    const FAV_KEY = 'aet_v5_favs';
+    const CACHE_MS = 6 * 60 * 60 * 1000;
+
+    const COUNTRY_FLAGS = {
+      'Afghanistan':'🇦🇫','Albania':'🇦🇱','Algeria':'🇩🇿','Andorra':'🇦🇩','Argentina':'🇦🇷','Armenia':'🇦🇲','Australia':'🇦🇺','Austria':'🇦🇹',
+      'Azerbaijan':'🇦🇿','Belarus':'🇧🇾','Belgium':'🇧🇪','Bosnia and Herzegovina':'🇧🇦','Brazil':'🇧🇷','Bulgaria':'🇧🇬','Canada':'🇨🇦',
+      'Chad':'🇹🇩','Chile':'🇨🇱','China':'🇨🇳','Costa Rica':'🇨🇷','Croatia':'🇭🇷','Cyprus':'🇨🇾','Czech Republic':'🇨🇿','Denmark':'🇩🇰',
+      'Dominican Republic':'🇩🇴','Egypt':'🇪🇬','Estonia':'🇪🇪','Finland':'🇫🇮','France':'🇫🇷','Georgia':'🇬🇪','Germany':'🇩🇪','Greece':'🇬🇷',
+      'Hong Kong':'🇭🇰','Hungary':'🇭🇺','India':'🇮🇳','Indonesia':'🇮🇩','Iran':'🇮🇷','Iraq':'🇮🇶','Ireland':'🇮🇪','Israel':'🇮🇱','Italy':'🇮🇹',
+      'Japan':'🇯🇵','Kenya':'🇰🇪','Korea':'🇰🇷','Latvia':'🇱🇻','Lithuania':'🇱🇹','Luxembourg':'🇱🇺','Mexico':'🇲🇽','Monaco':'🇲🇨',
+      'Morocco':'🇲🇦','Netherlands':'🇳🇱','Nigeria':'🇳🇬','Norway':'🇳🇴','Pakistan':'🇵🇰','Peru':'🇵🇪','Philippines':'🇵🇭','Poland':'🇵🇱','Portugal':'🇵🇹',
+      'Qatar':'🇶🇦','Romania':'🇷🇴','Russia':'🇷🇺','Saudi Arabia':'🇸🇦','Serbia':'🇷🇸','Singapore':'🇸🇬','Slovakia':'🇸🇰','Slovenia':'🇸🇮','South Africa':'🇿🇦',
+      'Spain':'🇪🇸','Sweden':'🇸🇪','Switzerland':'🇨🇭','Tunisia':'🇹🇳','Turkey':'🇹🇷','Ukraine':'🇺🇦','United Kingdom':'🇬🇧','UK':'🇬🇧','United States':'🇺🇸','USA':'🇺🇸','Uruguay':'🇺🇾','Vietnam':'🇻🇳',
+      'News':'📰','Sports':'⚽','Business':'💼','Music':'🎵','Kids':'👶','Documentary':'📚'
+    };
+
+    const EVENTS = [
+      { leftFlag:'🇳🇴', left:'النرويج', status:'انتهت المباراة', rightFlag:'🏴', right:'إنجلترا', cup:'كأس العالم', com:'حسن العيدروس', ch:'beIN MAX 1' },
+      { leftFlag:'🇦🇷', left:'الأرجنتين', status:'انتهت المباراة', rightFlag:'🇨🇭', right:'سويسرا', cup:'كأس العالم', com:'عصام الشوالي', ch:'beIN MAX 2' }
     ];
-    const QUICK_CHANNELS=[
-      {title:'CANAL+ CINEMA',url:'https://huhu.to/live',country:'FR',category:'Cinéma'},
-      {title:'CANAL+ 360 4K',url:'https://huhu.to/live',country:'FR',category:'TV'},
-      {title:'CANAL+ LIGUE 1',url:'https://huhu.to/live',country:'FR',category:'Sport'},
-      {title:'CANAL SERIES HD',url:'https://huhu.to/live',country:'FR',category:'Séries'},
-      {title:'CANAL+ ACTION HD',url:'https://huhu.to/live',country:'FR',category:'Cinéma'},
-      {title:'CANAL SPORT HD',url:'https://huhu.to/live',country:'FR',category:'Sport'},
-      {title:'TF1',url:'https://huhu.to/live',country:'FR',category:'TV'},
-      {title:'France 2',url:'https://huhu.to/live',country:'FR',category:'TV'}
+
+    const YT_LINKS = [
+      { title:'France 24', sub:'Actualités', url:'https://www.youtube.com/@FRANCE24/live' },
+      { title:'Al Jazeera', sub:'News', url:'https://www.youtube.com/@aljazeera/live' },
+      { title:'Sky News', sub:'Live', url:'https://www.youtube.com/@SkyNews/live' },
+      { title:'euronews', sub:'Europe', url:'https://www.youtube.com/@euronews/live' }
     ];
-    const $=id=>document.getElementById(id);
-    const streamUrl=$('streamUrl'),streamTitle=$('streamTitle'),streamType=$('streamType');
-    const libraryList=$('libraryList'),libraryCount=$('libraryCount'),librarySearch=$('librarySearch');
-    const playerPlaceholder=$('playerPlaceholder'),videoPlayer=$('videoPlayer'),embedPlayer=$('embedPlayer');
-    const metaTitle=$('metaTitle'),metaType=$('metaType'),metaUrl=$('metaUrl');
-    const browserUrl=$('browserUrl'),frame=$('huhuFrame'),blankOverlay=$('blankOverlay'),modePill=$('modePill');
-    const launcherWrap=$('launcherWrap'),viewerWrap=$('viewerWrap'),launcherGrid=$('launcherGrid'),quickList=$('quickList');
-    const modeLauncherBtn=$('modeLauncherBtn'),modeIntegratedBtn=$('modeIntegratedBtn');
-    let browserMode='launcher', browserCurrent='https://huhu.to/live', historyStack=['https://huhu.to/live'], historyIndex=0;
-    let hlsInstance=null,currentItem=null,library=[];
 
-    function safeJsonParse(v,f){try{return JSON.parse(v)??f}catch{return f}}
-    function uid(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4)}
-    function escapeHtml(v){return String(v).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
-    function normalizeTitle(url,title){if(title&&title.trim()) return title.trim(); try{const u=new URL(url); return u.pathname.split('/').filter(Boolean).pop()||u.hostname}catch{return 'Flux sans titre'}}
-    function detectType(url){const v=String(url||'').toLowerCase(); if(v.includes('youtube.com')||v.includes('youtu.be')) return 'youtube'; if(v.includes('vimeo.com')) return 'vimeo'; if(v.includes('.m3u8')) return 'hls'; if(v.match(/\.(mp4|webm|ogg)(\?|#|$)/)) return 'video'; if(v.includes('huhu.to/watch')||v.includes('huhu.to/live')||v.includes('/embed')) return 'embed'; return 'video'}
-    function getEffectiveType(url,selected){return selected==='auto'?detectType(url):selected}
-    function getLibrary(){return safeJsonParse(localStorage.getItem(STORAGE_KEY),[])}
-    function saveLibrary(items){localStorage.setItem(STORAGE_KEY,JSON.stringify(items)); library=items; renderLibrary()}
-    function setLastPlayed(item){localStorage.setItem(LAST_KEY,JSON.stringify(item))}
-    function getLastPlayed(){return safeJsonParse(localStorage.getItem(LAST_KEY),null)}
-    function toast(msg){const el=document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',right:'16px',bottom:'16px',zIndex:'9999',background:'rgba(8,14,28,.96)',color:'#fff',padding:'12px 14px',borderRadius:'14px',border:'1px solid rgba(255,255,255,.10)',boxShadow:'0 20px 40px rgba(0,0,0,.35)',fontSize:'14px',maxWidth:'330px'}); document.body.appendChild(el); setTimeout(()=>el.remove(),2600)}
-    function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('active',p.id==='pane-'+name));window.scrollTo({top:0,behavior:'smooth'})}
-    function setModePill(text,kind='ok'){modePill.textContent=text; modePill.className='pill '+kind}
-    function pushHistory(url){if(historyStack[historyIndex]===url) return; historyStack=historyStack.slice(0,historyIndex+1); historyStack.push(url); historyIndex=historyStack.length-1}
-    function setBrowserCurrent(url,push=true){browserCurrent=url; browserUrl.value=url; if(push) pushHistory(url); highlightLauncher(url)}
-    function highlightLauncher(url){document.querySelectorAll('.launch-card').forEach(card=>card.classList.remove('active')); const found=LAUNCH_ITEMS.find(x=>x.url===url); if(found){const el=document.querySelector(`.launch-card[data-id="${found.id}"]`); if(el) el.classList.add('active')}}
-    function openSameTab(url){window.location.href=url}
-    function openNewTab(url){window.open(url,'_blank','noopener')}
-    function buildSearchUrl(q){return 'https://huhu.to/search?q='+encodeURIComponent(q||'')}
-    function normalizeBrowserInput(raw){const v=(raw||'').trim(); if(!v) return browserCurrent; return /^https?:\/\//i.test(v)?v:buildSearchUrl(v)}
+    const $ = id => document.getElementById(id);
+    const screens = [...document.querySelectorAll('.screen')];
+    const bottomBtns = [...document.querySelectorAll('.bottom-btn')];
+    const drawerBtns = [...document.querySelectorAll('.drawer-item[data-screen]')];
 
-    function setBrowserMode(mode){browserMode=mode; const launcher=mode==='launcher'; launcherWrap.classList.toggle('hidden',!launcher); viewerWrap.classList.toggle('hidden',launcher); modeLauncherBtn.classList.toggle('active',launcher); modeIntegratedBtn.classList.toggle('active',!launcher); if(launcher){blankOverlay.classList.add('hidden'); setModePill('Mode mobile recommandé actif','ok')} else {setModePill('Mode intégration en test','warn'); frame.src=browserCurrent; if(isTouchMobile){blankOverlay.classList.remove('hidden')}}}
-    function navigate(url){const final=normalizeBrowserInput(url); setBrowserCurrent(final,true); if(browserMode==='integrated'){frame.src=final; if(isTouchMobile) blankOverlay.classList.remove('hidden')} }
-    function backHistory(){if(historyIndex>0){historyIndex--; setBrowserCurrent(historyStack[historyIndex],false); if(browserMode==='integrated') frame.src=browserCurrent}}
-    function nextHistory(){if(historyIndex<historyStack.length-1){historyIndex++; setBrowserCurrent(historyStack[historyIndex],false); if(browserMode==='integrated') frame.src=browserCurrent}}
+    let channels = [];
+    let countries = [];
+    let currentFilter = 'ALL';
+    let currentSearch = '';
+    let currentItem = null;
+    let favs = [];
+    let hls = null;
 
-    function toYouTubeEmbed(url){try{const u=new URL(url);let id=''; if(u.hostname.includes('youtu.be')) id=u.pathname.split('/').filter(Boolean)[0]||''; else if(u.searchParams.get('v')) id=u.searchParams.get('v'); else if(u.pathname.startsWith('/embed/')) id=u.pathname.split('/embed/')[1]; return id?`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`:url}catch{return url}}
-    function toVimeoEmbed(url){try{const id=new URL(url).pathname.split('/').filter(Boolean).pop(); return id?`https://player.vimeo.com/video/${id}?autoplay=1`:url}catch{return url}}
-    function stopPlayback(){if(hlsInstance){try{hlsInstance.destroy()}catch{} hlsInstance=null} try{videoPlayer.pause()}catch{} videoPlayer.removeAttribute('src'); videoPlayer.load?.(); embedPlayer.removeAttribute('src'); videoPlayer.classList.add('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.remove('hidden')}
-    function updateMeta(item,label){metaTitle.textContent=item.title||'Sans titre'; metaType.textContent=label||'—'; metaUrl.textContent=item.url||'—'}
-    function playHls(url){videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); if(window.Hls&&window.Hls.isSupported()){ hlsInstance=new Hls({enableWorker:true}); hlsInstance.loadSource(url); hlsInstance.attachMedia(videoPlayer); hlsInstance.on(Hls.Events.MANIFEST_PARSED,()=>videoPlayer.play().catch(()=>{})); hlsInstance.on(Hls.Events.ERROR,(_,d)=>{ if(d.fatal) toast('Erreur HLS : '+(d.details||'inconnue'))}); } else if(videoPlayer.canPlayType('application/vnd.apple.mpegurl')) { videoPlayer.src=url; videoPlayer.play().catch(()=>{}) } else toast('HLS non supporté') }
-    function playVideo(url){videoPlayer.classList.remove('hidden'); embedPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); videoPlayer.src=url; videoPlayer.play().catch(()=>{})}
-    function playEmbed(url){embedPlayer.classList.remove('hidden'); videoPlayer.classList.add('hidden'); playerPlaceholder.classList.add('hidden'); embedPlayer.src=url}
-    function playStream(item){stopPlayback(); if(!item?.url) return toast('URL manquante'); const type=getEffectiveType(item.url,item.type||'auto'); currentItem={...item,detectedType:type}; setLastPlayed(currentItem); switchTab('player'); if(type==='hls'){playHls(item.url);updateMeta(item,'HLS')} else if(type==='youtube'){playEmbed(toYouTubeEmbed(item.url));updateMeta(item,'YouTube')} else if(type==='vimeo'){playEmbed(toVimeoEmbed(item.url));updateMeta(item,'Vimeo')} else if(type==='embed'){playEmbed(item.url);updateMeta(item,'Embed')} else {playVideo(item.url);updateMeta(item,'Vidéo')}}
+    const safeParse = (v,f)=>{ try{return JSON.parse(v)??f}catch{return f} };
+    const esc = v => String(v??'').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+    const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+    function toast(msg){ const el=document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'86px',background:'rgba(0,0,0,.92)',color:'#fff',padding:'12px 16px',borderRadius:'12px',fontWeight:'800',fontSize:'13px',zIndex:'999',boxShadow:'0 10px 24px rgba(0,0,0,.3)',maxWidth:'90%',textAlign:'center'}); document.body.appendChild(el); setTimeout(()=>el.remove(),2300); }
 
-    function renderLauncher(){launcherGrid.innerHTML=LAUNCH_ITEMS.map(it=>`<div class="launch-card" data-id="${it.id}"><div class="launch-ico">${it.icon}</div><div class="launch-title">${it.title}</div><div class="launch-sub">${it.sub}</div><div class="launch-actions"><button class="btn btn-primary mini" data-launch-here="${it.id}">Ouvrir ici</button><button class="btn btn-secondary mini" data-launch-tab="${it.id}">Nouvel onglet</button></div></div>`).join(''); highlightLauncher(browserCurrent)}
-    function renderQuickChannels(){quickList.innerHTML=QUICK_CHANNELS.map((c,i)=>`<div class="item"><div class="item-title">${escapeHtml(c.title)}</div><div class="item-sub">${escapeHtml(c.url)}</div><div class="tagrow"><span class="tag live">LIVE</span><span class="tag">${escapeHtml(c.country)}</span><span class="tag warn">${escapeHtml(c.category)}</span></div><div class="item-actions"><button class="btn btn-primary mini" data-quick-open="${i}">🌐 Ouvrir</button><button class="btn btn-secondary mini" data-quick-play="${i}">▶ Lecteur</button><button class="btn btn-ghost mini" data-quick-save="${i}">＋ Favori</button></div></div>`).join('')}
-    function renderLibrary(){const q=(librarySearch.value||'').toLowerCase().trim(); const filtered=library.filter(x=>!q||x.title.toLowerCase().includes(q)||x.url.toLowerCase().includes(q)); libraryCount.textContent=`${library.length} lien${library.length>1?'s':''} enregistré${library.length>1?'s':''}`; if(!filtered.length){libraryList.innerHTML=`<div class="empty">${library.length?'Aucun résultat.':'Aucun favori enregistré.'}</div>`; return} libraryList.innerHTML=filtered.map(item=>`<div class="item"><div class="item-title">${escapeHtml(item.title)}</div><div class="item-sub">${escapeHtml(item.url)}</div><div class="tagrow"><span class="tag ok">${escapeHtml((item.type||'auto').toUpperCase())}</span>${item.country?`<span class="tag">${escapeHtml(item.country)}</span>`:''}${item.category?`<span class="tag warn">${escapeHtml(item.category)}</span>`:''}</div><div class="item-actions"><button class="btn btn-primary mini" data-play="${item.id}">▶ Lire</button><button class="btn btn-secondary mini" data-fill="${item.id}">✎ Charger</button><button class="btn btn-danger mini" data-del="${item.id}">Supprimer</button></div></div>`).join('')}
-    function addToLibrary(item){if(library.find(x=>x.url===item.url)) return toast('Déjà dans les favoris'); library.unshift({...item,id:uid(),addedAt:Date.now()}); saveLibrary(library); toast('Ajouté aux favoris')}
-    function removeItem(id){library=library.filter(x=>x.id!==id); saveLibrary(library); toast('Favori supprimé')}
-    function syncFormFromItem(item){streamUrl.value=item.url||''; streamTitle.value=item.title||''; streamType.value=item.type||'auto'}
+    function openDrawer(){ $('drawer').classList.add('open'); $('drawerMask').classList.add('show'); }
+    function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerMask').classList.remove('show'); }
 
-    document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
-    document.querySelectorAll('[data-url]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.url)));
-    modeLauncherBtn.addEventListener('click',()=>setBrowserMode('launcher')); modeIntegratedBtn.addEventListener('click',()=>setBrowserMode('integrated'));
-    $('goBtn').addEventListener('click',()=>navigate(browserUrl.value)); browserUrl.addEventListener('keydown',e=>{if(e.key==='Enter') navigate(browserUrl.value)});
-    $('homeBtn').addEventListener('click',()=>navigate('https://huhu.to/')); $('reloadBtn').addEventListener('click',()=>navigate(browserCurrent)); $('backBtn').addEventListener('click',backHistory); $('nextBtn').addEventListener('click',nextHistory);
-    $('openCurrentHereBtn').addEventListener('click',()=>openSameTab(browserCurrent)); $('openCurrentTabBtn').addEventListener('click',()=>openNewTab(browserCurrent)); $('backLauncherBtn').addEventListener('click',()=>setBrowserMode('launcher'));
-    $('captureBrowserUrlBtn').addEventListener('click',()=>{streamUrl.value=browserCurrent; streamTitle.value=normalizeTitle(browserCurrent,''); streamType.value='auto'; switchTab('player'); toast('URL envoyée vers le lecteur')});
-    $('openBrowserNewTabBtn').addEventListener('click',()=>openNewTab(browserCurrent)); $('openBrowserSameTabBtn').addEventListener('click',()=>openSameTab(browserCurrent)); $('saveBrowserFavBtn').addEventListener('click',()=>addToLibrary({url:browserCurrent,title:normalizeTitle(browserCurrent,''),type:'auto'}));
-    $('quickSearchHereBtn').addEventListener('click',()=>{const q=$('quickSearchInput').value.trim(); const u=buildSearchUrl(q); setBrowserCurrent(u); openSameTab(u)}); $('quickSearchTabBtn').addEventListener('click',()=>openNewTab(buildSearchUrl($('quickSearchInput').value.trim())));
+    function setHeader(screen){
+      const map = {
+        'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],
+        'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],
+        'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],
+        'huhu':['ALBAN ELOH TECHNOLOGIE','HUHU.TO'],
+        'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],
+        'live-event':['LIVE EVENT','MATCHS'],
+        'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS']
+      };
+      const [a,b] = map[screen] || map['live-tv'];
+      $('titleMain').textContent = a;
+      $('titleSub').textContent = b;
+    }
+    function switchScreen(name){ screens.forEach(s=>s.classList.toggle('active', s.id==='screen-'+name)); bottomBtns.forEach(b=>b.classList.toggle('active', b.dataset.nav===name)); setHeader(name); closeDrawer(); window.scrollTo({top:0,behavior:'smooth'}); }
 
-    launcherGrid.addEventListener('click',e=>{const here=e.target.closest('[data-launch-here]')?.dataset.launchHere; const tab=e.target.closest('[data-launch-tab]')?.dataset.launchTab; if(here){const it=LAUNCH_ITEMS.find(x=>x.id===here); if(it){setBrowserCurrent(it.url); openSameTab(it.url)}} if(tab){const it=LAUNCH_ITEMS.find(x=>x.id===tab); if(it){setBrowserCurrent(it.url); openNewTab(it.url)}}});
-    frame.addEventListener('load',()=>{if(browserMode==='integrated'&&!isTouchMobile){blankOverlay.classList.add('hidden'); setModePill('Mode intégration actif','ok')}});
+    function parseM3U(text){
+      const lines = text.split(/\r?\n/);
+      const out = [];
+      let info = null;
+      for (const lineRaw of lines){
+        const line = lineRaw.trim();
+        if (!line) continue;
+        if (line.startsWith('#EXTINF')){
+          const name = line.split(',').slice(-1)[0]?.trim() || 'Sans titre';
+          const logo = (line.match(/tvg-logo="([^"]*)"/)||[])[1] || '';
+          const group = (line.match(/group-title="([^"]*)"/)||[])[1] || 'Autres';
+          info = { id: uid(), name, logo, group };
+        } else if (!line.startsWith('#') && info){
+          out.push({ ...info, url: line });
+          info = null;
+        }
+      }
+      return out;
+    }
 
-    $('playBtn').addEventListener('click',()=>{const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); playStream({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value})});
-    $('savePlayerFavBtn').addEventListener('click',()=>{const url=streamUrl.value.trim(); if(!url) return toast('Entrez une URL'); addToLibrary({url,title:normalizeTitle(url,streamTitle.value),type:streamType.value})});
-    $('resetPlayerFormBtn').addEventListener('click',()=>{streamUrl.value=''; streamTitle.value=''; streamType.value='auto'}); $('clearPlayerBtn').addEventListener('click',()=>{stopPlayback(); currentItem=null; metaTitle.textContent='Aucun flux chargé'; metaType.textContent='—'; metaUrl.textContent='—'}); $('copyPlayerUrlBtn').addEventListener('click',async()=>{const url=currentItem?.url||streamUrl.value.trim(); if(!url) return toast('Aucune URL'); try{await navigator.clipboard.writeText(url); toast('URL copiée')}catch{toast('Copie impossible')}}); $('openPlayerNewTabBtn').addEventListener('click',()=>{const url=currentItem?.url||streamUrl.value.trim(); if(!url) return toast('Aucune URL'); openNewTab(url)});
-    document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>{streamUrl.value=btn.dataset.example; streamTitle.value='Exemple'; streamType.value='auto'})); streamUrl.addEventListener('input',()=>{const url=streamUrl.value.trim(); if(!streamTitle.value.trim()&&url) streamTitle.value=normalizeTitle(url,'')});
-    quickList.addEventListener('click',e=>{const a=e.target.closest('[data-quick-open]')?.dataset.quickOpen; const b=e.target.closest('[data-quick-play]')?.dataset.quickPlay; const c=e.target.closest('[data-quick-save]')?.dataset.quickSave; if(a!==undefined){const it=QUICK_CHANNELS[+a]; if(it){setBrowserCurrent(it.url); openSameTab(it.url)}} if(b!==undefined){const it=QUICK_CHANNELS[+b]; if(it){playStream({url:it.url,title:it.title,type:'embed'})}} if(c!==undefined){const it=QUICK_CHANNELS[+c]; if(it){addToLibrary({url:it.url,title:it.title,type:'auto',country:it.country,category:it.category})}}});
-    librarySearch.addEventListener('input',renderLibrary); libraryList.addEventListener('click',e=>{const playId=e.target.closest('[data-play]')?.dataset.play; const fillId=e.target.closest('[data-fill]')?.dataset.fill; const delId=e.target.closest('[data-del]')?.dataset.del; if(playId){const item=library.find(x=>x.id===playId); if(item) playStream(item)} if(fillId){const item=library.find(x=>x.id===fillId); if(item){currentItem=item; syncFormFromItem(item); switchTab('player'); toast('Lien chargé dans le lecteur')}} if(delId) removeItem(delId)});
-    $('clearLibraryBtn').addEventListener('click',()=>{if(!library.length) return toast('Bibliothèque vide'); if(!confirm('Supprimer tous les favoris ?')) return; saveLibrary([]); toast('Favoris supprimés')}); $('exportLibraryBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(library,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='aet-alban-huhu-favoris-v4.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000)}); $('importLibraryBtn').addEventListener('click',()=>{const input=document.createElement('input'); input.type='file'; input.accept='application/json'; input.addEventListener('change',async()=>{const file=input.files?.[0]; if(!file) return; try{const txt=await file.text(); const data=JSON.parse(txt); if(!Array.isArray(data)) throw new Error('Format invalide'); const merged=[...data.map(x=>({...x,id:x.id||uid()})),...library]; const seen=new Set(); const uniq=[]; for(const it of merged){ if(!seen.has(it.url)){seen.add(it.url); uniq.push(it)} } saveLibrary(uniq); toast('Import terminé')}catch(err){toast('Erreur import : '+err.message)}}); input.click()});
+    async function loadPlaylist(force=false){
+      const cached = localStorage.getItem(CACHE_KEY);
+      const t = parseInt(localStorage.getItem(CACHE_TIME_KEY)||'0',10);
+      if (!force && cached && (Date.now()-t<CACHE_MS)){
+        const data = safeParse(cached, []);
+        if (data.length){ channels = data; buildCountries(); renderAll(); return; }
+      }
+      $('channelsWrap').innerHTML = '<div class="empty"><div class="em">⏳</div><h4>Chargement des chaînes…</h4><p>La nouvelle source iptv-org est en cours de lecture</p></div>';
+      try{
+        let text='';
+        try{ const r=await fetch(PLAYLIST_URL,{cache:force?'reload':'default'}); if(r.ok) text=await r.text(); }catch{}
+        if(!text || !text.includes('#EXTINF')){ const r2=await fetch(CORS_PROXY+encodeURIComponent(PLAYLIST_URL)); text=await r2.text(); }
+        const parsed = parseM3U(text);
+        if(!parsed.length) throw new Error('Playlist vide');
+        channels = parsed;
+        localStorage.setItem(CACHE_KEY, JSON.stringify(parsed));
+        localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+        buildCountries();
+        renderAll();
+        toast(`✅ ${parsed.length} chaînes chargées`);
+      }catch(err){
+        console.error(err);
+        $('channelsWrap').innerHTML = '<div class="empty"><div class="em">⚠️</div><h4>Chargement impossible</h4><p>Réessayez plus tard ou rechargez la playlist</p></div>';
+      }
+    }
 
-    function boot(){library=getLibrary(); renderLibrary(); renderQuickChannels(); renderLauncher(); const last=getLastPlayed(); if(last?.url){currentItem=last; updateMeta(last,(last.type||last.detectedType||'').toUpperCase()); syncFormFromItem(last)} setBrowserCurrent(browserCurrent,false); setBrowserMode('launcher'); if(!isTouchMobile){setModePill('Mode lancement rapide actif','ok')} }
+    function buildCountries(){
+      const map = new Map();
+      channels.forEach(c => map.set(c.group, (map.get(c.group)||0)+1));
+      countries = [...map.entries()].sort((a,b)=>b[1]-a[1]).map(([name,count]) => ({ name, count, flag: COUNTRY_FLAGS[name] || '🏳️' }));
+    }
+
+    function filteredChannels(){
+      const q = currentSearch.toLowerCase().trim();
+      return channels.filter(c => {
+        if(currentFilter!=='ALL' && c.group!==currentFilter) return false;
+        if(q && !c.name.toLowerCase().includes(q) && !c.group.toLowerCase().includes(q)) return false;
+        return true;
+      });
+    }
+
+    function renderChips(){
+      const top = countries.slice(0,10);
+      $('filterChips').innerHTML = `
+        <button class="chip ${currentFilter==='ALL'?'active':''}" data-filter="ALL">🌍 Toutes</button>
+        ${top.map(c => `<button class="chip ${currentFilter===c.name?'active':''}" data-filter="${esc(c.name)}">${c.flag} ${esc(c.name)}</button>`).join('')}
+        <button class="chip" data-filter="__countries">➕ Plus</button>
+      `;
+    }
+
+    function renderChannels(){
+      const list = filteredChannels();
+      $('totalCount').textContent = `${channels.length}`;
+      $('shownCount').textContent = `${list.length}`;
+      $('listTitle').textContent = currentFilter==='ALL' ? 'Toutes les chaînes' : `Chaînes — ${currentFilter}`;
+      if(!list.length){ $('channelsWrap').innerHTML = '<div class="empty"><div class="em">🔍</div><h4>Aucune chaîne</h4><p>Essayez un autre mot-clé ou un autre pays</p></div>'; return; }
+      const sliced = list.slice(0,200);
+      $('channelsWrap').innerHTML = `<div class="channels-grid">${sliced.map(c => `
+        <div class="channel" data-play="${c.id}">
+          <div class="logo">${c.logo ? `<img src="${esc(c.logo)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='📺'">` : '📺'}</div>
+          <div class="cinf">
+            <div class="cname">${esc(c.name)}</div>
+            <div class="cmeta"><span class="badge">${COUNTRY_FLAGS[c.group]||'🏳️'} ${esc(c.group)}</span></div>
+          </div>
+          <span class="live">LIVE</span>
+        </div>
+      `).join('')}</div>${list.length>200?'<div class="info">Affichage limité à 200 résultats. Filtrez par pays ou recherchez pour affiner.</div>':''}`;
+    }
+
+    function renderCountries(){
+      const q = ($('countrySearch').value||'').toLowerCase().trim();
+      const list = countries.filter(c => !q || c.name.toLowerCase().includes(q));
+      $('countryCount').textContent = `${countries.length}`;
+      if(!list.length){ $('countryWrap').innerHTML = '<div class="empty"><div class="em">🔍</div><h4>Aucun pays</h4></div>'; return; }
+      $('countryWrap').innerHTML = list.map(c => `
+        <button class="country-btn" data-country="${esc(c.name)}">
+          <span class="country-left"><span class="country-flag">${c.flag}</span><span>${esc(c.name)}</span></span>
+          <span class="count">${c.count}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderEvents(){
+      $('eventWrap').innerHTML = EVENTS.map(e => `
+        <div class="event-card">
+          <div class="event-grid">
+            <div class="event-team"><div class="fl">${e.leftFlag}</div><div class="nm">${esc(e.left)}</div></div>
+            <div class="status-pill">${esc(e.status)}</div>
+            <div class="event-team"><div class="fl">${e.rightFlag}</div><div class="nm">${esc(e.right)}</div></div>
+          </div>
+          <div class="event-meta"><span>🏆</span><span>${esc(e.cup)}</span></div>
+          <div class="event-foot"><span>🎙️ ${esc(e.com)}</span><span>📺 ${esc(e.ch)}</span></div>
+        </div>
+      `).join('');
+    }
+
+    function renderYTTiles(){
+      $('ytTiles').innerHTML = YT_LINKS.map(y => `
+        <button class="tile dark" data-yt-open="${esc(y.url)}"><span class="ti">▶️</span><span class="tt">${esc(y.title)}</span><span class="ts">${esc(y.sub)}</span></button>
+      `).join('');
+    }
+
+    function renderFavs(){
+      $('favCount').textContent = `${favs.length}`;
+      if(!favs.length){ $('favWrap').innerHTML = '<div class="empty"><div class="em">⭐</div><h4>Aucun favori</h4><p>Ajoutez une chaîne depuis le lecteur</p></div>'; return; }
+      $('favWrap').innerHTML = favs.map(f => `
+        <div class="fav-item">
+          <h4>${esc(f.name)}</h4>
+          <p>${esc(f.group)} · ${esc(f.url)}</p>
+          <div class="row3">
+            <button class="btn btn-red" data-fplay="${f.id}">Lire</button>
+            <button class="btn btn-light" data-fcopy="${f.id}">Copier</button>
+            <button class="btn btn-soft" data-fdel="${f.id}">Suppr.</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function detectType(url){
+      const v = String(url||'').toLowerCase();
+      if(v.includes('youtube.com') || v.includes('youtu.be')) return 'youtube';
+      if(v.includes('twitch.tv')) return 'twitch';
+      if(v.includes('.m3u8')) return 'hls';
+      if(/\.(mp4|webm|ogg|mov)(\?|#|$)/.test(v)) return 'video';
+      return 'embed';
+    }
+    function ytId(url){
+      const raw = String(url||'').trim(); if(!raw) return '';
+      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+      try{ const u = new URL(raw); if(u.hostname.includes('youtu.be')) return u.pathname.split('/').filter(Boolean)[0]||''; if(u.searchParams.get('v')) return u.searchParams.get('v'); if(u.pathname.startsWith('/embed/')) return u.pathname.split('/embed/')[1]?.split('/')[0]||''; }catch{}
+      return '';
+    }
+    const ytEmbed = url => { const id = ytId(url); return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0` : url; };
+    const twitchEmbed = url => { try{ const u=new URL(url); const ch=u.pathname.split('/').filter(Boolean)[0]; return ch ? `https://player.twitch.tv/?channel=${encodeURIComponent(ch)}&parent=${location.hostname}&autoplay=true` : url; }catch{return url;} };
+
+    function stopPlayer(){
+      if(hls){ try{ hls.destroy(); }catch{} hls=null; }
+      try{ $('videoPlayer').pause(); }catch{}
+      $('videoPlayer').removeAttribute('src'); $('videoPlayer').load?.();
+      $('embedPlayer').removeAttribute('src');
+      $('videoPlayer').classList.add('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.remove('hidden'); $('playerLoading').classList.add('hidden');
+    }
+    function playHls(url){
+      $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
+      if(window.Hls && Hls.isSupported()){
+        hls = new Hls({ enableWorker:true, lowLatencyMode:true, maxBufferLength:30 });
+        hls.loadSource(url); hls.attachMedia($('videoPlayer'));
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); $('videoPlayer').play().catch(()=>{}); });
+        hls.on(Hls.Events.ERROR, (_, data)=>{ if(data?.fatal){ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué'); } });
+      }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
+        $('videoPlayer').src = url; $('videoPlayer').oncanplay = ()=>$('playerLoading').classList.add('hidden'); $('videoPlayer').play().catch(()=>{});
+      }else{ $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
+    }
+    function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; $('videoPlayer').play().catch(()=>{}); }
+    function playEmbed(url){ $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').src=url; }
+    function playItem(item){
+      stopPlayer(); if(!item?.url) return toast('URL manquante');
+      const type = detectType(item.url); currentItem = { ...item, detectedType:type };
+      $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
+      if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
+      switchScreen('player');
+    }
+
+    const getFavs = ()=>safeParse(localStorage.getItem(FAV_KEY), []);
+    const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
+    function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
+    function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
+    function openUrl(url){ if(!url) return; window.open(url, '_blank', 'noopener'); }
+
+    // Events
+    $('menuBtn').addEventListener('click', openDrawer);
+    $('drawerMask').addEventListener('click', closeDrawer);
+    $('drawerClose').addEventListener('click', closeDrawer);
+    drawerBtns.forEach(b=>b.addEventListener('click', ()=>switchScreen(b.dataset.screen)));
+    bottomBtns.forEach(b=>b.addEventListener('click', ()=>switchScreen(b.dataset.nav)));
+    $('searchTopBtn').addEventListener('click', ()=>{ switchScreen('live-tv'); setTimeout(()=>$('channelSearch').focus(),150); });
+    $('reloadBtn').addEventListener('click', ()=>loadPlaylist(true));
+    $('shareBtn').addEventListener('click', async ()=>{ const data={title:'ALBAN ELOH TECHNOLOGIE',text:'Chaînes du monde et YouTube',url:location.href}; if(navigator.share){try{await navigator.share(data)}catch{}} else copyText(location.href); });
+
+    $('channelSearch').addEventListener('input', e=>{ currentSearch = e.target.value; $('searchClear').classList.toggle('show', !!currentSearch); renderChannels(); });
+    $('searchClear').addEventListener('click', ()=>{ $('channelSearch').value=''; currentSearch=''; $('searchClear').classList.remove('show'); renderChannels(); });
+    $('countrySearch').addEventListener('input', renderCountries);
+
+    $('filterChips').addEventListener('click', e=>{
+      const b = e.target.closest('[data-filter]'); if(!b) return;
+      const f = b.dataset.filter; if(f==='__countries'){ switchScreen('countries'); return; }
+      currentFilter = f; renderChips(); renderChannels();
+    });
+    $('channelsWrap').addEventListener('click', e=>{ const c=e.target.closest('[data-play]'); if(!c) return; const item = channels.find(x=>x.id===c.dataset.play); if(item) playItem(item); });
+    $('countryWrap').addEventListener('click', e=>{ const b=e.target.closest('[data-country]'); if(!b) return; currentFilter=b.dataset.country; renderChips(); renderChannels(); switchScreen('live-tv'); });
+
+    $('ytSearchBtn').addEventListener('click', ()=>{ const q=$('ytSearch').value.trim(); if(!q) return toast('Entrez une recherche'); openUrl(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`); });
+    $('ytHomeBtn').addEventListener('click', ()=>openUrl('https://www.youtube.com/'));
+    $('ytPlayBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); $('ytFrame').src = ytEmbed(u); });
+    $('ytSendBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); playItem({ name:'YouTube', url:u, group:'YouTube' }); });
+    $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; openUrl(b.dataset.ytOpen); });
+
+    document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ $('huhuUrl').value=b.dataset.huhu; openUrl(b.dataset.huhu); }));
+    $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
+    $('huhuCopyBtn').addEventListener('click', ()=>copyText($('huhuUrl').value.trim()));
+
+    $('stopBtn').addEventListener('click', ()=>{ stopPlayer(); currentItem=null; toast('Lecture arrêtée'); });
+    $('copyBtn').addEventListener('click', ()=>copyText(currentItem?.url));
+    $('favBtn').addEventListener('click', ()=>{ if(!currentItem) return toast('Aucun flux en cours'); addFav(currentItem); });
+    $('manualPlayBtn').addEventListener('click', ()=>{ const u=$('manualUrl').value.trim(); if(!u) return toast('Ajoutez un lien'); playItem({ name:'Lien manuel', url:u, group:'Manuel' }); });
+
+    $('favWrap').addEventListener('click', e=>{
+      const pid=e.target.closest('[data-fplay]')?.dataset.fplay; const cid=e.target.closest('[data-fcopy]')?.dataset.fcopy; const did=e.target.closest('[data-fdel]')?.dataset.fdel;
+      if(pid){ const f=favs.find(x=>x.id===pid); if(f) playItem(f); }
+      if(cid){ const f=favs.find(x=>x.id===cid); if(f) copyText(f.url); }
+      if(did){ saveFavs(favs.filter(x=>x.id!==did)); toast('Supprimé'); }
+    });
+
+    function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); }
     boot();
   </script>
 </body>

@@ -2,12 +2,8 @@
   publish = "."
 
 [[headers]]
-  for = "/index.html"
+  for = "/*"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-
-[[headers]]
-  for = "/channels.json"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Cache-Control = "public, max-age=3600"
+    Pragma = "no-cache"
+    Expires = "0"
