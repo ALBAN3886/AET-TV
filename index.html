@@ -139,14 +139,33 @@
     .tile .tt{display:block;font-size:13px;font-weight:900}
     .tile .ts{display:block;font-size:11px;opacity:.84;margin-top:3px}
 
-    .player-box{position:relative;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-    .player-box iframe,.player-box video{width:100%;height:100%;border:0;background:#000}
+    .player-box{position:relative;aspect-ratio:16/9;background:#000;border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;max-height:60vh}
+    .player-box iframe,.player-box video{width:100%;height:100%;border:0;background:#000;transition:transform .18s ease}
     .wm{position:absolute;top:10px;right:10px;z-index:4;background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.08em;pointer-events:none}
     .placeholder{padding:20px;text-align:center;color:#fff;max-width:330px}
     .placeholder .em{font-size:44px;margin-bottom:10px}.placeholder h4{margin:0 0 8px;font-size:18px}.placeholder p{margin:0;font-size:13px;color:rgba(255,255,255,.84);line-height:1.5}
     .loading{position:absolute;inset:0;background:rgba(0,0,0,.72);z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;font-size:13px}
     .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
     .hidden{display:none !important}
+
+    .player-tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+    .player-tools button{background:#f3f3f3;border:none;border-radius:10px;padding:10px 4px;font-size:11px;font-weight:800;color:var(--text);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .player-tools button:active{background:#e4e4e4}
+    .player-tools button.on{background:var(--red);color:#fff}
+    .player-tools .ic{font-size:16px}
+
+    .player-box.floating{position:fixed;right:10px;bottom:96px;width:52vw;max-width:240px;z-index:250;box-shadow:0 14px 30px rgba(0,0,0,.4);border:2px solid #fff;max-height:none;touch-action:none}
+    .player-box.floating .wm{display:none}
+    .float-close{position:absolute;top:6px;right:6px;z-index:6;width:26px;height:26px;border:none;border-radius:8px;background:rgba(0,0,0,.65);color:#fff;font-weight:900;display:none;align-items:center;justify-content:center}
+    .player-box.floating .float-close{display:flex}
+
+    .web-overlay{position:fixed;inset:0;z-index:300;background:#0b0b0b;display:flex;flex-direction:column}
+    .web-overlay.hidden{display:none}
+    .web-overlay-head{height:54px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px;background:linear-gradient(180deg,var(--red) 0%, var(--red-dark) 100%);color:#fff}
+    .web-overlay-head strong{font-size:13px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .web-overlay-head button{width:38px;height:38px;border:none;border-radius:10px;background:rgba(255,255,255,.16);color:#fff;font-size:16px;font-weight:900}
+    .web-overlay iframe{flex:1;width:100%;border:0;background:#fff}
+    .web-overlay-hint{flex:0 0 auto;padding:8px 12px;font-size:11px;color:#fff;background:rgba(0,0,0,.4);line-height:1.4}
     .meta{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
     .meta-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fafafa}
     .meta-item .k{font-size:10px;font-weight:900;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
@@ -276,12 +295,20 @@
     <section class="screen" id="screen-player">
       <div class="card">
         <div class="card-h"><h3 id="playerTitle">Lecteur principal</h3><small id="playerType">Prêt</small></div>
-        <div class="player-box">
+        <div class="player-box" id="playerBox">
           <div class="wm">ALBAN ELOH TECHNOLOGIE</div>
+          <button class="float-close" id="floatCloseBtn">✕</button>
           <div class="placeholder" id="playerPlaceholder"><div class="em">📺</div><h4>Lecteur prêt</h4><p>Sélectionnez une chaîne du monde, une vidéo YouTube ou un lien HLS/MP4.</p></div>
           <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
           <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
           <div class="loading hidden" id="playerLoading"><div class="spinner"></div><div>Chargement…</div></div>
+        </div>
+        <div class="player-tools">
+          <button id="zoomInBtn"><span class="ic">🔍+</span>Zoom +</button>
+          <button id="zoomOutBtn"><span class="ic">🔍-</span>Zoom -</button>
+          <button id="rotateBtn"><span class="ic">🔄</span>Rotation</button>
+          <button id="floatBtn"><span class="ic">🗗</span>Flotter</button>
+          <button id="resetViewBtn"><span class="ic">↺</span>Réinit.</button>
         </div>
         <div class="meta">
           <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
@@ -314,6 +341,15 @@
       <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>huhu.to</span></button>
       <button class="bottom-btn" data-nav="player"><span class="ico">🎥</span><span>Lecteur</span></button>
     </nav>
+  </div>
+
+  <div class="web-overlay hidden" id="webOverlay">
+    <div class="web-overlay-head">
+      <strong id="webOverlayTitle">Navigation intégrée</strong>
+      <button id="webOverlayClose">✕</button>
+    </div>
+    <iframe id="webOverlayFrame" src="about:blank" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <div class="web-overlay-hint">Navigation intégrée à l'app — certains sites refusent l'intégration et resteront vides ; utilisez ✕ pour revenir.</div>
   </div>
 
   <script>
@@ -547,6 +583,7 @@
       $('videoPlayer').removeAttribute('src'); $('videoPlayer').load?.();
       $('embedPlayer').removeAttribute('src');
       $('videoPlayer').classList.add('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.remove('hidden'); $('playerLoading').classList.add('hidden');
+      zoomLevel = 1; rotateDeg = 0; $('videoPlayer').style.transform = ''; $('embedPlayer').style.transform = '';
     }
     function playHls(url){
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
@@ -575,11 +612,13 @@
     function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
     function openUrl(url){
       if(!url) return;
-      $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden');
-      $('playerTitle').textContent = 'Navigation intégrée'; $('playerType').textContent = 'WEB';
-      $('embedPlayer').src = url;
-      switchScreen('player');
-      toast('Ouverture dans le lecteur intégré (certains sites refusent l\'intégration et resteront vides)');
+      $('webOverlayTitle').textContent = url;
+      $('webOverlayFrame').src = url;
+      $('webOverlay').classList.remove('hidden');
+    }
+    function closeWebOverlay(){
+      $('webOverlay').classList.add('hidden');
+      $('webOverlayFrame').src = 'about:blank';
     }
 
     // Events
@@ -613,6 +652,59 @@
     document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ $('huhuUrl').value=b.dataset.huhu; openUrl(b.dataset.huhu); }));
     $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
     $('huhuCopyBtn').addEventListener('click', ()=>copyText($('huhuUrl').value.trim()));
+
+    // Zoom / rotation / mode flottant du lecteur
+    let zoomLevel = 1, rotateDeg = 0;
+    function applyPlayerTransform(){
+      const t = `rotate(${rotateDeg}deg) scale(${zoomLevel})`;
+      $('videoPlayer').style.transform = t;
+      $('embedPlayer').style.transform = t;
+    }
+    $('zoomInBtn').addEventListener('click', ()=>{ zoomLevel = Math.min(zoomLevel + 0.25, 3); applyPlayerTransform(); });
+    $('zoomOutBtn').addEventListener('click', ()=>{ zoomLevel = Math.max(zoomLevel - 0.25, 0.5); applyPlayerTransform(); });
+    $('rotateBtn').addEventListener('click', ()=>{ rotateDeg = (rotateDeg + 90) % 360; applyPlayerTransform(); });
+    $('resetViewBtn').addEventListener('click', ()=>{ zoomLevel = 1; rotateDeg = 0; applyPlayerTransform(); });
+
+    let floatOriginalParent = null, floatOriginalNext = null;
+    function exitFloating(){
+      const box = $('playerBox');
+      box.classList.remove('floating');
+      box.style.left = ''; box.style.top = ''; box.style.right = ''; box.style.bottom = '';
+      if(floatOriginalParent){ floatOriginalParent.insertBefore(box, floatOriginalNext); floatOriginalParent = null; floatOriginalNext = null; }
+      $('floatBtn').classList.remove('on');
+    }
+    $('floatBtn').addEventListener('click', ()=>{
+      const box = $('playerBox');
+      if(box.classList.contains('floating')){ exitFloating(); return; }
+      if($('playerPlaceholder').classList.contains('hidden') === false){ toast('Sélectionnez d\'abord un flux'); return; }
+      floatOriginalParent = box.parentNode; floatOriginalNext = box.nextSibling;
+      document.querySelector('.app').appendChild(box);
+      box.classList.add('floating'); $('floatBtn').classList.add('on');
+      switchScreen('live-tv');
+      toast('Lecteur flottant activé — glissez-le, ✕ pour fermer');
+    });
+    $('floatCloseBtn').addEventListener('click', ()=>{ stopPlayer(); exitFloating(); });
+
+    // Glisser le lecteur flottant
+    (function enableFloatDrag(){
+      const box = $('playerBox');
+      let dragging = false, offX = 0, offY = 0;
+      box.addEventListener('pointerdown', (e)=>{
+        if(!box.classList.contains('floating')) return;
+        if(e.target.closest('.float-close')) return;
+        dragging = true; box.setPointerCapture(e.pointerId);
+        const r = box.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top;
+      });
+      box.addEventListener('pointermove', (e)=>{
+        if(!dragging) return;
+        box.style.right = 'auto'; box.style.bottom = 'auto';
+        box.style.left = Math.max(4, Math.min(window.innerWidth - box.offsetWidth - 4, e.clientX - offX)) + 'px';
+        box.style.top = Math.max(4, Math.min(window.innerHeight - box.offsetHeight - 4, e.clientY - offY)) + 'px';
+      });
+      box.addEventListener('pointerup', ()=>{ dragging = false; });
+    })();
+
+    $('webOverlayClose').addEventListener('click', closeWebOverlay);
 
     $('stopBtn').addEventListener('click', ()=>{ stopPlayer(); currentItem=null; toast('Lecture arrêtée'); });
     $('copyBtn').addEventListener('click', ()=>copyText(currentItem?.url));
