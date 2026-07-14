@@ -1,22 +1,34 @@
-# ALBAN ELOH TECHNOLOGIE — V5
+# AET TV Smart Hub
 
-## Changements demandés appliqués
+Refonte complète du projet **AET-TV** en une expérience type Smart TV premium inspirée des hubs TV modernes, tout en conservant l’identité AET TV.
 
-- Source des chaînes du monde changée vers : `https://iptv-org.github.io/iptv/index.country.m3u`
-- Menu transformé en **plein écran**
-- YouTube configuré avec **vrais liens d'ouverture**
-- huhu.to intégré en **accès rapide externe** + copie de lien
+## Points livrés
 
-## Important concernant huhu.to
+- interface 16:9 premium, sombre, plein écran et glassmorphism
+- page d’accueil avec hero + rangées horizontales type Smart Hub
+- cartes enrichies : logo, nom, qualité, pays, catégorie, vues locales, état LIVE
+- navigation clavier / télécommande : haut, bas, gauche, droite, OK, retour, home, play/pause
+- lecteur vidéo plein écran avec progression, reprise, mute, sous-titres, chaîne suivante/précédente
+- recherche instantanée, historique, suggestions, recherche vocale si support navigateur
+- profil utilisateur, favoris, historique et section “continuer à regarder”
+- paramètres : thème, langue, qualité, contrôle parental, notifications, sons UI
+- optimisation : cache local, préchargement des logos, lazy loading, PWA, service worker, mode hors ligne
+- installation PWA + splash screen + icônes + mise à jour applicative
 
-Si huhu.to refuse l'ouverture dans une iframe ou renvoie un code de protection côté serveur, le site doit être ouvert normalement dans un onglet. Cette version ajoute donc les raccourcis, l'ouverture directe et le menu plein écran, sans essayer de contourner les protections du site tiers.
+## Structure
 
-## Déploiement GitHub
+- `index.html` : shell applicatif
+- `assets/css/app.css` : design system + responsive TV/mobile
+- `assets/js/app.js` : logique UI, navigation, lecteur, recherche, PWA
+- `assets/js/store.js` : persistance locale
+- `assets/js/utils.js` : helpers, parsing, catégorisation
+- `manifest.webmanifest` : installation PWA
+- `sw.js` : cache offline et mises à jour
 
-Remplacez à la racine du repo :
-- `index.html`
-- `_headers`
-- `netlify.toml`
-- `README.md`
+## Déploiement
 
-Netlify gardera la **même URL** si ce repo GitHub est déjà lié au site existant.
+Déployez simplement le contenu à la racine du site statique ou du dépôt GitHub Pages.
+
+## Remarque
+
+Les données IPTV restent dépendantes des flux tiers (`iptv-org`). Certaines chaînes peuvent être indisponibles selon leur source, leur géoblocage ou leur politique CORS.
