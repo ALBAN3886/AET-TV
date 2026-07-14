@@ -573,7 +573,14 @@
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
     function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
     function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
-    function openUrl(url){ if(!url) return; window.open(url, '_blank', 'noopener'); }
+    function openUrl(url){
+      if(!url) return;
+      $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden');
+      $('playerTitle').textContent = 'Navigation intégrée'; $('playerType').textContent = 'WEB';
+      $('embedPlayer').src = url;
+      switchScreen('player');
+      toast('Ouverture dans le lecteur intégré (certains sites refusent l\'intégration et resteront vides)');
+    }
 
     // Events
     $('menuBtn').addEventListener('click', openDrawer);
