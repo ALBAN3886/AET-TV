@@ -1,13 +1,13 @@
 /* ============================================================
- * huhu-watch-live-menu-open.js — version simplifiée compatible
+ * huhu-watch-live-menu-open.js — v4
  * ------------------------------------------------------------
- * Script optionnel pour huhu.to/watch?live=...
- * Garde le panneau latéral visible sur grand écran.
+ * Userscript optionnel pour huhu.to/watch?live=...
+ * Garde le panneau latéral des chaînes ouvert sur grand écran.
  * ============================================================ */
 (function () {
   'use strict';
 
-  const STYLE_ID = 'aet-watch-live-menu-style-v3';
+  const STYLE_ID = 'aet-watch-live-menu-style-v4';
 
   function isLiveWatchPage() {
     return location.pathname === '/watch' && !!new URLSearchParams(location.search).get('live');

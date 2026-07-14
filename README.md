@@ -1,22 +1,44 @@
-# ALBAN ELOH TECHNOLOGIE — V5
+# ALBAN ELOH TECHNOLOGIE — AET (V4 corrigée)
 
-## Changements demandés appliqués
+Version **V4** entièrement réécrite qui corrige les problèmes de lenteur et de blocage de la V3.
 
-- Source des chaînes du monde changée vers : `https://iptv-org.github.io/iptv/index.country.m3u`
-- Menu transformé en **plein écran**
-- YouTube configuré avec **vrais liens d'ouverture**
-- huhu.to intégré en **accès rapide externe** + copie de lien
+## ✅ Défauts corrigés dans cette version
 
-## Important concernant huhu.to
+| Problème V3 | Correction V4 |
+|---|---|
+| 1032 chaînes IPTV **inline dans le HTML** (191 KB sur 1 ligne JS) | Chaînes déplacées dans `channels.json`, **chargement asynchrone** en arrière-plan |
+| Aucune **pagination** — 1000+ boutons rendus d'un coup | Pagination 40 chaînes/page + recherche filtrée |
+| Écran **Paramètres** existant en HTML mais jamais activé (pas de switchScreen) | Système de navigation unifié `switchScreen()` qui active tous les écrans |
+| **20 IDs orphelins** en HTML jamais liés à du JS | Structure nettoyée, tous les IDs sont utilisés |
+| `.onclick=` qui écrasait les handlers | 100 % `addEventListener` avec **délégation d'événements** |
+| Recherche sans debounce → re-render à chaque frappe | Debounce 200 ms sur toutes les recherches |
+| Pas de cache | Cache localStorage des chaînes après premier chargement |
 
-Si huhu.to refuse l'ouverture dans une iframe ou renvoie un code de protection côté serveur, le site doit être ouvert normalement dans un onglet. Cette version ajoute donc les raccourcis, l'ouverture directe et le menu plein écran, sans essayer de contourner les protections du site tiers.
+## 📁 Fichiers du dépôt
 
-## Déploiement GitHub
+- **`index.html`** — application principale, 50 KB
+- **`channels.json`** — base des 1032 chaînes IPTV (188 pays), chargée en arrière-plan
+- **`_headers`** — configuration cache Netlify
+- **`netlify.toml`** — configuration Netlify (CORS pour channels.json)
+- **`huhu-watch-live-menu-open.js`** — userscript optionnel Tampermonkey
+- **`huhu-stream-home-integration.js`** — userscript optionnel Tampermonkey
 
-Remplacez à la racine du repo :
-- `index.html`
-- `_headers`
-- `netlify.toml`
-- `README.md`
+## 🚀 Déploiement
 
-Netlify gardera la **même URL** si ce repo GitHub est déjà lié au site existant.
+Netlify est lié à ce repo GitHub, **l'URL ne change pas**. Il suffit de :
+
+1. Remplacer `index.html` par le nouveau
+2. Ajouter `channels.json` à la racine
+3. Ajouter `_headers` et `netlify.toml`
+4. Commit sur `main` → Netlify redéploie automatiquement
+
+## 🔍 Vérification après déploiement
+
+Ouvrez le site en **navigation privée**. Vous devez voir :
+
+- Badge **VERSION V4 · CORRIGÉE** sur l'accueil
+- Chargement rapide (l'interface s'affiche avant même que les chaînes soient chargées)
+- Un compteur "Chaînes : 1 032" et "Pays : 188" une fois le JSON téléchargé
+- L'écran **Paramètres** s'ouvre bien depuis la barre du bas
+- Recherche pays / chaînes réactive sans lag
+- Pagination en bas de la liste des chaînes
