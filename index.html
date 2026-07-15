@@ -79,6 +79,22 @@
     .brand strong{display:block;font-size:14px;font-weight:800;line-height:1.15;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .brand span{display:block;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;margin-top:4px;opacity:.94}
 
+    .dl-banner{
+      position:sticky;top:64px;z-index:59;
+      display:flex;align-items:center;gap:8px;
+      padding:8px 10px;
+      background:linear-gradient(90deg,var(--gold) 0%, #ffcf4d 100%);
+      color:#3a2400;box-shadow:0 4px 12px rgba(0,0,0,.18);
+      max-width:560px;margin:0 auto;
+    }
+    .dl-banner.hidden{display:none}
+    .dl-banner-ico{font-size:16px;flex:0 0 auto}
+    .dl-banner-text{flex:1 1 auto;font-size:11px;font-weight:800;line-height:1.25}
+    .dl-banner-btn{flex:0 0 auto;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:7px 12px;border-radius:999px;text-decoration:none;white-space:nowrap}
+    .dl-banner-close{flex:0 0 auto;width:26px;height:26px;border:none;border-radius:8px;background:rgba(0,0,0,.12);color:#3a2400;font-weight:900;font-size:12px;display:grid;place-items:center;cursor:pointer}
+    body.theme-dark .dl-banner{color:#241800}
+    body.theme-dark .dl-banner-close{color:#241800}
+
     .drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:69}
     .drawer-mask.show{opacity:1;pointer-events:auto}
     .drawer{
@@ -257,6 +273,13 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
     </header>
+
+    <div class="dl-banner" id="dlBanner">
+      <span class="dl-banner-ico">📱</span>
+      <span class="dl-banner-text">Télécharge l'app Android pour une meilleure expérience</span>
+      <a href="https://github.com/ALBAN3886/alban-eloh-tv-android/releases/download/1.0/app-debug.apk" class="dl-banner-btn">Télécharger</a>
+      <button class="dl-banner-close" id="dlBannerClose" aria-label="Fermer">✕</button>
+    </div>
 
     <section class="screen active" id="screen-live-tv">
       <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong></div><div class="pill" id="totalCount">…</div></div>
@@ -743,6 +766,19 @@
       applyLanguage();
     }
     function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
+
+    // Bannière de téléchargement de l'app Android
+    (function(){
+      const DL_KEY = 'aet_dl_banner_dismissed';
+      const banner = document.getElementById('dlBanner');
+      const closeBtn = document.getElementById('dlBannerClose');
+      if(!banner || !closeBtn) return;
+      if(localStorage.getItem(DL_KEY) === '1'){ banner.classList.add('hidden'); }
+      closeBtn.addEventListener('click', ()=>{
+        banner.classList.add('hidden');
+        localStorage.setItem(DL_KEY, '1');
+      });
+    })();
     document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{ appSettings.theme = b.dataset.val; saveSettings(); applySettingsUI(); }));
     $('langSelect').addEventListener('change', e=>{ appSettings.lang = e.target.value; saveSettings(); applyLanguage(); setHeader(currentScreenName()); });
     $('autoplayToggle').addEventListener('change', e=>{ appSettings.autoplay = e.target.checked; saveSettings(); });
