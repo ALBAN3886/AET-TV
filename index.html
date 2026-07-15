@@ -248,22 +248,21 @@
     <section class="screen" id="screen-youtube">
       <div class="glass stats"><div><strong>▶️ YouTube</strong></div></div>
       <div class="card">
-        <div class="card-h"><h3>Recherche YouTube</h3><small>Onglet réel</small></div>
-        <div class="field"><input class="input" id="ytSearch" type="text" placeholder="Ex : football, musique, film, actualité" /></div>
-        <div class="row"><button class="btn btn-red" id="ytSearchBtn">Rechercher</button><button class="btn btn-light" id="ytHomeBtn">Ouvrir YouTube</button></div>
-        <div class="info">La recherche YouTube s’ouvre en vrai lien YouTube dans un nouvel onglet pour éviter les blocages d’intégration.</div>
+        <div class="card-h"><h3>Recherche</h3></div>
+        <div class="field"><input class="input" id="ytSearch" type="text" placeholder="Rechercher" /></div>
+        <div class="row"><button class="btn btn-red" id="ytSearchBtn">Rechercher</button><button class="btn btn-light" id="ytHomeBtn">Ouvrir</button></div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>Lire une vidéo</h3><small>URL ou ID</small></div>
-        <div class="field"><label>Lien YouTube</label><input class="input" id="ytUrl" type="text" placeholder="https://www.youtube.com/watch?v=..." /></div>
+        <div class="card-h"><h3>Lire une vidéo</h3></div>
+        <div class="field"><input class="input" id="ytUrl" type="text" placeholder="Coller un lien" /></div>
         <div class="row"><button class="btn btn-red" id="ytPlayBtn">Lire ici</button><button class="btn btn-soft" id="ytSendBtn">Vers lecteur</button></div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>Aperçu</h3><small>Embed</small></div>
+        <div class="card-h"><h3>Aperçu</h3></div>
         <div class="player-box" style="aspect-ratio:16/9"><iframe id="ytFrame" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?rel=0" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>Raccourcis YouTube</h3><small>Ouverture directe</small></div>
+        <div class="card-h"><h3>Raccourcis</h3></div>
         <div class="quick-tiles" id="ytTiles"></div>
       </div>
     </section>
@@ -314,8 +313,8 @@
         <div class="row3" style="margin-top:12px"><button class="btn btn-red" id="favBtn">⭐ Favori</button><button class="btn btn-light" id="copyBtn">📋 Copier</button><button class="btn btn-soft" id="stopBtn">⏹ Stop</button></div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>Lien manuel</h3><small>HLS / MP4 / YouTube</small></div>
-        <div class="field"><input class="input" id="manualUrl" type="url" placeholder="https://.../playlist.m3u8 ou YouTube" /></div>
+        <div class="card-h"><h3>Lien manuel</h3></div>
+        <div class="field"><input class="input" id="manualUrl" type="url" placeholder="Coller un lien" /></div>
         <button class="btn btn-red" id="manualPlayBtn" style="width:100%">Lire ce lien</button>
       </div>
     </section>
@@ -650,7 +649,7 @@
     $('ytSendBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); playItem({ name:'YouTube', url:u, group:'YouTube' }); });
     $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; openUrl(b.dataset.ytOpen); });
 
-    document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ $('huhuUrl').value=b.dataset.huhu; openUrl(b.dataset.huhu); }));
+    document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
     $('huhuCopyBtn').addEventListener('click', ()=>copyText($('huhuUrl').value.trim()));
 
