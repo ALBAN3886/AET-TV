@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>ALBAN ELOH TECHNOLOGIE — V5</title>
-  <meta name="description" content="ALBAN ELOH TECHNOLOGIE V5 - chaînes du monde entier, menu plein écran, YouTube réel, accès huhu.to." />
+  <meta name="description" content="ALBAN ELOH TECHNOLOGIE" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -195,7 +195,7 @@
         <div class="drawer-badge">AET</div>
         <div>
           <h2>ALBAN ELOH<br>TECHNOLOGIE</h2>
-          <p>Version V5 · menu plein écran · IPTV mondiale · YouTube réel · accès huhu.to</p>
+          <p>AET Technology — Lomé, Togo</p>
         </div>
       </div>
       <button class="drawer-close" id="drawerClose">✕</button>
@@ -204,12 +204,10 @@
       <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
-      <button class="drawer-item" data-screen="huhu"><span class="ico">🎬</span><span>huhu.to</span></button>
+      <button class="drawer-item" data-screen="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
-      <div class="drawer-mini">Source TV mondiale : iptv-org index.country.m3u</div>
-      <div class="drawer-mini">huhu.to : accès rapide par ouverture externe si le site refuse l’intégration</div>
       <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
       <button class="drawer-item" id="shareBtn"><span class="ico">📤</span><span>Partager</span></button>
     </div>
@@ -227,7 +225,7 @@
     </header>
 
     <section class="screen active" id="screen-live-tv">
-      <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong><p>Source mise à jour : iptv-org index.country.m3u</p></div><div class="pill" id="totalCount">…</div></div>
+      <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong></div><div class="pill" id="totalCount">…</div></div>
       <div class="search-wrap">
         <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <input class="search-input" id="channelSearch" type="text" placeholder="Rechercher une chaîne ou un pays" />
@@ -239,7 +237,7 @@
     </section>
 
     <section class="screen" id="screen-countries">
-      <div class="glass stats"><div><strong>🌍 Navigation par pays</strong><p>Choisissez un pays pour voir ses chaînes</p></div><div class="pill" id="countryCount">…</div></div>
+      <div class="glass stats"><div><strong>🌍 Pays</strong></div><div class="pill" id="countryCount">…</div></div>
       <div class="search-wrap">
         <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <input class="search-input" id="countrySearch" type="text" placeholder="Rechercher un pays" />
@@ -248,7 +246,7 @@
     </section>
 
     <section class="screen" id="screen-youtube">
-      <div class="glass stats"><div><strong>▶️ YouTube réel</strong><p>Recherche et ouverture directe</p></div><div class="pill">OPEN</div></div>
+      <div class="glass stats"><div><strong>▶️ YouTube</strong></div></div>
       <div class="card">
         <div class="card-h"><h3>Recherche YouTube</h3><small>Onglet réel</small></div>
         <div class="field"><input class="input" id="ytSearch" type="text" placeholder="Ex : football, musique, film, actualité" /></div>
@@ -271,24 +269,22 @@
     </section>
 
     <section class="screen" id="screen-huhu">
-      <div class="glass stats"><div><strong>🎬 huhu.to</strong><p>Accès rapide films, séries, live et recherche</p></div><div class="pill">HUHU</div></div>
+      <div class="glass stats"><div><strong>🎬 ALBAN TV</strong></div></div>
       <div class="card">
-        <div class="card-h"><h3>Accès rapide huhu.to</h3><small>officiel</small></div>
+        <div class="card-h"><h3>ALBAN TV</h3></div>
         <div class="quick-tiles">
-          <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span><span class="ts">ouvrir</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/live"><span class="ti">📡</span><span class="tt">TV live</span><span class="ts">ouvrir</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/movies"><span class="ti">🎬</span><span class="tt">Films</span><span class="ts">ouvrir</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/series"><span class="ti">📺</span><span class="tt">Séries</span><span class="ts">ouvrir</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/search"><span class="ti">🔎</span><span class="tt">Recherche</span><span class="ts">ouvrir</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/trending"><span class="ti">🔥</span><span class="tt">Tendance</span><span class="ts">ouvrir</span></button>
+          <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/live"><span class="ti">📡</span><span class="tt">TV live</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/movies"><span class="ti">🎬</span><span class="tt">Films</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/series"><span class="ti">📺</span><span class="tt">Séries</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/search"><span class="ti">🔎</span><span class="tt">Recherche</span></button>
+          <button class="tile dark" data-huhu="https://huhu.to/trending"><span class="ti">🔥</span><span class="tt">Tendance</span></button>
         </div>
       </div>
       <div class="card">
-        <div class="card-h"><h3>Ouverture manuelle</h3><small>URL directe</small></div>
-        <div class="field"><input class="input" id="huhuUrl" type="text" value="https://huhu.to/" /></div>
-        <div class="row"><button class="btn btn-red" id="huhuOpenBtn">Ouvrir le lien</button><button class="btn btn-light" id="huhuCopyBtn">Copier</button></div>
-        <div class="info">Je peux intégrer un accès rapide à huhu.to, mais je ne peux pas mettre en place un contournement forcé d’un refus d’accès ou d’un code 444. Si le site bloque l’iframe ou l’accès direct, il faut l’ouvrir normalement dans un onglet.</div>
-        <div class="success">Le menu plein écran et les raccourcis huhu.to sont maintenant ajoutés.</div>
+        <div class="card-h"><h3>Lien direct</h3></div>
+        <div class="field"><input class="input" id="huhuUrl" type="text" value="" placeholder="Coller un lien" /></div>
+        <div class="row"><button class="btn btn-red" id="huhuOpenBtn">Ouvrir</button><button class="btn btn-light" id="huhuCopyBtn">Copier</button></div>
       </div>
     </section>
 
@@ -298,7 +294,7 @@
         <div class="player-box" id="playerBox">
           <div class="wm">ALBAN ELOH TECHNOLOGIE</div>
           <button class="float-close" id="floatCloseBtn">✕</button>
-          <div class="placeholder" id="playerPlaceholder"><div class="em">📺</div><h4>Lecteur prêt</h4><p>Sélectionnez une chaîne du monde, une vidéo YouTube ou un lien HLS/MP4.</p></div>
+          <div class="placeholder" id="playerPlaceholder"><div class="em">📺</div><h4>Lecteur prêt</h4></div>
           <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
           <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
           <div class="loading hidden" id="playerLoading"><div class="spinner"></div><div>Chargement…</div></div>
@@ -325,12 +321,12 @@
     </section>
 
     <section class="screen" id="screen-live-event">
-      <div class="glass stats"><div><strong>🏆 Live Event</strong><p>Style Yacine TV conservé</p></div><div class="pill">2 matchs</div></div>
+      <div class="glass stats"><div><strong>🏆 Live Event</strong></div><div class="pill">2 matchs</div></div>
       <div id="eventWrap"></div>
     </section>
 
     <section class="screen" id="screen-favorites">
-      <div class="glass stats"><div><strong>⭐ Mes favoris</strong><p>Chaînes enregistrées localement</p></div><div class="pill" id="favCount">0</div></div>
+      <div class="glass stats"><div><strong>⭐ Mes favoris</strong></div><div class="pill" id="favCount">0</div></div>
       <div class="fav-list" id="favWrap"></div>
     </section>
 
@@ -338,7 +334,7 @@
       <button class="bottom-btn active" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
       <button class="bottom-btn" data-nav="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="bottom-btn" data-nav="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
-      <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>huhu.to</span></button>
+      <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
       <button class="bottom-btn" data-nav="player"><span class="ico">🎥</span><span>Lecteur</span></button>
     </nav>
   </div>
@@ -349,7 +345,6 @@
       <button id="webOverlayClose">✕</button>
     </div>
     <iframe id="webOverlayFrame" src="about:blank" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <div class="web-overlay-hint">Navigation intégrée à l'app — certains sites refusent l'intégration et resteront vides ; utilisez ✕ pour revenir.</div>
   </div>
 
   <script>
@@ -411,7 +406,7 @@
         'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],
         'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],
         'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],
-        'huhu':['ALBAN ELOH TECHNOLOGIE','HUHU.TO'],
+        'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],
         'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],
         'live-event':['LIVE EVENT','MATCHS'],
         'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS']
@@ -550,7 +545,7 @@
       $('favWrap').innerHTML = favs.map(f => `
         <div class="fav-item">
           <h4>${esc(f.name)}</h4>
-          <p>${esc(f.group)} · ${esc(f.url)}</p>
+          <p>${esc(f.group)}</p>
           <div class="row3">
             <button class="btn btn-red" data-fplay="${f.id}">Lire</button>
             <button class="btn btn-light" data-fcopy="${f.id}">Copier</button>
@@ -585,6 +580,11 @@
       $('videoPlayer').classList.add('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.remove('hidden'); $('playerLoading').classList.add('hidden');
       zoomLevel = 1; rotateDeg = 0; $('videoPlayer').style.transform = ''; $('embedPlayer').style.transform = '';
     }
+    function stopAllPlayback(){
+      stopPlayer();
+      $('webOverlay').classList.add('hidden'); $('webOverlayFrame').src = 'about:blank';
+      try{ $('ytFrame').removeAttribute('src'); }catch{}
+    }
     function playHls(url){
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(window.Hls && Hls.isSupported()){
@@ -599,7 +599,7 @@
     function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; $('videoPlayer').play().catch(()=>{}); }
     function playEmbed(url){ $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').src=url; }
     function playItem(item){
-      stopPlayer(); if(!item?.url) return toast('URL manquante');
+      stopAllPlayback(); if(!item?.url) return toast('URL manquante');
       const type = detectType(item.url); currentItem = { ...item, detectedType:type };
       $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
       if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
@@ -612,7 +612,8 @@
     function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
     function openUrl(url){
       if(!url) return;
-      $('webOverlayTitle').textContent = url;
+      stopAllPlayback();
+      $('webOverlayTitle').textContent = 'ALBAN TV';
       $('webOverlayFrame').src = url;
       $('webOverlay').classList.remove('hidden');
     }
@@ -645,7 +646,7 @@
 
     $('ytSearchBtn').addEventListener('click', ()=>{ const q=$('ytSearch').value.trim(); if(!q) return toast('Entrez une recherche'); openUrl(`https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`); });
     $('ytHomeBtn').addEventListener('click', ()=>openUrl('https://www.youtube.com/'));
-    $('ytPlayBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); $('ytFrame').src = ytEmbed(u); });
+    $('ytPlayBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); stopAllPlayback(); $('ytFrame').src = ytEmbed(u); });
     $('ytSendBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); playItem({ name:'YouTube', url:u, group:'YouTube' }); });
     $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; openUrl(b.dataset.ytOpen); });
 
