@@ -27,6 +27,33 @@
       --radius:16px;
       --bottom:74px;
     }
+    body.theme-dark{
+      --paper:#161616;
+      --text:#f2f2f2;
+      --muted:#a9a9a9;
+      --line:#2a2a2a;
+      --bg1:#3a0f0f;
+      --bg2:#1c0707;
+    }
+    body.theme-dark .input{background:#222;color:#f2f2f2;border-color:#333}
+    body.theme-dark .tile.dark{background:#0c0c0c}
+    body.theme-dark .card{background:var(--paper)}
+    .settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;font-weight:700}
+    .settings-row:last-child{border-bottom:none}
+    .seg{display:flex;background:#f0f0f0;border-radius:10px;padding:3px;gap:3px}
+    body.theme-dark .seg{background:#222}
+    .seg-btn{border:none;background:transparent;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
+    .seg-btn.on{background:var(--red);color:#fff}
+    .select{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;background:var(--paper);color:var(--text)}
+    .switch{position:relative;display:inline-block;width:44px;height:26px}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#ccc;border-radius:26px;cursor:pointer;transition:.2s}
+    .slider::before{content:'';position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+    .switch input:checked + .slider{background:var(--red)}
+    .switch input:checked + .slider::before{transform:translateX(18px)}
+    .contact-list{display:flex;flex-direction:column;gap:8px}
+    .contact-row{display:block;padding:12px;background:#f6f6f6;border-radius:12px;font-size:13px;font-weight:700;color:var(--text);text-decoration:none}
+    body.theme-dark .contact-row{background:#222}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;min-height:100%;font-family:Inter,system-ui,-apple-system,sans-serif;color:var(--text)}
     body{
@@ -64,6 +91,8 @@
     .drawer-badge{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-weight:900;font-size:18px}
     .drawer-head h2{margin:0;font-size:22px;line-height:1.05;font-weight:900}
     .drawer-head p{margin:7px 0 0;font-size:12px;opacity:.9;max-width:260px}
+    .contact-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .contact-link{font-size:11px;font-weight:800;color:#fff;background:rgba(255,255,255,.14);padding:6px 10px;border-radius:10px;text-decoration:none}
     .drawer-close{width:42px;height:42px;border:none;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
     .drawer-body{padding:12px 14px 30px;overflow:auto;display:flex;flex-direction:column;gap:8px}
     .drawer-item{width:100%;display:flex;align-items:center;gap:14px;padding:16px 14px;border:none;background:rgba(255,255,255,.08);color:#fff;border-radius:16px;text-align:left;font-size:15px;font-weight:700;cursor:pointer}
@@ -195,7 +224,11 @@
         <div class="drawer-badge">AET</div>
         <div>
           <h2>ALBAN ELOH<br>TECHNOLOGIE</h2>
-          <p>AET Technology — Lomé, Togo</p>
+          <div class="contact-links">
+            <a href="mailto:aetalban-technologie@hotmail.com" class="contact-link">✉️ Email</a>
+            <a href="tel:+22899812072" class="contact-link">📞 Appel</a>
+            <a href="https://wa.me/22899812072" target="_blank" rel="noopener" class="contact-link">💬 WhatsApp</a>
+          </div>
         </div>
       </div>
       <button class="drawer-close" id="drawerClose">✕</button>
@@ -208,6 +241,7 @@
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
+      <button class="drawer-item" data-screen="settings"><span class="ico">⚙️</span><span>Paramètres</span></button>
       <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
       <button class="drawer-item" id="shareBtn"><span class="ico">📤</span><span>Partager</span></button>
     </div>
@@ -329,6 +363,59 @@
       <div class="fav-list" id="favWrap"></div>
     </section>
 
+    <section class="screen" id="screen-settings">
+      <div class="glass stats"><div><strong>⚙️ Paramètres</strong></div></div>
+
+      <div class="card">
+        <div class="card-h"><h3>Affichage</h3></div>
+        <div class="settings-row">
+          <span>Thème</span>
+          <div class="seg" id="themeSeg">
+            <button data-val="light" class="seg-btn">Clair</button>
+            <button data-val="dark" class="seg-btn">Sombre</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <span>Langue</span>
+          <select class="select" id="langSelect">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Lecture</h3></div>
+        <div class="settings-row">
+          <span>Lecture automatique</span>
+          <label class="switch"><input type="checkbox" id="autoplayToggle" checked><span class="slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <span>Qualité par défaut</span>
+          <select class="select" id="qualitySelect">
+            <option value="auto">Automatique</option>
+            <option value="eco">Économie de données</option>
+            <option value="high">Haute qualité</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Données</h3></div>
+        <button class="btn btn-light" id="clearFavBtn" style="width:100%;margin-bottom:8px">Vider les favoris</button>
+        <button class="btn btn-light" id="clearCacheBtn" style="width:100%">Vider le cache des chaînes</button>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Contact</h3></div>
+        <div class="contact-list">
+          <a href="mailto:aetalban-technologie@hotmail.com" class="contact-row">✉️ aetalban-technologie@hotmail.com</a>
+          <a href="tel:+22899812072" class="contact-row">📞 +228 99 81 20 72</a>
+          <a href="https://wa.me/22899812072" target="_blank" rel="noopener" class="contact-row">💬 WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
     <nav class="bottom-nav">
       <button class="bottom-btn active" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
       <button class="bottom-btn" data-nav="countries"><span class="ico">🌍</span><span>Pays</span></button>
@@ -352,6 +439,7 @@
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
+    const SETTINGS_KEY = 'aet_v5_settings';
     const CACHE_MS = 6 * 60 * 60 * 1000;
 
     const COUNTRY_FLAGS = {
@@ -400,20 +488,6 @@
     function openDrawer(){ $('drawer').classList.add('open'); $('drawerMask').classList.add('show'); }
     function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerMask').classList.remove('show'); }
 
-    function setHeader(screen){
-      const map = {
-        'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],
-        'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],
-        'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],
-        'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],
-        'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],
-        'live-event':['LIVE EVENT','MATCHS'],
-        'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS']
-      };
-      const [a,b] = map[screen] || map['live-tv'];
-      $('titleMain').textContent = a;
-      $('titleSub').textContent = b;
-    }
     function switchScreen(name){ screens.forEach(s=>s.classList.toggle('active', s.id==='screen-'+name)); bottomBtns.forEach(b=>b.classList.toggle('active', b.dataset.nav===name)); setHeader(name); closeDrawer(); window.scrollTo({top:0,behavior:'smooth'}); }
 
     function parseM3U(text){
@@ -584,18 +658,21 @@
       $('webOverlay').classList.add('hidden'); $('webOverlayFrame').src = 'about:blank';
       try{ $('ytFrame').removeAttribute('src'); }catch{}
     }
+    function getSettings(){ return safeParse(localStorage.getItem(SETTINGS_KEY), { theme:'light', lang:'fr', autoplay:true, quality:'auto' }); }
+    let appSettings = getSettings();
     function playHls(url){
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(window.Hls && Hls.isSupported()){
-        hls = new Hls({ enableWorker:true, lowLatencyMode:true, maxBufferLength:30 });
+        const startLevel = appSettings.quality==='eco' ? 0 : -1;
+        hls = new Hls({ enableWorker:true, lowLatencyMode:true, maxBufferLength:30, startLevel, capLevelToPlayerSize: appSettings.quality==='eco' });
         hls.loadSource(url); hls.attachMedia($('videoPlayer'));
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); $('videoPlayer').play().catch(()=>{}); });
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
         hls.on(Hls.Events.ERROR, (_, data)=>{ if(data?.fatal){ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué'); } });
       }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
-        $('videoPlayer').src = url; $('videoPlayer').oncanplay = ()=>$('playerLoading').classList.add('hidden'); $('videoPlayer').play().catch(()=>{});
+        $('videoPlayer').src = url; $('videoPlayer').oncanplay = ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
       }else{ $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
     }
-    function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; $('videoPlayer').play().catch(()=>{}); }
+    function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); }
     function playEmbed(url){ $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').src=url; }
     function playItem(item){
       stopAllPlayback(); if(!item?.url) return toast('URL manquante');
@@ -630,6 +707,44 @@
     $('searchTopBtn').addEventListener('click', ()=>{ switchScreen('live-tv'); setTimeout(()=>$('channelSearch').focus(),150); });
     $('reloadBtn').addEventListener('click', ()=>loadPlaylist(true));
     $('shareBtn').addEventListener('click', async ()=>{ const data={title:'ALBAN ELOH TECHNOLOGIE',text:'Chaînes du monde et YouTube',url:location.href}; if(navigator.share){try{await navigator.share(data)}catch{}} else copyText(location.href); });
+
+    // Paramètres : thème, langue, lecture auto, qualité, données
+    const I18N = {
+      fr:{ livetv:'Live TV', countries:'Pays', youtube:'YouTube', albantv:'ALBAN TV', player:'Lecteur', liveevent:'Live Event', favorites:'Favoris', settings:'Paramètres', worldchannels:'Chaînes du monde', reload:'Recharger les chaînes', share:'Partager',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],'live-event':['LIVE EVENT','MATCHS'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS'],'settings':['ALBAN ELOH TECHNOLOGIE','PARAMÈTRES']} },
+      en:{ livetv:'Live TV', countries:'Countries', youtube:'YouTube', albantv:'ALBAN TV', player:'Player', liveevent:'Live Event', favorites:'Favorites', settings:'Settings', worldchannels:'World channels', reload:'Reload channels', share:'Share',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','WORLD CHANNELS'],'countries':['ALBAN ELOH TECHNOLOGIE','COUNTRIES'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','PLAYER'],'live-event':['LIVE EVENT','MATCHES'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORITES'],'settings':['ALBAN ELOH TECHNOLOGIE','SETTINGS']} }
+    };
+    function applyLanguage(){
+      const d = I18N[appSettings.lang] || I18N.fr;
+      const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'settings':d.settings };
+      document.querySelectorAll('.bottom-btn[data-nav]').forEach(b=>{ const t = map[b.dataset.nav]; if(t) b.querySelector('span:last-child').textContent = t; });
+      document.querySelectorAll('.drawer-item[data-screen]').forEach(b=>{ const t = b.dataset.screen==='live-tv' ? d.worldchannels : map[b.dataset.screen]; if(t) b.querySelector('span:last-child').textContent = t; });
+      $('reloadBtn').querySelector('span:last-child').textContent = d.reload;
+      $('shareBtn').querySelector('span:last-child').textContent = d.share;
+    }
+    function setHeader(screen){
+      const d = I18N[appSettings.lang] || I18N.fr;
+      const [a,b] = d.headers[screen] || d.headers['live-tv'];
+      $('titleMain').textContent = a;
+      $('titleSub').textContent = b;
+    }
+    function applySettingsUI(){
+      document.body.classList.toggle('theme-dark', appSettings.theme==='dark');
+      document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.classList.toggle('on', b.dataset.val===appSettings.theme));
+      $('langSelect').value = appSettings.lang;
+      $('autoplayToggle').checked = !!appSettings.autoplay;
+      $('qualitySelect').value = appSettings.quality;
+      applyLanguage();
+    }
+    function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(appSettings)); }
+    document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{ appSettings.theme = b.dataset.val; saveSettings(); applySettingsUI(); }));
+    $('langSelect').addEventListener('change', e=>{ appSettings.lang = e.target.value; saveSettings(); applyLanguage(); setHeader(currentScreenName()); });
+    $('autoplayToggle').addEventListener('change', e=>{ appSettings.autoplay = e.target.checked; saveSettings(); });
+    $('qualitySelect').addEventListener('change', e=>{ appSettings.quality = e.target.value; saveSettings(); });
+    $('clearFavBtn').addEventListener('click', ()=>{ saveFavs([]); toast('Favoris supprimés'); });
+    $('clearCacheBtn').addEventListener('click', ()=>{ localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TIME_KEY); toast('Cache vidé — rechargement…'); loadPlaylist(true); });
+    function currentScreenName(){ const active = screens.find(s=>s.classList.contains('active')); return active ? active.id.replace('screen-','') : 'live-tv'; }
 
     $('channelSearch').addEventListener('input', e=>{ currentSearch = e.target.value; $('searchClear').classList.toggle('show', !!currentSearch); renderChannels(); });
     $('searchClear').addEventListener('click', ()=>{ $('channelSearch').value=''; currentSearch=''; $('searchClear').classList.remove('show'); renderChannels(); });
@@ -719,7 +834,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); }
     boot();
   </script>
 </body>
