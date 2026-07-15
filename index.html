@@ -561,6 +561,9 @@
     const PLAYLIST_URL = 'https://iptv-org.github.io/iptv/index.country.m3u';
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const CORS_PROXY_2 = 'https://corsproxy.io/?url=';
+    // Relais Cloudflare Worker qui peut envoyer un Referer/User-Agent personnalisé (voir HEADER-PROXY-WORKER.js).
+    // Laisser vide tant qu'il n'est pas déployé : l'app se rabat alors sur les proxys génériques ci-dessus.
+    const HEADER_PROXY = 'https://aet-header-proxy.albaneloh686.workers.dev/';
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
@@ -626,7 +629,18 @@
           const name = line.split(',').slice(-1)[0]?.trim() || 'Sans titre';
           const logo = (line.match(/tvg-logo="([^"]*)"/)||[])[1] || '';
           const group = (line.match(/group-title="([^"]*)"/)||[])[1] || 'Autres';
-          info = { id: uid(), name, logo, group };
+          info = { id: uid(), name, logo, group, referrer:'', userAgent:'' };
+        } else if (line.startsWith('#EXTVLCOPT') && info){
+          const ref = line.match(/http-referrer\s*=\s*(.+)$/i);
+          const ua = line.match(/http-user-agent\s*=\s*(.+)$/i);
+          if(ref) info.referrer = ref[1].trim();
+          if(ua) info.userAgent = ua[1].trim();
+        } else if (line.startsWith('#EXTHTTP') && info){
+          try{
+            const json = JSON.parse(line.slice(line.indexOf('{')));
+            if(json['referrer']) info.referrer = json['referrer'];
+            if(json['user-agent']) info.userAgent = json['user-agent'];
+          }catch{}
         } else if (!line.startsWith('#') && info){
           out.push({ ...info, url: line });
           info = null;
@@ -796,17 +810,34 @@
     }
     let appSettings = getSettings();
     let hlsRetryCount = 0;
-    let hlsAttemptStage = 0; // 0 = direct, 1 = proxy 1, 2 = proxy 2
+    let hlsAttemptStage = 0;
     let hlsWatchdog = null;
-    const proxyState = { prefix: null };
+    const proxyState = { mode: null }; // null=direct, 'header', 'proxy1', 'proxy2'
     let ProxyLoaderClass = null;
+    function buildStages(item){
+      const stages = ['direct'];
+      if(HEADER_PROXY && (item?.referrer || item?.userAgent)) stages.push('header');
+      stages.push('proxy1', 'proxy2');
+      return stages;
+    }
     function getProxyLoader(){
       if(ProxyLoaderClass || !window.Hls) return ProxyLoaderClass;
       ProxyLoaderClass = class extends Hls.DefaultConfig.loader {
         load(context, config, callbacks){
-          if(proxyState.prefix){
+          const mode = proxyState.mode;
+          if(mode){
             const originalUrl = context.url;
-            context.url = proxyState.prefix + encodeURIComponent(originalUrl);
+            let proxied;
+            if(mode==='header'){
+              const params = new URLSearchParams({ url: originalUrl });
+              if(currentItem?.referrer) params.set('ref', currentItem.referrer);
+              if(currentItem?.userAgent) params.set('ua', currentItem.userAgent);
+              proxied = HEADER_PROXY + (HEADER_PROXY.includes('?') ? '&' : '?') + params.toString();
+            } else {
+              const base = mode==='proxy1' ? CORS_PROXY : CORS_PROXY_2;
+              proxied = base + encodeURIComponent(originalUrl);
+            }
+            context.url = proxied;
             const origSuccess = callbacks.onSuccess;
             callbacks.onSuccess = (response, stats, ctx, networkDetails)=>{
               // On restaure l'URL réelle pour que les chemins relatifs de la playlist restent corrects
@@ -822,13 +853,15 @@
     function clearWatchdog(){ if(hlsWatchdog){ clearTimeout(hlsWatchdog); hlsWatchdog=null; } }
     function playHls(url){
       clearWatchdog();
-      const stage = hlsAttemptStage;
-      proxyState.prefix = stage===1 ? CORS_PROXY : stage===2 ? CORS_PROXY_2 : null;
+      const stages = buildStages(currentItem);
+      const stage = stages[hlsAttemptStage % stages.length];
+      proxyState.mode = stage==='direct' ? null : stage;
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(hls){ try{ hls.destroy(); }catch{} hls=null; }
       const advance = (msg)=>{
         clearWatchdog();
-        if(stage < 2){ toast(msg || 'Flux bloqué, nouvelle tentative…'); hlsAttemptStage = stage + 1; playHls(url); }
+        const idx = stages.indexOf(stage);
+        if(idx < stages.length - 1){ toast(msg || 'Flux bloqué, nouvelle tentative…'); hlsAttemptStage = idx + 1; playHls(url); }
         else{ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué — appuie sur Forcer pour réessayer'); }
       };
       // Filet de sécurité : si rien ne se charge en 9s, on bascule automatiquement à la méthode suivante
@@ -851,7 +884,14 @@
           advance();
         });
       }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
-        const finalUrl = proxyState.prefix ? (proxyState.prefix + encodeURIComponent(url)) : url;
+        let finalUrl = url;
+        if(proxyState.mode==='header'){
+          const params = new URLSearchParams({ url });
+          if(currentItem?.referrer) params.set('ref', currentItem.referrer);
+          if(currentItem?.userAgent) params.set('ua', currentItem.userAgent);
+          finalUrl = HEADER_PROXY + (HEADER_PROXY.includes('?') ? '&' : '?') + params.toString();
+        } else if(proxyState.mode==='proxy1'){ finalUrl = CORS_PROXY + encodeURIComponent(url); }
+        else if(proxyState.mode==='proxy2'){ finalUrl = CORS_PROXY_2 + encodeURIComponent(url); }
         $('videoPlayer').src = finalUrl;
         $('videoPlayer').oncanplay = ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
         $('videoPlayer').onerror = ()=>advance();
@@ -860,8 +900,10 @@
     function forceCurrentPlayback(){
       if(!currentItem?.url) return toast('Aucun flux sélectionné');
       hlsRetryCount = 0;
-      hlsAttemptStage = (hlsAttemptStage + 1) % 3;
-      toast(['Lecture forcée (direct)…','Lecture forcée (proxy 1)…','Lecture forcée (proxy 2)…'][hlsAttemptStage]);
+      const stages = buildStages(currentItem);
+      hlsAttemptStage = (hlsAttemptStage + 1) % stages.length;
+      const labels = { direct:'Lecture forcée (direct)…', header:'Lecture forcée (relais Referer/UA)…', proxy1:'Lecture forcée (proxy 1)…', proxy2:'Lecture forcée (proxy 2)…' };
+      toast(labels[stages[hlsAttemptStage]]);
       const type = currentItem.detectedType || detectType(currentItem.url);
       if(type==='hls') playHls(currentItem.url);
       else if(type==='video') playVideo(currentItem.url);
