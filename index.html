@@ -798,17 +798,32 @@
     let hlsRetryCount = 0;
     let hlsAttemptStage = 0; // 0 = direct, 1 = proxy 1, 2 = proxy 2
     let hlsWatchdog = null;
-    function stageUrl(url, stage){
-      if(stage===1) return CORS_PROXY + encodeURIComponent(url);
-      if(stage===2) return CORS_PROXY_2 + encodeURIComponent(url);
-      return url;
+    const proxyState = { prefix: null };
+    let ProxyLoaderClass = null;
+    function getProxyLoader(){
+      if(ProxyLoaderClass || !window.Hls) return ProxyLoaderClass;
+      ProxyLoaderClass = class extends Hls.DefaultConfig.loader {
+        load(context, config, callbacks){
+          if(proxyState.prefix){
+            const originalUrl = context.url;
+            context.url = proxyState.prefix + encodeURIComponent(originalUrl);
+            const origSuccess = callbacks.onSuccess;
+            callbacks.onSuccess = (response, stats, ctx, networkDetails)=>{
+              // On restaure l'URL réelle pour que les chemins relatifs de la playlist restent corrects
+              ctx.url = originalUrl;
+              origSuccess(response, stats, ctx, networkDetails);
+            };
+          }
+          super.load(context, config, callbacks);
+        }
+      };
+      return ProxyLoaderClass;
     }
     function clearWatchdog(){ if(hlsWatchdog){ clearTimeout(hlsWatchdog); hlsWatchdog=null; } }
-    function playHls(url, forceNextStage){
+    function playHls(url){
       clearWatchdog();
-      if(forceNextStage){ hlsAttemptStage = Math.min(hlsAttemptStage + 1, 2); }
       const stage = hlsAttemptStage;
-      const finalUrl = stageUrl(url, stage);
+      proxyState.prefix = stage===1 ? CORS_PROXY : stage===2 ? CORS_PROXY_2 : null;
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(hls){ try{ hls.destroy(); }catch{} hls=null; }
       const advance = (msg)=>{
@@ -824,9 +839,10 @@
           enableWorker:true, lowLatencyMode:true, maxBufferLength:30, startLevel, capLevelToPlayerSize: appSettings.quality==='eco',
           manifestLoadingMaxRetry:4, manifestLoadingRetryDelay:1000,
           levelLoadingMaxRetry:4, levelLoadingRetryDelay:1000,
-          fragLoadingMaxRetry:6, fragLoadingRetryDelay:1000
+          fragLoadingMaxRetry:6, fragLoadingRetryDelay:1000,
+          loader: getProxyLoader() || undefined
         });
-        hls.loadSource(finalUrl); hls.attachMedia($('videoPlayer'));
+        hls.loadSource(url); hls.attachMedia($('videoPlayer'));
         hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); hlsRetryCount = 0; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
         hls.on(Hls.Events.ERROR, (_, data)=>{
           if(!data?.fatal) return;
@@ -835,6 +851,7 @@
           advance();
         });
       }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
+        const finalUrl = proxyState.prefix ? (proxyState.prefix + encodeURIComponent(url)) : url;
         $('videoPlayer').src = finalUrl;
         $('videoPlayer').oncanplay = ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
         $('videoPlayer').onerror = ()=>advance();
