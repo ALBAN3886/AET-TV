@@ -361,6 +361,7 @@
           <button id="rotateBtn"><span class="ic">🔄</span>Rotation</button>
           <button id="floatBtn"><span class="ic">🗗</span>Flotter</button>
           <button id="resetViewBtn"><span class="ic">↺</span>Réinit.</button>
+          <button id="forceBtn"><span class="ic">⚡</span>Forcer</button>
         </div>
         <div class="meta">
           <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
@@ -688,17 +689,47 @@
     }
     function getSettings(){ return safeParse(localStorage.getItem(SETTINGS_KEY), { theme:'light', lang:'fr', autoplay:true, quality:'auto' }); }
     let appSettings = getSettings();
-    function playHls(url){
+    let hlsRetryCount = 0;
+    function playHls(url, forceProxy){
+      const finalUrl = forceProxy ? (CORS_PROXY + encodeURIComponent(url)) : url;
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
+      if(hls){ try{ hls.destroy(); }catch{} hls=null; }
       if(window.Hls && Hls.isSupported()){
         const startLevel = appSettings.quality==='eco' ? 0 : -1;
-        hls = new Hls({ enableWorker:true, lowLatencyMode:true, maxBufferLength:30, startLevel, capLevelToPlayerSize: appSettings.quality==='eco' });
-        hls.loadSource(url); hls.attachMedia($('videoPlayer'));
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
-        hls.on(Hls.Events.ERROR, (_, data)=>{ if(data?.fatal){ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué'); } });
+        hls = new Hls({
+          enableWorker:true, lowLatencyMode:true, maxBufferLength:30, startLevel, capLevelToPlayerSize: appSettings.quality==='eco',
+          manifestLoadingMaxRetry:4, manifestLoadingRetryDelay:1000,
+          levelLoadingMaxRetry:4, levelLoadingRetryDelay:1000,
+          fragLoadingMaxRetry:6, fragLoadingRetryDelay:1000
+        });
+        hls.loadSource(finalUrl); hls.attachMedia($('videoPlayer'));
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); hlsRetryCount = 0; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
+        hls.on(Hls.Events.ERROR, (_, data)=>{
+          if(!data?.fatal) return;
+          if(data.type === Hls.ErrorTypes.NETWORK_ERROR && hlsRetryCount < 3){ hlsRetryCount++; try{ hls.startLoad(); return; }catch{} }
+          if(data.type === Hls.ErrorTypes.MEDIA_ERROR && hlsRetryCount < 3){ hlsRetryCount++; try{ hls.recoverMediaError(); return; }catch{} }
+          $('playerLoading').classList.add('hidden');
+          if(!forceProxy){ toast('Flux bloqué, nouvelle tentative…'); playHls(url, true); }
+          else{ toast('Flux indisponible ou bloqué'); }
+        });
       }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
-        $('videoPlayer').src = url; $('videoPlayer').oncanplay = ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
+        $('videoPlayer').src = finalUrl;
+        $('videoPlayer').oncanplay = ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
+        $('videoPlayer').onerror = ()=>{
+          $('playerLoading').classList.add('hidden');
+          if(!forceProxy){ toast('Flux bloqué, nouvelle tentative…'); playHls(url, true); }
+          else{ toast('Flux indisponible ou bloqué'); }
+        };
       }else{ $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
+    }
+    function forceCurrentPlayback(){
+      if(!currentItem?.url) return toast('Aucun flux sélectionné');
+      hlsRetryCount = 0;
+      toast('Lecture forcée…');
+      const type = currentItem.detectedType || detectType(currentItem.url);
+      if(type==='hls') playHls(currentItem.url, true);
+      else if(type==='video') playVideo(currentItem.url);
+      else { $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden'); playHls(currentItem.url, true); }
     }
     function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); }
     function playEmbed(url){ $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').src=url; }
@@ -817,6 +848,7 @@
       $('embedPlayer').style.transform = t;
     }
     $('zoomInBtn').addEventListener('click', ()=>{ zoomLevel = Math.min(zoomLevel + 0.25, 3); applyPlayerTransform(); });
+    $('forceBtn').addEventListener('click', forceCurrentPlayback);
     $('zoomOutBtn').addEventListener('click', ()=>{ zoomLevel = Math.max(zoomLevel - 0.25, 0.5); applyPlayerTransform(); });
     $('rotateBtn').addEventListener('click', ()=>{ rotateDeg = (rotateDeg + 90) % 360; applyPlayerTransform(); });
     $('resetViewBtn').addEventListener('click', ()=>{ zoomLevel = 1; rotateDeg = 0; applyPlayerTransform(); });
