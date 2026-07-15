@@ -358,7 +358,7 @@
       <div class="card">
         <div class="card-h"><h3>Lien direct</h3></div>
         <div class="field"><input class="input" id="huhuUrl" type="text" value="" placeholder="Coller un lien" /></div>
-        <div class="row"><button class="btn btn-red" id="huhuOpenBtn">Ouvrir</button><button class="btn btn-light" id="huhuCopyBtn">Copier</button></div>
+        <div class="row"><button class="btn btn-red" id="huhuOpenBtn">Ouvrir</button><button class="btn btn-light" id="huhuCopyBtn">Copier</button><button class="btn btn-light" id="huhuReloadBtn">🔄 Recharger</button></div>
       </div>
     </section>
 
@@ -550,6 +550,8 @@
   <div class="web-overlay hidden" id="webOverlay">
     <div class="web-overlay-head">
       <strong id="webOverlayTitle">Navigation intégrée</strong>
+      <button id="webOverlayReload" title="Recharger">🔄</button>
+      <button id="webOverlayExternal" title="Ouvrir dans le navigateur">↗</button>
       <button id="webOverlayClose">✕</button>
     </div>
     <iframe id="webOverlayFrame" src="about:blank" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -558,6 +560,7 @@
   <script>
     const PLAYLIST_URL = 'https://iptv-org.github.io/iptv/index.country.m3u';
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    const CORS_PROXY_2 = 'https://corsproxy.io/?url=';
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
@@ -793,10 +796,28 @@
     }
     let appSettings = getSettings();
     let hlsRetryCount = 0;
-    function playHls(url, forceProxy){
-      const finalUrl = forceProxy ? (CORS_PROXY + encodeURIComponent(url)) : url;
+    let hlsAttemptStage = 0; // 0 = direct, 1 = proxy 1, 2 = proxy 2
+    let hlsWatchdog = null;
+    function stageUrl(url, stage){
+      if(stage===1) return CORS_PROXY + encodeURIComponent(url);
+      if(stage===2) return CORS_PROXY_2 + encodeURIComponent(url);
+      return url;
+    }
+    function clearWatchdog(){ if(hlsWatchdog){ clearTimeout(hlsWatchdog); hlsWatchdog=null; } }
+    function playHls(url, forceNextStage){
+      clearWatchdog();
+      if(forceNextStage){ hlsAttemptStage = Math.min(hlsAttemptStage + 1, 2); }
+      const stage = hlsAttemptStage;
+      const finalUrl = stageUrl(url, stage);
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(hls){ try{ hls.destroy(); }catch{} hls=null; }
+      const advance = (msg)=>{
+        clearWatchdog();
+        if(stage < 2){ toast(msg || 'Flux bloqué, nouvelle tentative…'); hlsAttemptStage = stage + 1; playHls(url); }
+        else{ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué — appuie sur Forcer pour réessayer'); }
+      };
+      // Filet de sécurité : si rien ne se charge en 9s, on bascule automatiquement à la méthode suivante
+      hlsWatchdog = setTimeout(()=>advance('Chargement trop long, bascule automatique…'), 9000);
       if(window.Hls && Hls.isSupported()){
         const startLevel = appSettings.quality==='eco' ? 0 : -1;
         hls = new Hls({
@@ -806,38 +827,34 @@
           fragLoadingMaxRetry:6, fragLoadingRetryDelay:1000
         });
         hls.loadSource(finalUrl); hls.attachMedia($('videoPlayer'));
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ $('playerLoading').classList.add('hidden'); hlsRetryCount = 0; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); hlsRetryCount = 0; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
         hls.on(Hls.Events.ERROR, (_, data)=>{
           if(!data?.fatal) return;
           if(data.type === Hls.ErrorTypes.NETWORK_ERROR && hlsRetryCount < 3){ hlsRetryCount++; try{ hls.startLoad(); return; }catch{} }
           if(data.type === Hls.ErrorTypes.MEDIA_ERROR && hlsRetryCount < 3){ hlsRetryCount++; try{ hls.recoverMediaError(); return; }catch{} }
-          $('playerLoading').classList.add('hidden');
-          if(!forceProxy){ toast('Flux bloqué, nouvelle tentative…'); playHls(url, true); }
-          else{ toast('Flux indisponible ou bloqué'); }
+          advance();
         });
       }else if($('videoPlayer').canPlayType('application/vnd.apple.mpegurl')){
         $('videoPlayer').src = finalUrl;
-        $('videoPlayer').oncanplay = ()=>{ $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
-        $('videoPlayer').onerror = ()=>{
-          $('playerLoading').classList.add('hidden');
-          if(!forceProxy){ toast('Flux bloqué, nouvelle tentative…'); playHls(url, true); }
-          else{ toast('Flux indisponible ou bloqué'); }
-        };
-      }else{ $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
+        $('videoPlayer').oncanplay = ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
+        $('videoPlayer').onerror = ()=>advance();
+      }else{ clearWatchdog(); $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
     }
     function forceCurrentPlayback(){
       if(!currentItem?.url) return toast('Aucun flux sélectionné');
       hlsRetryCount = 0;
-      toast('Lecture forcée…');
+      hlsAttemptStage = (hlsAttemptStage + 1) % 3;
+      toast(['Lecture forcée (direct)…','Lecture forcée (proxy 1)…','Lecture forcée (proxy 2)…'][hlsAttemptStage]);
       const type = currentItem.detectedType || detectType(currentItem.url);
-      if(type==='hls') playHls(currentItem.url, true);
+      if(type==='hls') playHls(currentItem.url);
       else if(type==='video') playVideo(currentItem.url);
-      else { $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden'); playHls(currentItem.url, true); }
+      else { $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden'); playHls(currentItem.url); }
     }
     function playVideo(url){ $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('videoPlayer').src=url; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); }
     function playEmbed(url){ $('embedPlayer').classList.remove('hidden'); $('videoPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('embedPlayer').src=url; }
     function playItem(item){
       stopAllPlayback(); if(!item?.url) return toast('URL manquante');
+      hlsAttemptStage = 0; hlsRetryCount = 0;
       const type = detectType(item.url); currentItem = { ...item, detectedType:type };
       $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
       if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
@@ -848,12 +865,20 @@
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
     function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
     function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
+    let currentOverlayUrl = '';
     function openUrl(url){
       if(!url) return;
       stopAllPlayback();
+      currentOverlayUrl = url;
       $('webOverlayTitle').textContent = 'ALBAN TV';
       $('webOverlayFrame').src = url;
       $('webOverlay').classList.remove('hidden');
+    }
+    function reloadWebOverlay(){
+      if(!currentOverlayUrl) return;
+      $('webOverlayFrame').src = 'about:blank';
+      setTimeout(()=>{ $('webOverlayFrame').src = currentOverlayUrl; }, 50);
+      toast('Rechargement…');
     }
     function closeWebOverlay(){
       $('webOverlay').classList.add('hidden');
@@ -1059,6 +1084,10 @@
     document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
     $('huhuCopyBtn').addEventListener('click', ()=>copyText($('huhuUrl').value.trim()));
+    $('huhuReloadBtn').addEventListener('click', ()=>{
+      if(!$('webOverlay').classList.contains('hidden')){ reloadWebOverlay(); }
+      else{ openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'); }
+    });
 
     // Zoom / rotation / mode flottant du lecteur
     let zoomLevel = 1, rotateDeg = 0;
@@ -1113,6 +1142,8 @@
     })();
 
     $('webOverlayClose').addEventListener('click', closeWebOverlay);
+    $('webOverlayReload').addEventListener('click', reloadWebOverlay);
+    $('webOverlayExternal').addEventListener('click', ()=>{ if(currentOverlayUrl) window.open(currentOverlayUrl, '_blank', 'noopener'); });
 
     $('stopBtn').addEventListener('click', ()=>{ stopPlayer(); currentItem=null; toast('Lecture arrêtée'); });
     $('copyBtn').addEventListener('click', ()=>copyText(currentItem?.url));
