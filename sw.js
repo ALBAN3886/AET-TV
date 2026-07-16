@@ -1,49 +1,49 @@
-const CACHE_NAME = 'aet-tv-shell-v1';
-const CORE_ASSETS = [
+const CACHE_NAME = 'aet-tv-shell-v6';
+const ASSETS = [
   './',
   './index.html',
-  './app.css',
-  './app.js',
-  './utils.js',
-  './store.js',
   './manifest.webmanifest',
-  './channels.json'
+  './assets/css/app.css',
+  './assets/js/app.js',
+  './assets/js/store.js',
+  './assets/js/utils.js',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => null)
-  );
-  self.skipWaiting();
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
-    const clients = await self.clients.matchAll({ type: 'window' });
-    clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' }));
-    await self.clients.claim();
-  })());
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))).then(() => self.clients.claim())
+  );
+  self.clients.matchAll({ includeUncontrolled: true }).then((clients) => clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' })));
 });
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  if (request.url.includes('iptv-org.github.io') || request.url.includes('allorigins.win')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
 
-  event.respondWith((async () => {
-    try {
-      const network = await fetch(request);
-      if (request.url.startsWith(self.location.origin)) {
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(request, network.clone()).catch(() => null);
-      }
-      return network;
-    } catch {
-      const cached = await caches.match(request);
-      if (cached) return cached;
-      if (request.mode === 'navigate') return caches.match('./index.html');
-      throw new Error('offline');
-    }
-  })());
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request).then((response) => {
+      const copy = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      return response;
+    }).catch(() => caches.match('./index.html')))
+  );
 });
