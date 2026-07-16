@@ -563,6 +563,29 @@
 
   <script>
     const PLAYLIST_URL = 'https://iptv-org.github.io/iptv/index.country.m3u';
+    const STREAMS_API_URL = 'https://iptv-org.github.io/api/streams.json';
+    const STREAMS_CACHE_KEY = 'aet_v5_streams_meta';
+    const STREAMS_CACHE_MS = 24*60*60*1000;
+    async function enrichWithStreamHeaders(items){
+      try{
+        let map = safeParse(localStorage.getItem(STREAMS_CACHE_KEY), null);
+        const t = parseInt(localStorage.getItem(STREAMS_CACHE_KEY+'_t')||'0',10);
+        if(!map || Date.now()-t>STREAMS_CACHE_MS){
+          const res = await fetch(STREAMS_API_URL);
+          if(!res.ok) return items;
+          const list = await res.json();
+          map = {};
+          list.forEach(s=>{ if(s.url && (s.referrer || s.http_referrer || s.user_agent)) map[s.url] = { referrer: s.referrer || s.http_referrer || '', userAgent: s.user_agent || '' }; });
+          localStorage.setItem(STREAMS_CACHE_KEY, JSON.stringify(map));
+          localStorage.setItem(STREAMS_CACHE_KEY+'_t', String(Date.now()));
+        }
+        return items.map(it=>{
+          if((it.referrer || it.userAgent)) return it; // déjà renseigné via le m3u
+          const meta = map[it.url];
+          return meta ? { ...it, referrer: meta.referrer, userAgent: meta.userAgent } : it;
+        });
+      }catch{ return items; }
+    }
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const CORS_PROXY_2 = 'https://corsproxy.io/?url=';
     // Relais Cloudflare Worker qui peut envoyer un Referer/User-Agent personnalisé (voir HEADER-PROXY-WORKER.js).
@@ -667,12 +690,12 @@
         if(!text || !text.includes('#EXTINF')){ const r2=await fetch(CORS_PROXY+encodeURIComponent(PLAYLIST_URL)); text=await r2.text(); }
         const parsed = parseM3U(text);
         if(!parsed.length) throw new Error('Playlist vide');
-        channels = parsed;
-        localStorage.setItem(CACHE_KEY, JSON.stringify(parsed));
+        channels = await enrichWithStreamHeaders(parsed);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(channels));
         localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
         buildCountries();
         renderAll();
-        toast(`✅ ${parsed.length} chaînes chargées`);
+        toast(`✅ ${channels.length} chaînes chargées`);
       }catch(err){
         console.error(err);
         $('channelsWrap').innerHTML = '<div class="empty"><div class="em">⚠️</div><h4>Chargement impossible</h4><p>Réessayez plus tard ou rechargez la playlist</p></div>';
