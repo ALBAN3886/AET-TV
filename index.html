@@ -555,6 +555,7 @@
     <div class="web-overlay-head">
       <strong id="webOverlayTitle">Navigation intégrée</strong>
       <button id="webOverlayReload" title="Recharger">🔄</button>
+      <button id="webOverlayBypass" title="Contourner le blocage (via relais)">🛡️</button>
       <button id="webOverlayExternal" title="Ouvrir dans le navigateur">↗</button>
       <button id="webOverlayClose">✕</button>
     </div>
@@ -588,6 +589,7 @@
     }
     const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
     const CORS_PROXY_2 = 'https://corsproxy.io/?url=';
+    const CORS_PROXY_3 = 'https://api.codetabs.com/v1/proxy?quest=';
     // Relais Cloudflare Worker qui peut envoyer un Referer/User-Agent personnalisé (voir HEADER-PROXY-WORKER.js).
     // Laisser vide tant qu'il n'est pas déployé : l'app se rabat alors sur les proxys génériques ci-dessus.
     const HEADER_PROXY = 'https://aet-header-proxy.albaneloh686.workers.dev/';
@@ -844,7 +846,7 @@
     function buildStages(item){
       const stages = ['direct'];
       if(HEADER_PROXY) stages.push('header');
-      stages.push('proxy1', 'proxy2');
+      stages.push('proxy1', 'proxy2', 'proxy3');
       return stages;
     }
     function getProxyLoader(){
@@ -861,7 +863,7 @@
               if(currentItem?.userAgent) params.set('ua', currentItem.userAgent);
               proxied = HEADER_PROXY + (HEADER_PROXY.includes('?') ? '&' : '?') + params.toString();
             } else {
-              const base = mode==='proxy1' ? CORS_PROXY : CORS_PROXY_2;
+              const base = mode==='proxy1' ? CORS_PROXY : mode==='proxy2' ? CORS_PROXY_2 : CORS_PROXY_3;
               proxied = base + encodeURIComponent(originalUrl);
             }
             context.url = proxied;
@@ -919,6 +921,7 @@
           finalUrl = HEADER_PROXY + (HEADER_PROXY.includes('?') ? '&' : '?') + params.toString();
         } else if(proxyState.mode==='proxy1'){ finalUrl = CORS_PROXY + encodeURIComponent(url); }
         else if(proxyState.mode==='proxy2'){ finalUrl = CORS_PROXY_2 + encodeURIComponent(url); }
+        else if(proxyState.mode==='proxy3'){ finalUrl = CORS_PROXY_3 + encodeURIComponent(url); }
         $('videoPlayer').src = finalUrl;
         $('videoPlayer').oncanplay = ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
         $('videoPlayer').onerror = ()=>advance();
@@ -929,7 +932,7 @@
       hlsRetryCount = 0;
       const stages = buildStages(currentItem);
       hlsAttemptStage = (hlsAttemptStage + 1) % stages.length;
-      const labels = { direct:'Lecture forcée (direct)…', header:'Lecture forcée (relais Referer/UA)…', proxy1:'Lecture forcée (proxy 1)…', proxy2:'Lecture forcée (proxy 2)…' };
+      const labels = { direct:'Lecture forcée (direct)…', header:'Lecture forcée (relais Referer/UA)…', proxy1:'Lecture forcée (proxy 1)…', proxy2:'Lecture forcée (proxy 2)…', proxy3:'Lecture forcée (proxy 3)…' };
       toast(labels[stages[hlsAttemptStage]]);
       const type = currentItem.detectedType || detectType(currentItem.url);
       if(type==='hls') playHls(currentItem.url);
@@ -1213,9 +1216,10 @@
         direct: 'Direct — en cours…',
         header: HEADER_PROXY ? 'Relais Cloudflare — en cours…' : 'Relais Cloudflare — non configuré',
         proxy1: 'Proxy 1 — en cours…',
-        proxy2: 'Proxy 2 — en cours…'
+        proxy2: 'Proxy 2 — en cours…',
+        proxy3: 'Proxy 3 — en cours…'
       };
-      const render = ()=>{ box.textContent = `📋 ${currentItem.name}\n\n1) ${lines.direct}\n2) ${lines.header}\n3) ${lines.proxy1}\n4) ${lines.proxy2}`; };
+      const render = ()=>{ box.textContent = `📋 ${currentItem.name}\n\n1) ${lines.direct}\n2) ${lines.header}\n3) ${lines.proxy1}\n4) ${lines.proxy2}\n5) ${lines.proxy3}`; };
       render();
       const r1 = await testFetch(url, 7000);
       lines.direct = (r1.ok?'✅ ':'❌ ') + r1.label; render();
@@ -1228,6 +1232,8 @@
       lines.proxy1 = (r3.ok?'✅ ':'❌ ') + r3.label; render();
       const r4 = await testFetch(CORS_PROXY_2 + encodeURIComponent(url), 8000);
       lines.proxy2 = (r4.ok?'✅ ':'❌ ') + r4.label; render();
+      const r5 = await testFetch(CORS_PROXY_3 + encodeURIComponent(url), 8000);
+      lines.proxy3 = (r5.ok?'✅ ':'❌ ') + r5.label; render();
     }
     $('diagBtn').addEventListener('click', runDiagnostic);
     $('zoomOutBtn').addEventListener('click', ()=>{ zoomLevel = Math.max(zoomLevel - 0.25, 0.5); applyPlayerTransform(); });
@@ -1275,6 +1281,12 @@
 
     $('webOverlayClose').addEventListener('click', closeWebOverlay);
     $('webOverlayReload').addEventListener('click', reloadWebOverlay);
+    $('webOverlayBypass').addEventListener('click', ()=>{
+      if(!currentOverlayUrl) return;
+      if(!HEADER_PROXY) return toast('Relais non configuré');
+      toast('Tentative via relais (rendu possiblement imparfait)…');
+      $('webOverlayFrame').src = HEADER_PROXY + (HEADER_PROXY.includes('?')?'&':'?') + new URLSearchParams({ url: currentOverlayUrl }).toString();
+    });
     $('webOverlayExternal').addEventListener('click', ()=>{ if(currentOverlayUrl) window.open(currentOverlayUrl, '_blank', 'noopener'); });
 
     $('stopBtn').addEventListener('click', ()=>{ stopPlayer(); currentItem=null; toast('Lecture arrêtée'); });
