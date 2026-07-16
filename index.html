@@ -820,7 +820,7 @@
     let ProxyLoaderClass = null;
     function buildStages(item){
       const stages = ['direct'];
-      if(HEADER_PROXY && (item?.referrer || item?.userAgent)) stages.push('header');
+      if(HEADER_PROXY) stages.push('header');
       stages.push('proxy1', 'proxy2');
       return stages;
     }
@@ -1188,7 +1188,7 @@
       const ref = currentItem.referrer, ua = currentItem.userAgent;
       const lines = {
         direct: 'Direct — en cours…',
-        header: (ref||ua) ? 'Relais Referer/UA — en cours…' : 'Relais Referer/UA — non applicable (aucun referer/UA requis pour cette chaîne)',
+        header: HEADER_PROXY ? 'Relais Cloudflare — en cours…' : 'Relais Cloudflare — non configuré',
         proxy1: 'Proxy 1 — en cours…',
         proxy2: 'Proxy 2 — en cours…'
       };
@@ -1196,12 +1196,10 @@
       render();
       const r1 = await testFetch(url, 7000);
       lines.direct = (r1.ok?'✅ ':'❌ ') + r1.label; render();
-      if(HEADER_PROXY && (ref||ua)){
+      if(HEADER_PROXY){
         const params = new URLSearchParams({ url }); if(ref) params.set('ref', ref); if(ua) params.set('ua', ua);
         const r2 = await testFetch(HEADER_PROXY + (HEADER_PROXY.includes('?')?'&':'?') + params.toString(), 8000);
         lines.header = (r2.ok?'✅ ':'❌ ') + r2.label; render();
-      } else if(!HEADER_PROXY){
-        lines.header = '⚠️ Relais non configuré (HEADER_PROXY vide)'; render();
       }
       const r3 = await testFetch(CORS_PROXY + encodeURIComponent(url), 8000);
       lines.proxy1 = (r3.ok?'✅ ':'❌ ') + r3.label; render();
