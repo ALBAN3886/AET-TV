@@ -206,6 +206,8 @@
     .player-tools button:active{background:#e4e4e4}
     .player-tools button.on{background:var(--red);color:#fff}
     .player-tools .ic{font-size:16px}
+    .diag-box{margin-top:10px;background:#0f1115;color:#d7f7dc;border-radius:12px;padding:10px 12px;font-size:11px;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+    .diag-box.hidden{display:none}
 
     .player-box.floating{position:fixed;right:10px;bottom:96px;width:52vw;max-width:240px;z-index:250;box-shadow:0 14px 30px rgba(0,0,0,.4);border:2px solid #fff;max-height:none;touch-action:none}
     .player-box.floating .wm{display:none}
@@ -382,7 +384,9 @@
           <button id="floatBtn"><span class="ic">🗗</span>Flotter</button>
           <button id="resetViewBtn"><span class="ic">↺</span>Réinit.</button>
           <button id="forceBtn"><span class="ic">⚡</span>Forcer</button>
+          <button id="diagBtn"><span class="ic">🩺</span>Diagnostic</button>
         </div>
+        <div class="diag-box hidden" id="diagBox"></div>
         <div class="meta">
           <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
           <div class="meta-item"><div class="k">Pays</div><div class="v" id="metaCountry">—</div></div>
@@ -1157,6 +1161,54 @@
     }
     $('zoomInBtn').addEventListener('click', ()=>{ zoomLevel = Math.min(zoomLevel + 0.25, 3); applyPlayerTransform(); });
     $('forceBtn').addEventListener('click', forceCurrentPlayback);
+    async function testFetch(url, timeoutMs){
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), timeoutMs);
+      const started = Date.now();
+      try{
+        const res = await fetch(url, { signal: ctrl.signal, mode:'cors' });
+        clearTimeout(t);
+        const ms = Date.now() - started;
+        if(!res.ok) return { ok:false, label:`HTTP ${res.status} (${ms}ms)` };
+        const text = await res.text().catch(()=> '');
+        const looksLikeM3U8 = text.includes('#EXTM3U');
+        return { ok:true, label:`OK ${res.status} (${ms}ms)${looksLikeM3U8 ? ' — playlist valide ✓' : ' — réponse reçue mais pas une playlist HLS'}` };
+      }catch(err){
+        clearTimeout(t);
+        const ms = Date.now() - started;
+        if(err.name === 'AbortError') return { ok:false, label:`Timeout après ${timeoutMs/1000}s` };
+        return { ok:false, label:`Échec réseau/CORS (${ms}ms) — ${err.message}` };
+      }
+    }
+    async function runDiagnostic(){
+      if(!currentItem?.url) return toast('Aucun flux sélectionné');
+      const box = $('diagBox');
+      box.classList.remove('hidden');
+      const url = currentItem.url;
+      const ref = currentItem.referrer, ua = currentItem.userAgent;
+      const lines = {
+        direct: 'Direct — en cours…',
+        header: (ref||ua) ? 'Relais Referer/UA — en cours…' : 'Relais Referer/UA — non applicable (aucun referer/UA requis pour cette chaîne)',
+        proxy1: 'Proxy 1 — en cours…',
+        proxy2: 'Proxy 2 — en cours…'
+      };
+      const render = ()=>{ box.textContent = `📋 ${currentItem.name}\n\n1) ${lines.direct}\n2) ${lines.header}\n3) ${lines.proxy1}\n4) ${lines.proxy2}`; };
+      render();
+      const r1 = await testFetch(url, 7000);
+      lines.direct = (r1.ok?'✅ ':'❌ ') + r1.label; render();
+      if(HEADER_PROXY && (ref||ua)){
+        const params = new URLSearchParams({ url }); if(ref) params.set('ref', ref); if(ua) params.set('ua', ua);
+        const r2 = await testFetch(HEADER_PROXY + (HEADER_PROXY.includes('?')?'&':'?') + params.toString(), 8000);
+        lines.header = (r2.ok?'✅ ':'❌ ') + r2.label; render();
+      } else if(!HEADER_PROXY){
+        lines.header = '⚠️ Relais non configuré (HEADER_PROXY vide)'; render();
+      }
+      const r3 = await testFetch(CORS_PROXY + encodeURIComponent(url), 8000);
+      lines.proxy1 = (r3.ok?'✅ ':'❌ ') + r3.label; render();
+      const r4 = await testFetch(CORS_PROXY_2 + encodeURIComponent(url), 8000);
+      lines.proxy2 = (r4.ok?'✅ ':'❌ ') + r4.label; render();
+    }
+    $('diagBtn').addEventListener('click', runDiagnostic);
     $('zoomOutBtn').addEventListener('click', ()=>{ zoomLevel = Math.max(zoomLevel - 0.25, 0.5); applyPlayerTransform(); });
     $('rotateBtn').addEventListener('click', ()=>{ rotateDeg = (rotateDeg + 90) % 360; applyPlayerTransform(); });
     $('resetViewBtn').addEventListener('click', ()=>{ zoomLevel = 1; rotateDeg = 0; applyPlayerTransform(); });
