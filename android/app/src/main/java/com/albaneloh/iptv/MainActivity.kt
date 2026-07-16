@@ -1,7 +1,11 @@
 package com.albaneloh.iptv
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -39,9 +43,12 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
+        CrashLogger.install(this)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        showLastCrashIfAny()
 
         setupWebView()
 
@@ -104,6 +111,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showLastCrashIfAny() {
+        val trace = CrashLogger.readLastCrashAndClear(this) ?: return
+        AlertDialog.Builder(this)
+            .setTitle("Dernier crash détecté")
+            .setMessage(trace)
+            .setPositiveButton("Copier") { _, _ ->
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("crash", trace))
+            }
+            .setNegativeButton("Fermer", null)
+            .show()
     }
 
     private fun handleSpecialSchemes(uri: Uri): Boolean {
