@@ -55,7 +55,6 @@ const els = {
   settingsPanel: $('#settingsPanel'),
   profileBtn: $('#profileBtn'),
   settingsBtn: $('#settingsBtn'),
-  homeBtn: $('#homeBtn'),
   profileNameTop: $('#profileNameTop'),
   profileNamePanel: $('#profileNamePanel'),
   profileNameInput: $('#profileNameInput'),
@@ -482,22 +481,6 @@ const loadCatalog = async (force = false) => {
     store.setCatalogTime(Date.now());
     return parsed;
   } catch (error) {
-    try {
-      const localResponse = await fetch('./channels.json', { cache: 'default' });
-      if (localResponse.ok) {
-        const localItems = await localResponse.json();
-        const parsedLocal = Array.isArray(localItems)
-          ? dedupeBy(localItems.map(sanitizeItem), (item) => `${item.name}|${item.url}`).slice(0, 320)
-          : [];
-        if (parsedLocal.length) {
-          state.catalog = parsedLocal;
-          store.setCatalog(state.catalog);
-          store.setCatalogTime(Date.now());
-          notify('Catalogue local chargé.', 'success');
-          return parsedLocal;
-        }
-      }
-    } catch {}
     if (cached.length) {
       state.catalog = cached.map(sanitizeItem);
       notify('Mode hors ligne : catalogue local restauré.', 'success');
@@ -953,7 +936,6 @@ const wireEvents = () => {
 
   els.playPauseBtn.addEventListener('click', togglePlayPause);
   els.closePlayerBtn.addEventListener('click', closePlayer);
-  $('.player-backdrop')?.addEventListener('click', closePlayer);
   els.nextChannelBtn.addEventListener('click', () => nextChannel(1));
   els.prevChannelBtn.addEventListener('click', () => nextChannel(-1));
   els.muteBtn.addEventListener('click', () => {
