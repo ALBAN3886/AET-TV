@@ -320,6 +320,13 @@
       <button class="dl-banner-close" id="dlBannerClose" aria-label="Fermer">✕</button>
     </div>
 
+    <div class="dl-banner hidden" id="updateBanner">
+      <span class="dl-banner-ico">🔄</span>
+      <span class="dl-banner-text" id="updateBannerText">Une nouvelle version est disponible</span>
+      <a href="#" class="dl-banner-btn" id="updateBannerBtn" target="_blank" rel="noopener">Mettre à jour</a>
+      <button class="dl-banner-close" id="updateBannerClose" aria-label="Fermer">✕</button>
+    </div>
+
     <section class="screen active" id="screen-live-tv">
       <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong></div><div class="pill" id="totalCount">…</div></div>
       <div class="search-wrap">
@@ -615,6 +622,15 @@
           <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Chaîne</label><input class="input" id="adminEvCh" type="text" /></div>
         </div>
         <button class="btn btn-red" id="adminAddEventBtn" style="width:100%">➕ Ajouter le match</button>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Mise à jour de l'app Android</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Affiche une bannière dans l'app aux utilisateurs dont la version installée est plus ancienne.</p>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Numéro de version la plus récente</label><input class="input" id="adminUpdateVersion" type="number" placeholder="2" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Lien de téléchargement de l'APK</label><input class="input" id="adminUpdateUrl" type="text" placeholder="https://github.com/.../app-debug.apk" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Message affiché</label><input class="input" id="adminUpdateMessage" type="text" placeholder="Nouvelle version disponible !" /></div>
+        <button class="btn btn-red" id="adminSaveUpdateBtn" style="width:100%">💾 Enregistrer la mise à jour</button>
       </div>
 
       <div class="card">
@@ -1233,6 +1249,63 @@
         localStorage.setItem(DL_KEY, '1');
       });
     })();
+
+    // Détection app native + numéro de version installée (via le User-Agent)
+    const IS_NATIVE_APP = /AlbanElohIPTV/.test(navigator.userAgent);
+    const INSTALLED_VERSION = (()=>{
+      const m = navigator.userAgent.match(/AlbanElohIPTV\/(\d+)/);
+      return m ? parseInt(m[1], 10) : 0;
+    })();
+    if(IS_NATIVE_APP){
+      const dlBanner = document.getElementById('dlBanner');
+      if(dlBanner) dlBanner.classList.add('hidden'); // inutile de proposer l'app à quelqu'un qui l'a déjà
+    }
+
+    async function checkAppUpdate(){
+      if(!IS_NATIVE_APP || !fbDb) return;
+      try{
+        const snap = await fbDb.collection('settings').doc('appUpdate').get();
+        if(!snap.exists) return;
+        const d = snap.data();
+        const latest = Number(d.versionCode || 0);
+        if(latest > INSTALLED_VERSION && d.downloadUrl){
+          const UPDATE_DISMISS_KEY = 'aet_update_dismissed_v' + latest;
+          if(localStorage.getItem(UPDATE_DISMISS_KEY) === '1') return;
+          const banner = document.getElementById('updateBanner');
+          const text = document.getElementById('updateBannerText');
+          const btn = document.getElementById('updateBannerBtn');
+          const closeBtn = document.getElementById('updateBannerClose');
+          if(!banner) return;
+          text.textContent = d.message || 'Une nouvelle version est disponible';
+          btn.href = d.downloadUrl;
+          banner.classList.remove('hidden');
+          closeBtn.addEventListener('click', ()=>{
+            banner.classList.add('hidden');
+            localStorage.setItem(UPDATE_DISMISS_KEY, '1');
+          });
+        }
+      }catch(e){ console.warn('Vérification de mise à jour indisponible', e); }
+    }
+
+    async function fillAdminUpdateForm(){
+      try{
+        const s = await fbDb.collection('settings').doc('appUpdate').get();
+        const d = s.exists ? s.data() : {};
+        $('adminUpdateVersion').value = d.versionCode || '';
+        $('adminUpdateUrl').value = d.downloadUrl || '';
+        $('adminUpdateMessage').value = d.message || '';
+      }catch(e){}
+    }
+    $('adminSaveUpdateBtn')?.addEventListener('click', async ()=>{
+      const versionCode = parseInt($('adminUpdateVersion').value, 10);
+      const downloadUrl = $('adminUpdateUrl').value.trim();
+      const message = $('adminUpdateMessage').value.trim();
+      if(!versionCode || !downloadUrl) return toast('Numéro de version et lien requis');
+      try{
+        await fbDb.collection('settings').doc('appUpdate').set({ versionCode, downloadUrl, message }, { merge:true });
+        toast('Mise à jour configurée pour les utilisateurs de l\'app');
+      }catch(e){ toast('Échec de l\'enregistrement'); }
+    });
     document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{ appSettings.theme = b.dataset.val; saveSettings(); applySettingsUI(); }));
     $('langSelect').addEventListener('change', e=>{ appSettings.lang = e.target.value; saveSettings(); applyLanguage(); setHeader(currentScreenName()); });
     $('autoplayToggle').addEventListener('change', e=>{ appSettings.autoplay = e.target.checked; saveSettings(); });
@@ -1442,6 +1515,7 @@
       $('adminLabelPlayer').value = remoteLabels.player || '';
       renderAdminPlaylists();
       renderAdminEvents();
+      fillAdminUpdateForm();
       switchScreen('admin');
     }
     async function triggerAdminLock(){
@@ -1634,7 +1708,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); }
     boot();
   </script>
 </body>
