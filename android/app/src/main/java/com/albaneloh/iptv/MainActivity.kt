@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
      * Remplacez cette URL si votre interface est hébergée à distance.
      * Si vous gardez le fichier local, placez index-204.html dans app/src/main/assets/web/
      */
-    private val startUrl = "https://alban3886.github.io/index.html"
+    private val startUrl = "https://alban3886.github.io/AET-TV/?"
 
     /**
      * URL de secours locale, utilisée si le chargement en ligne échoue (pas de réseau).
