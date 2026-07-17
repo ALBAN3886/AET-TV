@@ -243,7 +243,7 @@
 
     .fav-list{display:flex;flex-direction:column;gap:10px}.fav-item{background:#fff7f7;border:2px solid #f2cccc;border-radius:14px;padding:12px}.fav-item h4{margin:0 0 4px;font-size:14px;color:var(--red-dark)}.fav-item p{margin:0 0 8px;font-size:11px;color:#888;word-break:break-all}
 
-    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);height:70px;background:#fff;display:grid;grid-template-columns:repeat(5,1fr);z-index:58;box-shadow:0 -8px 24px rgba(0,0,0,.14);border-top:1px solid var(--line)}
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);height:70px;background:#fff;display:grid;grid-template-columns:repeat(6,1fr);z-index:58;box-shadow:0 -8px 24px rgba(0,0,0,.14);border-top:1px solid var(--line)}
     .bottom-btn{border:none;background:transparent;color:#7c7c7c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer;position:relative}.bottom-btn.active{color:var(--red-dark)}.bottom-btn.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;background:var(--red);border-radius:0 0 4px 4px}.bottom-btn .ico{font-size:19px}
 
     @media (min-width:640px){.channels-grid{grid-template-columns:1fr 1fr}.meta{grid-template-columns:repeat(3,1fr)}}
@@ -649,6 +649,7 @@
       <button class="bottom-btn" data-nav="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
       <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
       <button class="bottom-btn" data-nav="player"><span class="ico">🎥</span><span>Lecteur</span></button>
+      <button class="bottom-btn" data-nav="live-event"><span class="ico">🏆</span><span>Matchs</span></button>
     </nav>
   </div>
 
@@ -1708,7 +1709,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); }
     boot();
   </script>
 </body>
