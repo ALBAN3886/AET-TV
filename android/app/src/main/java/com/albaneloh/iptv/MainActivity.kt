@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         settings.loadWithOverviewMode = true
         settings.useWideViewPort = true
-        settings.userAgentString = settings.userAgentString + " AlbanElohIPTV/1.0"
+        settings.userAgentString = settings.userAgentString + " AlbanElohIPTV/$APP_BUILD_VERSION"
 
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
@@ -206,5 +206,12 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val JS_BRIDGE_NAME = "NativePlayer"
+
+        /**
+         * Incrémentez ce nombre à chaque nouvelle build native (APK) qui doit être
+         * réinstallée par les utilisateurs. Comparé côté web à settings/appUpdate
+         * dans Firestore pour afficher (ou non) la bannière de mise à jour.
+         */
+        private const val APP_BUILD_VERSION = 2
     }
 }
