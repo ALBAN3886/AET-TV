@@ -57,7 +57,8 @@ class MainActivity : AppCompatActivity() {
         setupWebView()
 
         if (savedInstanceState == null) {
-            binding.webView.loadUrl(startUrl)
+            val bustCache = "${startUrl}?v=${System.currentTimeMillis()}"
+            binding.webView.loadUrl(bustCache)
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -84,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         settings.loadWithOverviewMode = true
         settings.useWideViewPort = true
         settings.userAgentString = settings.userAgentString + " AlbanElohIPTV/$APP_BUILD_VERSION"
+        settings.cacheMode = WebSettings.LOAD_NO_CACHE
 
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
@@ -212,6 +214,6 @@ class MainActivity : AppCompatActivity() {
          * réinstallée par les utilisateurs. Comparé côté web à settings/appUpdate
          * dans Firestore pour afficher (ou non) la bannière de mise à jour.
          */
-        private const val APP_BUILD_VERSION = 2
+        private const val APP_BUILD_VERSION = 3
     }
 }
