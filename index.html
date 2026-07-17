@@ -274,6 +274,7 @@
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
+      <div id="drawerPlaylistItems"></div>
       <button class="drawer-item" data-screen="settings"><span class="ico">⚙️</span><span>Paramètres</span></button>
       <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
       <button class="drawer-item" id="shareBtn"><span class="ico">📤</span><span>Partager</span></button>
@@ -428,6 +429,11 @@
     <section class="screen" id="screen-live-event">
       <div class="glass stats"><div><strong>🏆 Live Event</strong></div><div class="pill">2 matchs</div></div>
       <div id="eventWrap"></div>
+    </section>
+
+    <section class="screen" id="screen-category">
+      <div class="glass stats"><div><strong id="categoryTitle">Catégorie</strong></div><div class="pill" id="categoryCount">0</div></div>
+      <div id="categoryChannelsWrap"></div>
     </section>
 
     <section class="screen" id="screen-favorites">
@@ -839,6 +845,8 @@
     }
 
     async function loadPlaylist(force=false){
+      await loadRemotePlaylists();
+      renderPlaylistNav();
       const cached = localStorage.getItem(CACHE_KEY);
       const t = parseInt(localStorage.getItem(CACHE_TIME_KEY)||'0',10);
       if (!force && cached && (Date.now()-t<CACHE_MS)){
@@ -851,14 +859,14 @@
         try{ const r=await fetch(PLAYLIST_URL,{cache:force?'reload':'default'}); if(r.ok) text=await r.text(); }catch{}
         if(!text || !text.includes('#EXTINF')){ const r2=await fetch(CORS_PROXY+encodeURIComponent(PLAYLIST_URL)); text=await r2.text(); }
         let parsed = parseM3U(text);
-        const extraLists = await loadRemotePlaylists();
-        for(const pl of extraLists){
+        for(const pl of remotePlaylists){
           if(!pl.url) continue;
           try{
             let extraText='';
             try{ const r3=await fetch(pl.url,{cache:force?'reload':'default'}); if(r3.ok) extraText=await r3.text(); }catch{}
             if(!extraText || !extraText.includes('#EXTINF')){ const r4=await fetch(CORS_PROXY+encodeURIComponent(pl.url)); extraText=await r4.text(); }
             const extraParsed = parseM3U(extraText);
+            extraParsed.forEach(c => { c.source = pl.id; });
             parsed = parsed.concat(extraParsed);
           }catch(e){ console.warn('Playlist additionnelle échouée:', pl.url, e); }
         }
@@ -918,7 +926,50 @@
       `).join('')}</div>${list.length>200?'<div class="info">Affichage limité à 200 résultats. Filtrez par pays ou recherchez pour affiner.</div>':''}`;
     }
 
-    function renderCountries(){
+    function playlistIcon(label=''){
+      const l = label.toLowerCase();
+      if(l.includes('film') || l.includes('movie') || l.includes('cine')) return '🎬';
+      if(l.includes('music') || l.includes('musi')) return '🎵';
+      if(l.includes('sport')) return '⚽';
+      if(l.includes('kid') || l.includes('enfant')) return '🧒';
+      if(l.includes('news') || l.includes('info')) return '📰';
+      return '📂';
+    }
+
+    function renderPlaylistNav(){
+      const wrap = $('drawerPlaylistItems');
+      if(!wrap) return;
+      wrap.innerHTML = remotePlaylists.map(pl => `
+        <button class="drawer-item" data-category="${pl.id}"><span class="ico">${playlistIcon(pl.label)}</span><span>${esc(pl.label || 'Playlist')}</span></button>
+      `).join('');
+    }
+
+    function openCategoryScreen(pl){
+      $('categoryTitle').textContent = `${playlistIcon(pl.label)} ${pl.label || 'Playlist'}`;
+      renderCategoryChannels(pl);
+      screens.forEach(s=>s.classList.toggle('active', s.id==='screen-category'));
+      bottomBtns.forEach(b=>b.classList.remove('active'));
+      closeDrawer();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function renderCategoryChannels(pl){
+      const list = channels.filter(c => c.source === pl.id);
+      $('categoryCount').textContent = `${list.length}`;
+      if(!list.length){ $('categoryChannelsWrap').innerHTML = '<div class="empty"><div class="em">📂</div><h4>Aucune chaîne</h4><p>Cette playlist est vide ou n\'a pas pu être chargée</p></div>'; return; }
+      $('categoryChannelsWrap').innerHTML = `<div class="channels-grid">${list.slice(0,200).map(c => `
+        <div class="channel" data-catplay="${c.id}">
+          <div class="logo">${c.logo ? `<img src="${esc(c.logo)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='📺'">` : '📺'}</div>
+          <div class="cinf">
+            <div class="cname">${esc(c.name)}</div>
+            <div class="cmeta"><span class="badge">${COUNTRY_FLAGS[c.group]||'🏳️'} ${esc(c.group)}</span></div>
+          </div>
+          <span class="live">LIVE</span>
+        </div>
+      `).join('')}</div>`;
+    }
+
+        function renderCountries(){
       const q = ($('countrySearch').value||'').toLowerCase().trim();
       const list = countries.filter(c => !q || c.name.toLowerCase().includes(q));
       $('countryCount').textContent = `${countries.length}`;
@@ -1150,6 +1201,13 @@
     $('drawerMask').addEventListener('click', closeDrawer);
     $('drawerClose').addEventListener('click', closeDrawer);
     drawerBtns.forEach(b=>b.addEventListener('click', ()=>switchScreen(b.dataset.screen)));
+    $('drawer').addEventListener('click', e=>{
+      const catBtn = e.target.closest('[data-category]');
+      if(!catBtn) return;
+      const pl = remotePlaylists.find(p=>p.id===catBtn.dataset.category);
+      if(pl) openCategoryScreen(pl);
+    });
+    $('categoryChannelsWrap').addEventListener('click', e=>{ const c=e.target.closest('[data-catplay]'); if(!c) return; const item = channels.find(x=>x.id===c.dataset.catplay); if(item) playItem(item); });
     bottomBtns.forEach(b=>b.addEventListener('click', ()=>switchScreen(b.dataset.nav)));
     $('searchTopBtn').addEventListener('click', ()=>{ switchScreen('live-tv'); setTimeout(()=>$('channelSearch').focus(),150); });
     $('reloadBtn').addEventListener('click', ()=>loadPlaylist(true));
@@ -1623,6 +1681,7 @@
         $('adminPlaylistLabel').value = ''; $('adminPlaylistUrl').value = '';
         await loadRemotePlaylists();
         renderAdminPlaylists();
+        renderPlaylistNav();
         toast('Playlist ajoutée. Tape "Recharger les chaînes" pour l\'appliquer.');
       }catch(e){ toast('Échec de l\'ajout'); }
     });
@@ -1633,6 +1692,7 @@
         await fbDb.collection('playlists').doc(id).delete();
         await loadRemotePlaylists();
         renderAdminPlaylists();
+        renderPlaylistNav();
         toast('Playlist supprimée');
       }catch(err){ toast('Échec de la suppression'); }
     });
