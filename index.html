@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <style>
     :root{
       --red:#bf111b;
@@ -291,10 +294,11 @@
     <div class="parental-lock hidden" id="adminLock">
       <div class="parental-lock-box">
         <div style="font-size:32px;margin-bottom:8px">🛠️</div>
-        <h3 style="margin:0 0 8px" id="adminLockTitle">Code Admin requis</h3>
+        <h3 style="margin:0 0 8px">Connexion Admin</h3>
         <p style="font-size:12px;color:var(--muted);margin:0 0 12px" id="adminLockHint">Cette section est réservée au développeur.</p>
-        <input class="input" id="adminLockInput" type="password" inputmode="text" placeholder="Code admin" style="text-align:center;margin-bottom:10px" />
-        <button class="btn btn-red" id="adminLockBtn" style="width:100%">Valider</button>
+        <input class="input" id="adminLockEmail" type="email" placeholder="Email" style="text-align:center;margin-bottom:8px" autocomplete="username" />
+        <input class="input" id="adminLockInput" type="password" placeholder="Mot de passe" style="text-align:center;margin-bottom:10px" autocomplete="current-password" />
+        <button class="btn btn-red" id="adminLockBtn" style="width:100%">Se connecter</button>
         <button class="btn btn-light" id="adminLockCancelBtn" style="width:100%;margin-top:8px">Annuler</button>
       </div>
     </div>
@@ -559,16 +563,18 @@
       <button class="btn btn-light" id="adminBackBtn" style="margin-bottom:10px">← Retour aux Paramètres</button>
       <div class="card">
         <div class="card-h"><h3>🛠️ Mode Admin</h3></div>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Outils de test réservés au développeur : diagnostic de n'importe quelle URL de flux.</p>
-        <button class="btn btn-light" id="adminChangePassBtn" style="width:100%">🔑 Changer le code admin</button>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Connecté en tant que <strong id="adminAccountEmail">—</strong></p>
+        <button class="btn btn-light" id="adminLogoutBtn" style="width:100%">🚪 Se déconnecter</button>
       </div>
 
       <div class="card">
         <div class="card-h"><h3>Configuration des relais</h3></div>
-        <div class="admin-kv"><span>Relais Cloudflare</span><code id="adminHeaderProxy"></code></div>
-        <div class="admin-kv"><span>Proxy 1</span><code id="adminProxy1"></code></div>
-        <div class="admin-kv"><span>Proxy 2</span><code id="adminProxy2"></code></div>
-        <div class="admin-kv"><span>Proxy 3</span><code id="adminProxy3"></code></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Modifiable ici, s'applique automatiquement sur tous les appareils.</p>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Relais Cloudflare</label><input class="input" id="adminHeaderProxy" type="text" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Proxy 1</label><input class="input" id="adminProxy1" type="text" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Proxy 2</label><input class="input" id="adminProxy2" type="text" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Proxy 3</label><input class="input" id="adminProxy3" type="text" /></div>
+        <button class="btn btn-red" id="adminSaveProxiesBtn" style="width:100%">💾 Enregistrer</button>
       </div>
 
       <div class="card">
@@ -626,12 +632,41 @@
         });
       }catch{ return items; }
     }
-    const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-    const CORS_PROXY_2 = 'https://corsproxy.io/?url=';
-    const CORS_PROXY_3 = 'https://api.codetabs.com/v1/proxy?quest=';
+    let CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+    let CORS_PROXY_2 = 'https://corsproxy.io/?url=';
+    let CORS_PROXY_3 = 'https://api.codetabs.com/v1/proxy?quest=';
     // Relais Cloudflare Worker qui peut envoyer un Referer/User-Agent personnalisé (voir HEADER-PROXY-WORKER.js).
     // Laisser vide tant qu'il n'est pas déployé : l'app se rabat alors sur les proxys génériques ci-dessus.
-    const HEADER_PROXY = 'https://aet-header-proxy.albaneloh686.workers.dev/';
+    let HEADER_PROXY = 'https://aet-header-proxy.albaneloh686.workers.dev/';
+
+    // Firebase : synchronisation du compte admin et de la configuration des relais.
+    const firebaseConfig = {
+      apiKey: 'AIzaSyDamYUp1-7xx2jz2GPjKEIJ3zshJ-zLi1g',
+      authDomain: 'aet-tv-5d58c.firebaseapp.com',
+      projectId: 'aet-tv-5d58c',
+      storageBucket: 'aet-tv-5d58c.firebasestorage.app',
+      messagingSenderId: '4731069950',
+      appId: '1:4731069950:web:764c9df1511ff242c8ccaf'
+    };
+    let fbAuth = null, fbDb = null, isAdminSession = false;
+    try{
+      firebase.initializeApp(firebaseConfig);
+      fbAuth = firebase.auth();
+      fbDb = firebase.firestore();
+    }catch(e){ console.warn('Firebase indisponible', e); }
+    async function loadRemoteProxyConfig(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('settings').doc('proxies').get();
+        if(snap.exists){
+          const d = snap.data();
+          if(typeof d.headerProxy === 'string') HEADER_PROXY = d.headerProxy;
+          if(typeof d.proxy1 === 'string') CORS_PROXY = d.proxy1;
+          if(typeof d.proxy2 === 'string') CORS_PROXY_2 = d.proxy2;
+          if(typeof d.proxy3 === 'string') CORS_PROXY_3 = d.proxy3;
+        }
+      }catch(e){ console.warn('Config relais distante indisponible, valeurs locales conservées', e); }
+    }
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
@@ -1310,28 +1345,26 @@
     });
 
     // Panneau Admin
-    const ADMIN_PASS_KEY = 'aet_v5_admin_pass';
     function openAdminPanel(){
-      $('adminHeaderProxy').textContent = HEADER_PROXY || '(non configuré)';
-      $('adminProxy1').textContent = CORS_PROXY;
-      $('adminProxy2').textContent = CORS_PROXY_2;
-      $('adminProxy3').textContent = CORS_PROXY_3;
+      $('adminAccountEmail').textContent = fbAuth?.currentUser?.email || '—';
+      $('adminHeaderProxy').value = HEADER_PROXY || '';
+      $('adminProxy1').value = CORS_PROXY;
+      $('adminProxy2').value = CORS_PROXY_2;
+      $('adminProxy3').value = CORS_PROXY_3;
       switchScreen('admin');
     }
-    function triggerAdminLock(){
-      const savedPass = localStorage.getItem(ADMIN_PASS_KEY);
-      const lock = $('adminLock');
-      $('adminLockInput').value = '';
-      if(!savedPass){
-        $('adminLockTitle').textContent = 'Créer un code Admin';
-        $('adminLockHint').textContent = 'Aucun code défini. Choisis un code (4 caractères min.) pour protéger cette section.';
-        $('adminLockBtn').dataset.mode = 'create';
-      } else {
-        $('adminLockTitle').textContent = 'Code Admin requis';
-        $('adminLockHint').textContent = 'Cette section est réservée au développeur.';
-        $('adminLockBtn').dataset.mode = 'check';
+    async function triggerAdminLock(){
+      if(!fbAuth) return toast('Connexion admin indisponible hors ligne');
+      const user = fbAuth.currentUser;
+      if(user){
+        try{
+          const token = await user.getIdTokenResult(true);
+          if(token.claims.admin === true){ openAdminPanel(); return; }
+        }catch(e){}
       }
-      lock.classList.remove('hidden');
+      $('adminLockEmail').value = '';
+      $('adminLockInput').value = '';
+      $('adminLock').classList.remove('hidden');
     }
     // Geste secret : 5 taps rapides sur le titre en haut du site ouvrent le verrou admin.
     (function(){
@@ -1350,27 +1383,44 @@
       });
     })();
     $('adminLockCancelBtn').addEventListener('click', ()=>{ $('adminLock').classList.add('hidden'); });
-    $('adminLockBtn').addEventListener('click', ()=>{
-      const val = $('adminLockInput').value.trim();
-      const mode = $('adminLockBtn').dataset.mode;
-      if(mode==='create'){
-        if(val.length < 4) return toast('Le code doit faire au moins 4 caractères');
-        localStorage.setItem(ADMIN_PASS_KEY, val);
-        $('adminLock').classList.add('hidden');
-        toast('Code admin créé');
-        openAdminPanel();
-      } else {
-        const savedPass = localStorage.getItem(ADMIN_PASS_KEY);
-        if(val === savedPass){ $('adminLock').classList.add('hidden'); openAdminPanel(); }
-        else toast('Code incorrect');
+    $('adminLockBtn').addEventListener('click', async ()=>{
+      const email = $('adminLockEmail').value.trim();
+      const pass = $('adminLockInput').value;
+      if(!email || !pass) return toast('Renseigne l\'email et le mot de passe');
+      try{
+        const cred = await fbAuth.signInWithEmailAndPassword(email, pass);
+        const token = await cred.user.getIdTokenResult();
+        if(token.claims.admin === true){
+          $('adminLock').classList.add('hidden');
+          toast('Connecté');
+          openAdminPanel();
+        } else {
+          toast('Ce compte n\'a pas les droits admin');
+          fbAuth.signOut();
+        }
+      }catch(e){
+        toast('Connexion échouée : email ou mot de passe incorrect');
       }
     });
-    $('adminChangePassBtn')?.addEventListener('click', ()=>{
-      const np = prompt('Nouveau code admin (4 caractères min.) :');
-      if(np===null) return;
-      if(np.trim().length < 4) return toast('Code trop court, non modifié');
-      localStorage.setItem(ADMIN_PASS_KEY, np.trim());
-      toast('Code admin mis à jour');
+    $('adminLogoutBtn')?.addEventListener('click', async ()=>{
+      await fbAuth.signOut();
+      toast('Déconnecté');
+      switchScreen('settings');
+    });
+    $('adminSaveProxiesBtn')?.addEventListener('click', async ()=>{
+      const vals = {
+        headerProxy: $('adminHeaderProxy').value.trim(),
+        proxy1: $('adminProxy1').value.trim(),
+        proxy2: $('adminProxy2').value.trim(),
+        proxy3: $('adminProxy3').value.trim()
+      };
+      try{
+        await fbDb.collection('settings').doc('proxies').set(vals, { merge:true });
+        HEADER_PROXY = vals.headerProxy; CORS_PROXY = vals.proxy1; CORS_PROXY_2 = vals.proxy2; CORS_PROXY_3 = vals.proxy3;
+        toast('Configuration enregistrée pour tous les appareils');
+      }catch(e){
+        toast('Échec de l\'enregistrement');
+      }
     });
     $('adminBackBtn').addEventListener('click', ()=>switchScreen('settings'));
     $('adminTestBtn').addEventListener('click', async ()=>{
@@ -1404,7 +1454,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); }
     boot();
   </script>
 </body>
