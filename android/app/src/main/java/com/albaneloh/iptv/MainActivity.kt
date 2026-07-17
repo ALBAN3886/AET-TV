@@ -31,14 +31,18 @@ class MainActivity : AppCompatActivity() {
      * Remplacez cette URL si votre interface est hébergée à distance.
      * Si vous gardez le fichier local, placez index-204.html dans app/src/main/assets/web/
      */
-    private val startUrl = "file:///android_asset/web/index-204.html"
+    private val startUrl = "https://alban3886.github.io/index.html"
+
+    /**
+     * URL de secours locale, utilisée si le chargement en ligne échoue (pas de réseau).
+     */
+    private val fallbackUrl = "file:///android_asset/web/index-204.html"
 
     /**
      * N'injectez le bridge que sur vos pages de confiance.
      */
     private val trustedHosts = setOf(
-        "your-domain.com",
-        "www.your-domain.com"
+        "alban3886.github.io"
     )
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -102,6 +106,17 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 val url = request?.url ?: return false
                 return handleSpecialSchemes(url)
+            }
+
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: android.webkit.WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                if (request?.isForMainFrame == true && view?.url != fallbackUrl) {
+                    view?.loadUrl(fallbackUrl)
+                }
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
