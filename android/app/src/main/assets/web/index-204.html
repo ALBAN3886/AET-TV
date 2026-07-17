@@ -271,7 +271,6 @@
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
-      <button class="drawer-item" data-screen="history"><span class="ico">🕘</span><span>Historique</span></button>
       <button class="drawer-item" data-screen="settings"><span class="ico">⚙️</span><span>Paramètres</span></button>
       <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
       <button class="drawer-item" id="shareBtn"><span class="ico">📤</span><span>Partager</span></button>
@@ -427,11 +426,6 @@
       <div class="fav-list" id="favWrap"></div>
     </section>
 
-    <section class="screen" id="screen-history">
-      <div class="glass stats"><div><strong>🕘 Historique</strong></div><div class="pill" id="histCount">0</div></div>
-      <div class="fav-list" id="histWrap"></div>
-    </section>
-
     <section class="screen" id="screen-settings">
       <div class="glass stats"><div><strong>⚙️ Paramètres</strong></div></div>
 
@@ -521,7 +515,6 @@
         <div class="settings-row"><span>ALBAN TV</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="huhu" checked><span class="slider"></span></label></div>
         <div class="settings-row"><span>Live Event</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="live-event" checked><span class="slider"></span></label></div>
         <div class="settings-row"><span>Favoris</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="favorites" checked><span class="slider"></span></label></div>
-        <div class="settings-row"><span>Historique</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="history" checked><span class="slider"></span></label></div>
       </div>
 
       <div class="card">
@@ -543,7 +536,6 @@
       <div class="card">
         <div class="card-h"><h3>Données</h3></div>
         <button class="btn btn-light" id="clearFavBtn" style="width:100%;margin-bottom:8px">Vider les favoris</button>
-        <button class="btn btn-light" id="clearHistBtn" style="width:100%;margin-bottom:8px">Vider l'historique</button>
         <button class="btn btn-light" id="clearCacheBtn" style="width:100%;margin-bottom:8px">Vider le cache des chaînes</button>
         <button class="btn btn-light" id="exportBackupBtn" style="width:100%;margin-bottom:8px">⬆️ Sauvegarder mes données</button>
         <label class="btn btn-light" style="width:100%;display:block;text-align:center;margin-bottom:8px;cursor:pointer">⬇️ Restaurer une sauvegarde<input type="file" id="restoreBackupInput" accept="application/json" hidden /></label>
@@ -660,8 +652,6 @@
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
-    const HIST_KEY = 'aet_v5_history';
-    const HIST_MAX = 50;
     const SETTINGS_KEY = 'aet_v5_settings';
     const CACHE_MS = 6 * 60 * 60 * 1000;
 
@@ -701,7 +691,6 @@
     let currentSearch = '';
     let currentItem = null;
     let favs = [];
-    let hist = [];
     let hls = null;
 
     const safeParse = (v,f)=>{ try{return JSON.parse(v)??f}catch{return f} };
@@ -863,22 +852,6 @@
       `).join('');
     }
 
-    function renderHist(){
-      $('histCount').textContent = `${hist.length}`;
-      if(!hist.length){ $('histWrap').innerHTML = '<div class="empty"><div class="em">🕘</div><h4>Aucun historique</h4><p>Les chaînes lues apparaîtront ici</p></div>'; return; }
-      $('histWrap').innerHTML = hist.map(h => `
-        <div class="fav-item">
-          <h4>${esc(h.name)}</h4>
-          <p>${esc(h.group)}</p>
-          <div class="row3">
-            <button class="btn btn-red" data-hplay="${h.id}">Lire</button>
-            <button class="btn btn-light" data-hcopy="${h.id}">Copier</button>
-            <button class="btn btn-soft" data-hdel="${h.id}">Suppr.</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
     function detectType(url){
       const v = String(url||'').toLowerCase();
       if(v.includes('youtube.com') || v.includes('youtu.be')) return 'youtube';
@@ -914,7 +887,7 @@
         theme:'light', lang:'fr', autoplay:true, quality:'auto',
         uiScale:'n', clockShow:false, clockPos:'left', skipSeconds:30,
         relaunchFullscreen:true, forceLandscape:false,
-        navVisibility:{ 'live-tv':true, 'countries':true, 'youtube':true, 'huhu':true, 'live-event':true, 'favorites':true, 'history':true },
+        navVisibility:{ 'live-tv':true, 'countries':true, 'youtube':true, 'huhu':true, 'live-event':true, 'favorites':true },
         parentalEnabled:false, parentalPassword:'', parentalOnStart:false
       };
       const saved = safeParse(localStorage.getItem(SETTINGS_KEY), {});
@@ -1028,7 +1001,6 @@
       stopAllPlayback(); if(!item?.url) return toast('URL manquante');
       hlsAttemptStage = 0; hlsRetryCount = 0;
       const type = detectType(item.url); currentItem = applyOverrideIfAny({ ...item, detectedType:type });
-      addHistory(currentItem);
       $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
       if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
       switchScreen('player');
@@ -1037,15 +1009,6 @@
     const getFavs = ()=>safeParse(localStorage.getItem(FAV_KEY), []);
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
     function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
-
-    const getHist = ()=>safeParse(localStorage.getItem(HIST_KEY), []);
-    const saveHist = list => { hist = list; localStorage.setItem(HIST_KEY, JSON.stringify(list)); renderHist(); };
-    function addHistory(item){
-      if(!item?.url) return;
-      const withoutDup = hist.filter(x=>x.url!==item.url);
-      const entry = { id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'', watchedAt:new Date().toISOString() };
-      saveHist([entry, ...withoutDup].slice(0, HIST_MAX));
-    }
     function copyText(t){ if(!t) return toast('Rien à copier'); navigator.clipboard.writeText(t).then(()=>toast('Copié')).catch(()=>toast('Copie impossible')); }
     let currentOverlayUrl = '';
     function openUrl(url){
@@ -1079,14 +1042,14 @@
 
     // Paramètres : thème, langue, lecture auto, qualité, données
     const I18N = {
-      fr:{ livetv:'Live TV', countries:'Pays', youtube:'YouTube', albantv:'ALBAN TV', player:'Lecteur', liveevent:'Live Event', favorites:'Favoris', history:'Historique', settings:'Paramètres', worldchannels:'Chaînes du monde', reload:'Recharger les chaînes', share:'Partager',
-        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],'live-event':['LIVE EVENT','MATCHS'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS'],'history':['ALBAN ELOH TECHNOLOGIE','HISTORIQUE'],'settings':['ALBAN ELOH TECHNOLOGIE','PARAMÈTRES'],'admin':['ALBAN ELOH TECHNOLOGIE','MODE ADMIN']} },
-      en:{ livetv:'Live TV', countries:'Countries', youtube:'YouTube', albantv:'ALBAN TV', player:'Player', liveevent:'Live Event', favorites:'Favorites', history:'History', settings:'Settings', worldchannels:'World channels', reload:'Reload channels', share:'Share',
-        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','WORLD CHANNELS'],'countries':['ALBAN ELOH TECHNOLOGIE','COUNTRIES'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','PLAYER'],'live-event':['LIVE EVENT','MATCHES'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORITES'],'history':['ALBAN ELOH TECHNOLOGIE','HISTORY'],'settings':['ALBAN ELOH TECHNOLOGIE','SETTINGS'],'admin':['ALBAN ELOH TECHNOLOGIE','ADMIN MODE']} }
+      fr:{ livetv:'Live TV', countries:'Pays', youtube:'YouTube', albantv:'ALBAN TV', player:'Lecteur', liveevent:'Live Event', favorites:'Favoris', settings:'Paramètres', worldchannels:'Chaînes du monde', reload:'Recharger les chaînes', share:'Partager',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],'live-event':['LIVE EVENT','MATCHS'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS'],'settings':['ALBAN ELOH TECHNOLOGIE','PARAMÈTRES'],'admin':['ALBAN ELOH TECHNOLOGIE','MODE ADMIN']} },
+      en:{ livetv:'Live TV', countries:'Countries', youtube:'YouTube', albantv:'ALBAN TV', player:'Player', liveevent:'Live Event', favorites:'Favorites', settings:'Settings', worldchannels:'World channels', reload:'Reload channels', share:'Share',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','WORLD CHANNELS'],'countries':['ALBAN ELOH TECHNOLOGIE','COUNTRIES'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','PLAYER'],'live-event':['LIVE EVENT','MATCHES'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORITES'],'settings':['ALBAN ELOH TECHNOLOGIE','SETTINGS'],'admin':['ALBAN ELOH TECHNOLOGIE','ADMIN MODE']} }
     };
     function applyLanguage(){
       const d = I18N[appSettings.lang] || I18N.fr;
-      const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'history':d.history, 'settings':d.settings };
+      const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'settings':d.settings };
       document.querySelectorAll('.bottom-btn[data-nav]').forEach(b=>{ const t = map[b.dataset.nav]; if(t) b.querySelector('span:last-child').textContent = t; });
       document.querySelectorAll('.drawer-item[data-screen]').forEach(b=>{ const t = b.dataset.screen==='live-tv' ? d.worldchannels : map[b.dataset.screen]; if(t) b.querySelector('span:last-child').textContent = t; });
       $('reloadBtn').querySelector('span:last-child').textContent = d.reload;
@@ -1242,7 +1205,6 @@
       setTimeout(()=>location.reload(), 900);
     });
     $('clearFavBtn').addEventListener('click', ()=>{ saveFavs([]); toast('Favoris supprimés'); });
-    $('clearHistBtn').addEventListener('click', ()=>{ saveHist([]); toast('Historique supprimé'); });
     $('clearCacheBtn').addEventListener('click', ()=>{ localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TIME_KEY); toast('Cache vidé — rechargement…'); loadPlaylist(true); });
     function currentScreenName(){ const active = screens.find(s=>s.classList.contains('active')); return active ? active.id.replace('screen-','') : 'live-tv'; }
 
@@ -1492,15 +1454,8 @@
       if(did){ saveFavs(favs.filter(x=>x.id!==did)); toast('Supprimé'); }
     });
 
-    $('histWrap').addEventListener('click', e=>{
-      const pid=e.target.closest('[data-hplay]')?.dataset.hplay; const cid=e.target.closest('[data-hcopy]')?.dataset.hcopy; const did=e.target.closest('[data-hdel]')?.dataset.hdel;
-      if(pid){ const h=hist.find(x=>x.id===pid); if(h) playItem(h); }
-      if(cid){ const h=hist.find(x=>x.id===cid); if(h) copyText(h.url); }
-      if(did){ saveHist(hist.filter(x=>x.id!==did)); toast('Supprimé'); }
-    });
-
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); }
     boot();
   </script>
 </body>
