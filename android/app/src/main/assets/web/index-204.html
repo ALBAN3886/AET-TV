@@ -586,6 +586,46 @@
       </div>
 
       <div class="card">
+        <div class="card-h"><h3>Libellés du menu</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Laisser vide pour garder le nom par défaut.</p>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Live TV</label><input class="input" id="adminLabelLivetv" type="text" placeholder="Live TV" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Pays</label><input class="input" id="adminLabelCountries" type="text" placeholder="Pays" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Alban TV</label><input class="input" id="adminLabelHuhu" type="text" placeholder="Alban TV" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Lecteur</label><input class="input" id="adminLabelPlayer" type="text" placeholder="Lecteur" /></div>
+        <button class="btn btn-red" id="adminSaveLabelsBtn" style="width:100%">💾 Enregistrer les libellés</button>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Playlists M3U additionnelles</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">S'ajoutent à la source principale pour tous les appareils.</p>
+        <div id="adminPlaylistsWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Nom</label><input class="input" id="adminPlaylistLabel" type="text" placeholder="Ex: Chaînes Togo" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">URL M3U</label><input class="input" id="adminPlaylistUrl" type="text" placeholder="https://.../playlist.m3u8" /></div>
+        <button class="btn btn-red" id="adminAddPlaylistBtn" style="width:100%;margin-bottom:8px">➕ Ajouter la playlist</button>
+        <button class="btn btn-light" id="adminReloadChannelsBtn" style="width:100%">↻ Recharger les chaînes maintenant</button>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Matchs du jour</h3></div>
+        <div id="adminEventsWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <div class="row">
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Équipe 1</label><input class="input" id="adminEvLeft" type="text" /></div>
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Drapeau 1</label><input class="input" id="adminEvLeftFlag" type="text" placeholder="🇹🇬" /></div>
+        </div>
+        <div class="row">
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Équipe 2</label><input class="input" id="adminEvRight" type="text" /></div>
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Drapeau 2</label><input class="input" id="adminEvRightFlag" type="text" placeholder="🇬🇭" /></div>
+        </div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Statut (heure ou score)</label><input class="input" id="adminEvStatus" type="text" placeholder="20:45" /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Compétition</label><input class="input" id="adminEvCup" type="text" placeholder="CAN 2026" /></div>
+        <div class="row">
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Commentateur</label><input class="input" id="adminEvCom" type="text" /></div>
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Chaîne</label><input class="input" id="adminEvCh" type="text" /></div>
+        </div>
+        <button class="btn btn-red" id="adminAddEventBtn" style="width:100%">➕ Ajouter le match</button>
+      </div>
+
+      <div class="card">
         <div class="card-h"><h3>Testeur d'URL manuel</h3></div>
         <div class="field"><input class="input" id="adminTestUrl" type="text" placeholder="Coller une URL .m3u8 à tester" /></div>
         <div class="field"><input class="input" id="adminTestRef" type="text" placeholder="Referer (optionnel)" /></div>
@@ -684,6 +724,35 @@
           if(typeof d.proxy3 === 'string') CORS_PROXY_3 = d.proxy3;
         }
       }catch(e){ console.warn('Config relais distante indisponible, valeurs locales conservées', e); }
+    }
+
+    let remoteLabels = {};
+    async function loadRemoteLabels(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('settings').doc('labels').get();
+        if(snap.exists){ remoteLabels = snap.data() || {}; applyLanguage(); }
+      }catch(e){ console.warn('Libellés distants indisponibles', e); }
+    }
+
+    let remotePlaylists = [];
+    async function loadRemotePlaylists(){
+      if(!fbDb) return [];
+      try{
+        const snap = await fbDb.collection('playlists').get();
+        remotePlaylists = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }catch(e){ console.warn('Playlists distantes indisponibles', e); remotePlaylists = []; }
+      return remotePlaylists;
+    }
+
+    let remoteEvents = [];
+    async function loadRemoteEvents(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('events').orderBy('createdAt','asc').get();
+        remoteEvents = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if(remoteEvents.length) renderEvents();
+      }catch(e){ console.warn('Matchs distants indisponibles', e); }
     }
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
@@ -785,7 +854,18 @@
         let text='';
         try{ const r=await fetch(PLAYLIST_URL,{cache:force?'reload':'default'}); if(r.ok) text=await r.text(); }catch{}
         if(!text || !text.includes('#EXTINF')){ const r2=await fetch(CORS_PROXY+encodeURIComponent(PLAYLIST_URL)); text=await r2.text(); }
-        const parsed = parseM3U(text);
+        let parsed = parseM3U(text);
+        const extraLists = await loadRemotePlaylists();
+        for(const pl of extraLists){
+          if(!pl.url) continue;
+          try{
+            let extraText='';
+            try{ const r3=await fetch(pl.url,{cache:force?'reload':'default'}); if(r3.ok) extraText=await r3.text(); }catch{}
+            if(!extraText || !extraText.includes('#EXTINF')){ const r4=await fetch(CORS_PROXY+encodeURIComponent(pl.url)); extraText=await r4.text(); }
+            const extraParsed = parseM3U(extraText);
+            parsed = parsed.concat(extraParsed);
+          }catch(e){ console.warn('Playlist additionnelle échouée:', pl.url, e); }
+        }
         if(!parsed.length) throw new Error('Playlist vide');
         channels = await enrichWithStreamHeaders(parsed);
         localStorage.setItem(CACHE_KEY, JSON.stringify(channels));
@@ -856,7 +936,8 @@
     }
 
     function renderEvents(){
-      $('eventWrap').innerHTML = EVENTS.map(e => `
+      const list = remoteEvents.length ? remoteEvents : EVENTS;
+      $('eventWrap').innerHTML = list.map(e => `
         <div class="event-card">
           <div class="event-grid">
             <div class="event-team"><div class="fl">${e.leftFlag}</div><div class="nm">${esc(e.left)}</div></div>
@@ -1114,8 +1195,12 @@
     function applyLanguage(){
       const d = I18N[appSettings.lang] || I18N.fr;
       const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'history':d.history, 'settings':d.settings };
+      if(remoteLabels.livetv) map['live-tv'] = remoteLabels.livetv;
+      if(remoteLabels.countries) map['countries'] = remoteLabels.countries;
+      if(remoteLabels.huhu) map['huhu'] = remoteLabels.huhu;
+      if(remoteLabels.player) map['player'] = remoteLabels.player;
       document.querySelectorAll('.bottom-btn[data-nav]').forEach(b=>{ const t = map[b.dataset.nav]; if(t) b.querySelector('span:last-child').textContent = t; });
-      document.querySelectorAll('.drawer-item[data-screen]').forEach(b=>{ const t = b.dataset.screen==='live-tv' ? d.worldchannels : map[b.dataset.screen]; if(t) b.querySelector('span:last-child').textContent = t; });
+      document.querySelectorAll('.drawer-item[data-screen]').forEach(b=>{ const t = b.dataset.screen==='live-tv' ? (remoteLabels.livetv || d.worldchannels) : map[b.dataset.screen]; if(t) b.querySelector('span:last-child').textContent = t; });
       $('reloadBtn').querySelector('span:last-child').textContent = d.reload;
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
@@ -1346,6 +1431,12 @@
       $('adminProxy1').value = CORS_PROXY;
       $('adminProxy2').value = CORS_PROXY_2;
       $('adminProxy3').value = CORS_PROXY_3;
+      $('adminLabelLivetv').value = remoteLabels.livetv || '';
+      $('adminLabelCountries').value = remoteLabels.countries || '';
+      $('adminLabelHuhu').value = remoteLabels.huhu || '';
+      $('adminLabelPlayer').value = remoteLabels.player || '';
+      renderAdminPlaylists();
+      renderAdminEvents();
       if(currentItem?.url){
         $('adminCurrentChannel').textContent = currentItem.name;
         const o = getOverrides()[currentItem.url];
@@ -1425,6 +1516,95 @@
       }catch(e){
         toast('Échec de l\'enregistrement');
       }
+    });
+
+    $('adminSaveLabelsBtn')?.addEventListener('click', async ()=>{
+      const vals = {
+        livetv: $('adminLabelLivetv').value.trim(),
+        countries: $('adminLabelCountries').value.trim(),
+        huhu: $('adminLabelHuhu').value.trim(),
+        player: $('adminLabelPlayer').value.trim()
+      };
+      try{
+        await fbDb.collection('settings').doc('labels').set(vals, { merge:true });
+        remoteLabels = vals;
+        applyLanguage();
+        toast('Libellés enregistrés pour tous les appareils');
+      }catch(e){ toast('Échec de l\'enregistrement'); }
+    });
+
+    function renderAdminPlaylists(){
+      const wrap = $('adminPlaylistsWrap');
+      if(!remotePlaylists.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucune playlist additionnelle.</p>'; return; }
+      wrap.innerHTML = remotePlaylists.map(p => `
+        <div class="admin-kv">
+          <span>${esc(p.label || 'Sans nom')}<br><code style="font-size:10px">${esc(p.url)}</code></span>
+          <button class="btn btn-soft" data-pldel="${p.id}" style="flex:0 0 auto">Suppr.</button>
+        </div>
+      `).join('');
+    }
+    $('adminAddPlaylistBtn')?.addEventListener('click', async ()=>{
+      const label = $('adminPlaylistLabel').value.trim();
+      const url = $('adminPlaylistUrl').value.trim();
+      if(!url) return toast('URL M3U manquante');
+      try{
+        await fbDb.collection('playlists').add({ label: label || 'Playlist', url, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        $('adminPlaylistLabel').value = ''; $('adminPlaylistUrl').value = '';
+        await loadRemotePlaylists();
+        renderAdminPlaylists();
+        toast('Playlist ajoutée. Tape "Recharger les chaînes" pour l\'appliquer.');
+      }catch(e){ toast('Échec de l\'ajout'); }
+    });
+    $('adminPlaylistsWrap')?.addEventListener('click', async e=>{
+      const id = e.target.closest('[data-pldel]')?.dataset.pldel;
+      if(!id) return;
+      try{
+        await fbDb.collection('playlists').doc(id).delete();
+        await loadRemotePlaylists();
+        renderAdminPlaylists();
+        toast('Playlist supprimée');
+      }catch(err){ toast('Échec de la suppression'); }
+    });
+    $('adminReloadChannelsBtn')?.addEventListener('click', ()=>{ loadPlaylist(true); toast('Rechargement des chaînes…'); });
+
+    function renderAdminEvents(){
+      const wrap = $('adminEventsWrap');
+      if(!remoteEvents.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucun match ajouté (les matchs par défaut s\'affichent).</p>'; return; }
+      wrap.innerHTML = remoteEvents.map(e => `
+        <div class="admin-kv">
+          <span>${esc(e.leftFlag)} ${esc(e.left)} vs ${esc(e.right)} ${esc(e.rightFlag)}<br><code style="font-size:10px">${esc(e.status)} · ${esc(e.cup)}</code></span>
+          <button class="btn btn-soft" data-evdel="${e.id}" style="flex:0 0 auto">Suppr.</button>
+        </div>
+      `).join('');
+    }
+    $('adminAddEventBtn')?.addEventListener('click', async ()=>{
+      const payload = {
+        left: $('adminEvLeft').value.trim(), leftFlag: $('adminEvLeftFlag').value.trim() || '🏳️',
+        right: $('adminEvRight').value.trim(), rightFlag: $('adminEvRightFlag').value.trim() || '🏳️',
+        status: $('adminEvStatus').value.trim() || '—',
+        cup: $('adminEvCup').value.trim() || '—',
+        com: $('adminEvCom').value.trim() || '—',
+        ch: $('adminEvCh').value.trim() || '—',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if(!payload.left || !payload.right) return toast('Renseigne les deux équipes');
+      try{
+        await fbDb.collection('events').add(payload);
+        ['adminEvLeft','adminEvLeftFlag','adminEvRight','adminEvRightFlag','adminEvStatus','adminEvCup','adminEvCom','adminEvCh'].forEach(id=>$(id).value='');
+        await loadRemoteEvents();
+        renderAdminEvents();
+        toast('Match ajouté');
+      }catch(e){ toast('Échec de l\'ajout'); }
+    });
+    $('adminEventsWrap')?.addEventListener('click', async e=>{
+      const id = e.target.closest('[data-evdel]')?.dataset.evdel;
+      if(!id) return;
+      try{
+        await fbDb.collection('events').doc(id).delete();
+        await loadRemoteEvents();
+        renderAdminEvents();
+        toast('Match supprimé');
+      }catch(err){ toast('Échec de la suppression'); }
     });
     $('adminSaveOverrideBtn').addEventListener('click', ()=>{
       if(!currentItem?.url) return toast('Aucune chaîne ouverte dans le Lecteur');
@@ -1528,7 +1708,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); }
+    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); }
     boot();
   </script>
 </body>
