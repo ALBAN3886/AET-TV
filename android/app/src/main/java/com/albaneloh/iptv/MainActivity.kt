@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.ConsoleMessage
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
@@ -16,6 +18,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.albaneloh.iptv.bridge.WebAppBridge
@@ -27,11 +30,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
+    private var fullscreenContainer: FrameLayout? = null
+    private var fullscreenView: View? = null
+    private var fullscreenCallback: WebChromeClient.CustomViewCallback? = null
+
     /**
      * Remplacez cette URL si votre interface est hébergée à distance.
      * Si vous gardez le fichier local, placez index-204.html dans app/src/main/assets/web/
      */
-    private val startUrl = "https://alban3886.github.io/AET-TV/?"
+    private val startUrl = "https://alban3886.github.io/AET-TV/index.html"
 
     /**
      * URL de secours locale, utilisée si le chargement en ligne échoue (pas de réseau).
@@ -63,7 +70,9 @@ class MainActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (binding.webView.canGoBack()) {
+                if (fullscreenContainer != null) {
+                    binding.webView.webChromeClient?.onHideCustomView()
+                } else if (binding.webView.canGoBack()) {
                     binding.webView.goBack()
                 } else {
                     finish()
@@ -86,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         settings.useWideViewPort = true
         settings.userAgentString = settings.userAgentString + " AlbanElohIPTV/$APP_BUILD_VERSION"
         settings.cacheMode = WebSettings.LOAD_NO_CACHE
+        settings.mediaPlaybackRequiresUserGesture = false
 
         CookieManager.getInstance().setAcceptCookie(true)
         CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
@@ -98,6 +108,36 @@ class MainActivity : AppCompatActivity() {
         webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
                 return super.onConsoleMessage(consoleMessage)
+            }
+
+            override fun onShowCustomView(view: View?, callback: CustomViewCallback?) {
+                if (view == null) return
+                if (fullscreenContainer != null) {
+                    callback?.onCustomViewHidden()
+                    return
+                }
+                fullscreenView = view
+                fullscreenCallback = callback
+                fullscreenContainer = FrameLayout(this@MainActivity).apply {
+                    layoutParams = FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    addView(view)
+                }
+                binding.root.addView(fullscreenContainer)
+                binding.webView.visibility = View.GONE
+            }
+
+            override fun onHideCustomView() {
+                val container = fullscreenContainer ?: return
+                binding.root.removeView(container)
+                fullscreenContainer = null
+                fullscreenView = null
+                binding.webView.visibility = View.VISIBLE
+                fullscreenCallback?.onCustomViewHidden()
+                fullscreenCallback = null
             }
         }
 
@@ -214,6 +254,6 @@ class MainActivity : AppCompatActivity() {
          * réinstallée par les utilisateurs. Comparé côté web à settings/appUpdate
          * dans Firestore pour afficher (ou non) la bannière de mise à jour.
          */
-        private const val APP_BUILD_VERSION = 3
+        private const val APP_BUILD_VERSION = 5
     }
 }
