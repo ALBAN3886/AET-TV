@@ -377,7 +377,7 @@
       <div class="glass stats"><div><strong>🎬 ALBAN TV</strong></div></div>
       <div class="card">
         <div class="card-h"><h3>ALBAN TV</h3></div>
-        <div class="quick-tiles">
+        <div class="quick-tiles" id="huhuTiles">
           <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span></button>
           <button class="tile dark" data-huhu="https://huhu.to/live"><span class="ti">📡</span><span class="tt">TV live</span></button>
           <button class="tile dark" data-huhu="https://huhu.to/movies"><span class="ti">🎬</span><span class="tt">Films</span></button>
@@ -665,6 +665,18 @@
       </div>
 
       <div class="card">
+        <div class="card-h"><h3>Alban TV — Raccourcis</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Remplacent les raccourcis par défaut (huhu.to) dès qu'il y en a au moins un.</p>
+        <div id="adminHuhuLinksWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <div class="row">
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Titre</label><input class="input" id="adminHuhuTitle" type="text" placeholder="Ex: Oha" /></div>
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Icône (emoji)</label><input class="input" id="adminHuhuIcon" type="text" placeholder="🏠" /></div>
+        </div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Lien</label><input class="input" id="adminHuhuUrl" type="text" placeholder="https://oha.to" /></div>
+        <button class="btn btn-red" id="adminAddHuhuBtn" style="width:100%">➕ Ajouter le raccourci</button>
+      </div>
+
+      <div class="card">
         <div class="card-h"><h3>Testeur d'URL manuel</h3></div>
         <div class="field"><input class="input" id="adminTestUrl" type="text" placeholder="Coller une URL .m3u8 à tester" /></div>
         <div class="field"><input class="input" id="adminTestRef" type="text" placeholder="Referer (optionnel)" /></div>
@@ -819,6 +831,25 @@
         remoteYtShortcuts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderYTTiles();
       }catch(e){ console.warn('Raccourcis YouTube distants indisponibles', e); }
+    }
+
+    let remoteHuhuLinks = [];
+    async function loadRemoteHuhuLinks(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('albanTvLinks').orderBy('createdAt','asc').get();
+        remoteHuhuLinks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderHuhuTiles();
+      }catch(e){ console.warn('Raccourcis Alban TV distants indisponibles', e); }
+    }
+
+    function renderHuhuTiles(){
+      const wrap = $('huhuTiles');
+      if(!wrap || !remoteHuhuLinks.length) return;
+      wrap.innerHTML = remoteHuhuLinks.map((l, i) => `
+        <button class="tile${i===0?'':' dark'}" data-huhu="${esc(l.url)}"><span class="ti">${esc(l.icon||'🔗')}</span><span class="tt">${esc(l.title)}</span></button>
+      `).join('');
+      document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     }
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
@@ -1514,6 +1545,40 @@
         toast('Raccourci supprimé');
       }catch(err){ toast('Échec de la suppression'); }
     });
+
+    function renderAdminHuhuLinks(){
+      const wrap = $('adminHuhuLinksWrap');
+      if(!remoteHuhuLinks.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucun raccourci distant (les raccourcis huhu.to par défaut s\'affichent).</p>'; return; }
+      wrap.innerHTML = remoteHuhuLinks.map(l => `
+        <div class="admin-kv">
+          <span>${esc(l.icon||'🔗')} ${esc(l.title)}<br><code style="font-size:10px">${esc(l.url)}</code></span>
+          <button class="btn btn-soft" data-huhudel="${l.id}" style="flex:0 0 auto">Suppr.</button>
+        </div>
+      `).join('');
+    }
+    $('adminAddHuhuBtn')?.addEventListener('click', async ()=>{
+      const title = $('adminHuhuTitle').value.trim();
+      const icon = $('adminHuhuIcon').value.trim();
+      const url = $('adminHuhuUrl').value.trim();
+      if(!title || !url) return toast('Titre et lien requis');
+      try{
+        await fbDb.collection('albanTvLinks').add({ title, icon, url, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        $('adminHuhuTitle').value=''; $('adminHuhuIcon').value=''; $('adminHuhuUrl').value='';
+        await loadRemoteHuhuLinks();
+        renderAdminHuhuLinks();
+        toast('Raccourci ajouté');
+      }catch(e){ toast('Échec de l\'ajout'); }
+    });
+    $('adminHuhuLinksWrap')?.addEventListener('click', async e=>{
+      const id = e.target.closest('[data-huhudel]')?.dataset.huhudel;
+      if(!id) return;
+      try{
+        await fbDb.collection('albanTvLinks').doc(id).delete();
+        await loadRemoteHuhuLinks();
+        renderAdminHuhuLinks();
+        toast('Raccourci supprimé');
+      }catch(err){ toast('Échec de la suppression'); }
+    });
     document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{ appSettings.theme = b.dataset.val; saveSettings(); applySettingsUI(); }));
     $('langSelect').addEventListener('change', e=>{ appSettings.lang = e.target.value; saveSettings(); applyLanguage(); setHeader(currentScreenName()); });
     $('autoplayToggle').addEventListener('change', e=>{ appSettings.autoplay = e.target.checked; saveSettings(); });
@@ -1674,6 +1739,7 @@
       fillAdminUpdateForm();
       fillAdminYtForm();
       renderAdminYtShortcuts();
+      renderAdminHuhuLinks();
       if(currentItem?.url){
         $('adminCurrentChannel').textContent = currentItem.name;
         const o = getOverrides()[currentItem.url];
@@ -1947,7 +2013,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); }
+    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); }
     boot();
   </script>
 </body>
