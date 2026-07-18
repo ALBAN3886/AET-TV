@@ -365,6 +365,7 @@
       <div class="card">
         <div class="card-h"><h3>Aperçu</h3></div>
         <div class="player-box" style="aspect-ratio:16/9"><iframe id="ytFrame" src="https://www.youtube-nocookie.com/embed/jNQXAC9IVRw?rel=0" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+        <button class="btn btn-red" id="ytSubscribeBtn" style="width:100%;margin-top:10px">🔔 S'abonner à notre chaîne</button>
       </div>
       <div class="card">
         <div class="card-h"><h3>Raccourcis</h3></div>
@@ -648,6 +649,22 @@
       </div>
 
       <div class="card">
+        <div class="card-h"><h3>YouTube</h3></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Lien de la chaîne (pour "S'abonner")</label><input class="input" id="adminYtSubscribe" type="text" placeholder="https://www.youtube.com/@..." /></div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Vidéo affichée par défaut dans l'aperçu</label><input class="input" id="adminYtPreview" type="text" placeholder="https://youtu.be/..." /></div>
+        <button class="btn btn-red" id="adminSaveYtBtn" style="width:100%;margin-bottom:14px">💾 Enregistrer</button>
+
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Raccourcis affichés sur l'écran YouTube.</p>
+        <div id="adminYtShortcutsWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+        <div class="row">
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Titre</label><input class="input" id="adminYtTitle" type="text" placeholder="Ex: France 24" /></div>
+          <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Sous-titre</label><input class="input" id="adminYtSub" type="text" placeholder="Actualités" /></div>
+        </div>
+        <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Lien YouTube</label><input class="input" id="adminYtUrl" type="text" placeholder="https://www.youtube.com/@.../live" /></div>
+        <button class="btn btn-red" id="adminAddYtShortcutBtn" style="width:100%">➕ Ajouter le raccourci</button>
+      </div>
+
+      <div class="card">
         <div class="card-h"><h3>Testeur d'URL manuel</h3></div>
         <div class="field"><input class="input" id="adminTestUrl" type="text" placeholder="Coller une URL .m3u8 à tester" /></div>
         <div class="field"><input class="input" id="adminTestRef" type="text" placeholder="Referer (optionnel)" /></div>
@@ -776,6 +793,32 @@
         remoteEvents = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if(remoteEvents.length) renderEvents();
       }catch(e){ console.warn('Matchs distants indisponibles', e); }
+    }
+
+    let remoteYoutube = {};
+    async function loadRemoteYoutube(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('settings').doc('youtube').get();
+        if(snap.exists){
+          remoteYoutube = snap.data() || {};
+          if(remoteYoutube.previewUrl && ytId(remoteYoutube.previewUrl)) $('ytFrame').src = ytEmbed(remoteYoutube.previewUrl);
+          const subBtn = $('ytSubscribeBtn');
+          if(subBtn && remoteYoutube.subscribeUrl){
+            subBtn.onclick = ()=>openUrl(remoteYoutube.subscribeUrl);
+          }
+        }
+      }catch(e){ console.warn('Réglages YouTube distants indisponibles', e); }
+    }
+
+    let remoteYtShortcuts = [];
+    async function loadRemoteYtShortcuts(){
+      if(!fbDb) return;
+      try{
+        const snap = await fbDb.collection('youtubeShortcuts').orderBy('createdAt','asc').get();
+        remoteYtShortcuts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderYTTiles();
+      }catch(e){ console.warn('Raccourcis YouTube distants indisponibles', e); }
     }
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
@@ -1019,7 +1062,8 @@
     }
 
     function renderYTTiles(){
-      $('ytTiles').innerHTML = YT_LINKS.map(y => `
+      const list = remoteYtShortcuts.length ? remoteYtShortcuts : YT_LINKS;
+      $('ytTiles').innerHTML = list.map(y => `
         <button class="tile dark" data-yt-open="${esc(y.url)}"><span class="ti">▶️</span><span class="tt">${esc(y.title)}</span><span class="ts">${esc(y.sub)}</span></button>
       `).join('');
     }
@@ -1412,6 +1456,57 @@
         toast('Mise à jour configurée pour les utilisateurs de l\'app');
       }catch(e){ toast('Échec de l\'enregistrement'); }
     });
+
+    function fillAdminYtForm(){
+      $('adminYtSubscribe').value = remoteYoutube.subscribeUrl || '';
+      $('adminYtPreview').value = remoteYoutube.previewUrl || '';
+    }
+    $('adminSaveYtBtn')?.addEventListener('click', async ()=>{
+      const subscribeUrl = $('adminYtSubscribe').value.trim();
+      const previewUrl = $('adminYtPreview').value.trim();
+      try{
+        await fbDb.collection('settings').doc('youtube').set({ subscribeUrl, previewUrl }, { merge:true });
+        remoteYoutube = { subscribeUrl, previewUrl };
+        if(previewUrl && ytId(previewUrl)) $('ytFrame').src = ytEmbed(previewUrl);
+        const subBtn = $('ytSubscribeBtn');
+        if(subBtn && subscribeUrl) subBtn.onclick = ()=>openUrl(subscribeUrl);
+        toast('Réglages YouTube enregistrés');
+      }catch(e){ toast('Échec de l\'enregistrement'); }
+    });
+
+    function renderAdminYtShortcuts(){
+      const wrap = $('adminYtShortcutsWrap');
+      if(!remoteYtShortcuts.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucun raccourci distant (les raccourcis par défaut s\'affichent).</p>'; return; }
+      wrap.innerHTML = remoteYtShortcuts.map(y => `
+        <div class="admin-kv">
+          <span>${esc(y.title)} — ${esc(y.sub||'')}<br><code style="font-size:10px">${esc(y.url)}</code></span>
+          <button class="btn btn-soft" data-ytdel="${y.id}" style="flex:0 0 auto">Suppr.</button>
+        </div>
+      `).join('');
+    }
+    $('adminAddYtShortcutBtn')?.addEventListener('click', async ()=>{
+      const title = $('adminYtTitle').value.trim();
+      const sub = $('adminYtSub').value.trim();
+      const url = $('adminYtUrl').value.trim();
+      if(!title || !url) return toast('Titre et lien requis');
+      try{
+        await fbDb.collection('youtubeShortcuts').add({ title, sub, url, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        $('adminYtTitle').value=''; $('adminYtSub').value=''; $('adminYtUrl').value='';
+        await loadRemoteYtShortcuts();
+        renderAdminYtShortcuts();
+        toast('Raccourci ajouté');
+      }catch(e){ toast('Échec de l\'ajout'); }
+    });
+    $('adminYtShortcutsWrap')?.addEventListener('click', async e=>{
+      const id = e.target.closest('[data-ytdel]')?.dataset.ytdel;
+      if(!id) return;
+      try{
+        await fbDb.collection('youtubeShortcuts').doc(id).delete();
+        await loadRemoteYtShortcuts();
+        renderAdminYtShortcuts();
+        toast('Raccourci supprimé');
+      }catch(err){ toast('Échec de la suppression'); }
+    });
     document.querySelectorAll('#themeSeg .seg-btn').forEach(b=>b.addEventListener('click', ()=>{ appSettings.theme = b.dataset.val; saveSettings(); applySettingsUI(); }));
     $('langSelect').addEventListener('change', e=>{ appSettings.lang = e.target.value; saveSettings(); applyLanguage(); setHeader(currentScreenName()); });
     $('autoplayToggle').addEventListener('change', e=>{ appSettings.autoplay = e.target.checked; saveSettings(); });
@@ -1570,6 +1665,8 @@
       renderAdminPlaylists();
       renderAdminEvents();
       fillAdminUpdateForm();
+      fillAdminYtForm();
+      renderAdminYtShortcuts();
       if(currentItem?.url){
         $('adminCurrentChannel').textContent = currentItem.name;
         const o = getOverrides()[currentItem.url];
@@ -1843,7 +1940,7 @@
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); }
+    function boot(){ favs=getFavs(); hist=getHist(); renderFavs(); renderHist(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); }
     boot();
   </script>
 </body>
