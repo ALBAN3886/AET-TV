@@ -787,7 +787,7 @@
           if(remoteYoutube.previewUrl && ytId(remoteYoutube.previewUrl)) $('ytFrame').src = ytEmbed(remoteYoutube.previewUrl);
           const subBtn = $('ytSubscribeBtn');
           if(subBtn && remoteYoutube.subscribeUrl){
-            subBtn.onclick = ()=>openUrl(remoteYoutube.subscribeUrl);
+            subBtn.onclick = ()=>goSubscribeYoutube(remoteYoutube.subscribeUrl);
           }
         }
       }catch(e){ console.warn('Réglages YouTube distants indisponibles', e); }
@@ -1229,6 +1229,13 @@
       $('webOverlayFrame').src = url;
       $('webOverlay').classList.remove('hidden');
     }
+
+    function goSubscribeYoutube(channelUrl){
+      if(!channelUrl) return;
+      const sep = channelUrl.includes('?') ? '&' : '?';
+      const oneTapUrl = channelUrl.trimEnd().replace(/\/$/, '') + sep + 'sub_confirmation=1';
+      window.top.location.href = oneTapUrl;
+    }
     function reloadWebOverlay(){
       if(!currentOverlayUrl) return;
       $('webOverlayFrame').src = 'about:blank';
@@ -1422,7 +1429,7 @@
         remoteYoutube = { subscribeUrl, previewUrl };
         if(previewUrl && ytId(previewUrl)) $('ytFrame').src = ytEmbed(previewUrl);
         const subBtn = $('ytSubscribeBtn');
-        if(subBtn && subscribeUrl) subBtn.onclick = ()=>openUrl(subscribeUrl);
+        if(subBtn && subscribeUrl) subBtn.onclick = ()=>goSubscribeYoutube(subscribeUrl);
         toast('Réglages YouTube enregistrés');
       }catch(e){ toast('Échec de l\'enregistrement'); }
     });
