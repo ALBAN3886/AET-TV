@@ -8,6 +8,9 @@ on:
       - '.github/workflows/build-android.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,8 +30,28 @@ jobs:
       - name: Build debug APK
         run: gradle -p android assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Upload APK (artifact, temporaire)
         uses: actions/upload-artifact@v4
         with:
           name: aet-tv-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Rename APK avec la date
+        run: |
+          mkdir -p release-assets
+          cp android/app/build/outputs/apk/debug/app-debug.apk "release-assets/aet-tv-debug-$(date +%Y%m%d-%H%M).apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "release-assets/aet-tv-debug-latest.apk"
+
+      - name: Publier / mettre à jour la Release "latest-debug"
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-debug
+          name: "Dernière build (debug)"
+          body: |
+            Build automatique générée depuis le commit ${{ github.sha }}.
+            Ce lien de téléchargement est stable : il pointe toujours vers la dernière version buildée.
+          prerelease: true
+          make_latest: true
+          files: release-assets/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
