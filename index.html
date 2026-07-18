@@ -1560,7 +1560,7 @@
     $('ytHomeBtn').addEventListener('click', ()=>openUrl('https://www.youtube.com/'));
     $('ytPlayBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); stopAllPlayback(); $('ytFrame').src = ytEmbed(u); });
     $('ytSendBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); playItem({ name:'YouTube', url:u, group:'YouTube' }); });
-    $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; openUrl(b.dataset.ytOpen); });
+    $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; const u=b.dataset.ytOpen; if(!ytId(u)) return toast("Ce lien n'est pas une vidéo YouTube directe (lien de chaîne non pris en charge)"); playItem({ name:b.querySelector('.tt')?.textContent||'YouTube', url:u, group:'YouTube' }); });
 
     document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
