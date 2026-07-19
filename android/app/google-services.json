@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "4731069950",
+    "firebase_url": "https://aet-tv-5d58c-default-rtdb.firebaseio.com",
+    "project_id": "aet-tv-5d58c",
+    "storage_bucket": "aet-tv-5d58c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:4731069950:android:9e58c2197cc0aa53c8ccaf",
+        "android_client_info": {
+          "package_name": "com.albaneloh.iptv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "4731069950-0bispd6av2u3cdgre0p96qfqijh8s2cp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4zNKA3FrOX31o1AShjb0fDjoVKYvcSOk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "4731069950-0bispd6av2u3cdgre0p96qfqijh8s2cp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
