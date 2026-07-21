@@ -836,10 +836,11 @@
 
     function renderHuhuTiles(){
       const wrap = $('huhuTiles');
-      if(!wrap || !remoteHuhuLinks.length) return;
-      wrap.innerHTML = remoteHuhuLinks.map((l, i) => `
-        <button class="tile${i===0?'':' dark'}" data-huhu="${esc(l.url)}"><span class="ti">${esc(l.icon||'🔗')}</span><span class="tt">${esc(l.title)}</span></button>
+      if(!wrap) return;
+      const extra = remoteHuhuLinks.map(l => `
+        <button class="tile dark" data-huhu="${esc(l.url)}"><span class="ti">${esc(l.icon||'🔗')}</span><span class="tt">${esc(l.title)}</span></button>
       `).join('');
+      if(extra) wrap.insertAdjacentHTML('beforeend', extra);
       document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     }
     const CACHE_KEY = 'aet_v5_playlist';
@@ -1151,7 +1152,9 @@
     const proxyState = { mode: null }; // null=direct, 'header', 'proxy1', 'proxy2'
     let ProxyLoaderClass = null;
     function buildStages(item){
-      const stages = ['direct'];
+      const isMixedContent = location.protocol === 'https:' && /^http:\/\//i.test(item?.url || '');
+      const isNativeApp = typeof window.NativePlayer !== 'undefined';
+      const stages = (isMixedContent && !isNativeApp) ? [] : ['direct'];
       if(HEADER_PROXY) stages.push('header');
       stages.push('proxy1', 'proxy2', 'proxy3');
       return stages;
