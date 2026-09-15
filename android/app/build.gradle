@@ -29,6 +29,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+        // Requis par la bibliothèque officielle com.wireguard.android:tunnel (features Java 8).
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -59,4 +61,20 @@ dependencies {
 
     implementation platform("com.google.firebase:firebase-bom:33.7.0")
     implementation "com.google.firebase:firebase-analytics"
+    // Réutilisés pour le module AET VPN (config des serveurs + rattachement au compte utilisateur).
+    implementation "com.google.firebase:firebase-auth-ktx"
+    implementation "com.google.firebase:firebase-firestore-ktx"
+
+    // --- AET VPN : bibliothèque officielle WireGuard pour Android ---
+    // Vérifie la dernière version publiée avant build : https://central.sonatype.com/artifact/com.wireguard.android/tunnel
+    // Licence Apache-2.0, maintenue par WireGuard/Jason A. Donenfeld. Aucune primitive crypto réimplémentée ici.
+    implementation "com.wireguard.android:tunnel:1.0.20230706"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+
+    // Stockage chiffré de la clé privée WireGuard générée sur l'appareil (jamais en clair, jamais envoyée).
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
+
+    // Coroutines pour les opérations réseau/Firestore asynchrones du module VPN.
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1"
 }

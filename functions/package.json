@@ -1,0 +1,19 @@
+{
+  "name": "aet-tv-functions",
+  "description": "Backend AET VPN (provisioning des clients WireGuard) pour AET-TV",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions,firestore",
+    "shell": "firebase functions:shell",
+    "deploy": "firebase deploy --only functions:provisionVpnClient",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.0",
+    "firebase-functions": "^4.9.0"
+  },
+  "private": true
+}

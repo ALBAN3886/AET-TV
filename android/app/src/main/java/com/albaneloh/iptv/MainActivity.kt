@@ -20,11 +20,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.albaneloh.iptv.bridge.AetVpnBridge
 import com.albaneloh.iptv.bridge.WebAppBridge
 import com.albaneloh.iptv.databinding.ActivityMainBinding
 import com.albaneloh.iptv.model.PlayerRequest
 import com.albaneloh.iptv.player.PlayerActivity
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +37,20 @@ class MainActivity : AppCompatActivity() {
     private var fullscreenContainer: FrameLayout? = null
     private var fullscreenView: View? = null
     private var fullscreenCallback: WebChromeClient.CustomViewCallback? = null
+
+    private lateinit var vpnBridge: AetVpnBridge
+    private var pendingVpnServerId: String? = null
+
+    /** Lance le dialogue d'autorisation VPN Android (VpnService.prepare()). */
+    private val vpnPermissionLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val granted = result.resultCode == RESULT_OK
+            val serverId = pendingVpnServerId
+            pendingVpnServerId = null
+            if (serverId != null) {
+                vpnBridge.onVpnPermissionResult(granted, serverId)
+            }
+        }
 
     /**
      * Remplacez cette URL si votre interface est hébergée à distance.
@@ -104,6 +122,16 @@ class MainActivity : AppCompatActivity() {
             WebAppBridge(::openNativePlayer),
             JS_BRIDGE_NAME
         )
+
+        vpnBridge = AetVpnBridge(
+            context = this@MainActivity,
+            onPermissionRequired = { intent, serverId ->
+                pendingVpnServerId = serverId
+                vpnPermissionLauncher.launch(intent)
+            },
+            onStatusChanged = { payload -> dispatchVpnEvent(payload) }
+        )
+        addJavascriptInterface(vpnBridge, VPN_JS_BRIDGE_NAME)
 
         webChromeClient = object : WebChromeClient() {
             override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
@@ -208,8 +236,18 @@ class MainActivity : AppCompatActivity() {
         val bridgeScript = assets.open("web/player_bridge.js")
             .bufferedReader()
             .use { it.readText() }
-
         binding.webView.evaluateJavascript(bridgeScript, null)
+
+        val vpnBridgeScript = assets.open("web/aet_vpn_bridge.js")
+            .bufferedReader()
+            .use { it.readText() }
+        binding.webView.evaluateJavascript(vpnBridgeScript, null)
+    }
+
+    /** Transmet un évènement de statut VPN au JavaScript (window.__onAetVpnEvent). */
+    private fun dispatchVpnEvent(payload: JSONObject) {
+        val script = "window.__onAetVpnEvent && window.__onAetVpnEvent(${JSONObject.quote(payload.toString())});"
+        binding.webView.evaluateJavascript(script, null)
     }
 
     private fun openNativePlayer(request: PlayerRequest) {
@@ -242,12 +280,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         binding.webView.removeJavascriptInterface(JS_BRIDGE_NAME)
+        binding.webView.removeJavascriptInterface(VPN_JS_BRIDGE_NAME)
         binding.webView.destroy()
         super.onDestroy()
     }
 
     companion object {
         private const val JS_BRIDGE_NAME = "NativePlayer"
+        private const val VPN_JS_BRIDGE_NAME = "AetVpnAndroid"
 
         /**
          * Incrémentez ce nombre à chaque nouvelle build native (APK) qui doit être

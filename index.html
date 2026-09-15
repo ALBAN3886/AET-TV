@@ -252,6 +252,37 @@
 
     .fav-list{display:flex;flex-direction:column;gap:10px}.fav-item{background:#fff7f7;border:2px solid #f2cccc;border-radius:14px;padding:12px}.fav-item h4{margin:0 0 4px;font-size:14px;color:var(--red-dark)}.fav-item p{margin:0 0 8px;font-size:11px;color:#888;word-break:break-all}
 
+    /* --- AET VPN --- */
+    .vpn-status-card{border-radius:18px;padding:20px;color:#fff;background:linear-gradient(135deg,#2b2b2b,#111);position:relative;overflow:hidden}
+    .vpn-status-card.state-connected{background:linear-gradient(135deg,#0f9d58,#0a6b3c)}
+    .vpn-status-card.state-connecting,.vpn-status-card.state-disconnecting,.vpn-status-card.state-reconnecting{background:linear-gradient(135deg,#b8860b,#8a5a00)}
+    .vpn-status-card.state-error{background:linear-gradient(135deg,#8a1f1f,#5c0f0f)}
+    .vpn-status-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .vpn-dot{width:10px;height:10px;border-radius:50%;background:#8a8a8a;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+    .vpn-status-card.state-connected .vpn-dot{background:#4ee08a}
+    .vpn-status-card.state-connecting .vpn-dot,.vpn-status-card.state-reconnecting .vpn-dot{background:#ffd166;animation:vpnPulse 1s infinite}
+    .vpn-status-card.state-error .vpn-dot{background:#ff6b6b}
+    @keyframes vpnPulse{0%,100%{opacity:1}50%{opacity:.35}}
+    .vpn-status-label{font-size:13px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;opacity:.9}
+    .vpn-server-row{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:900;margin-bottom:12px}
+    .vpn-server-row .flag{font-size:26px}
+    .vpn-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .vpn-metric{background:rgba(255,255,255,.1);border-radius:12px;padding:8px 10px}
+    .vpn-metric .k{font-size:10px;text-transform:uppercase;opacity:.75;font-weight:700}
+    .vpn-metric .v{font-size:14px;font-weight:900;margin-top:2px}
+    .vpn-error-banner{background:rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;margin-bottom:12px}
+    .server-list{display:flex;flex-direction:column;gap:8px}
+    .server-item{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;cursor:pointer;text-align:left}
+    .server-item.selected{border-color:var(--red);background:#fff5f5}
+    .server-item .flag{font-size:24px}
+    .server-item .info{flex:1;min-width:0}
+    .server-item .name{font-size:13px;font-weight:800;color:var(--text)}
+    .server-item .sub{font-size:11px;color:var(--muted)}
+    .server-item .ping{font-size:11px;font-weight:800;color:var(--success);white-space:nowrap}
+    .server-item .ping.high{color:var(--red)}
+    .server-item .load-bar{width:46px;height:4px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:4px}
+    .server-item .load-bar > span{display:block;height:100%;background:var(--success)}
+
     .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);height:70px;background:#fff;display:grid;grid-template-columns:repeat(6,1fr);z-index:58;box-shadow:0 -8px 24px rgba(0,0,0,.14);border-top:1px solid var(--line)}
     .bottom-btn{border:none;background:transparent;color:#7c7c7c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:800;text-transform:uppercase;cursor:pointer;position:relative}.bottom-btn.active{color:var(--red-dark)}.bottom-btn.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:28px;height:3px;background:var(--red);border-radius:0 0 4px 4px}.bottom-btn .ico{font-size:19px}
 
@@ -283,6 +314,7 @@
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
+      <button class="drawer-item" data-screen="vpn"><span class="ico">🔐</span><span>AET VPN</span></button>
       <div id="drawerPlaylistItems"></div>
       <button class="drawer-item" data-screen="settings"><span class="ico">⚙️</span><span>Paramètres</span></button>
       <button class="drawer-item" id="reloadBtn"><span class="ico">🔄</span><span>Recharger les chaînes</span></button>
@@ -451,6 +483,52 @@
       <div class="fav-list" id="favWrap"></div>
     </section>
 
+    <section class="screen" id="screen-vpn">
+      <div class="glass stats"><div><strong>🔐 AET VPN</strong></div><div class="pill" id="vpnServerCount">0 serveurs</div></div>
+
+      <div id="vpnUnavailableCard" class="card hidden">
+        <div class="card-h"><h3>Indisponible ici</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0">
+          AET VPN nécessite l'application Android AET-TV (il utilise le VPN natif du
+          téléphone). Télécharge l'app pour l'activer.
+        </p>
+      </div>
+
+      <div id="vpnStatusCard" class="vpn-status-card state-disconnected">
+        <div class="vpn-status-top">
+          <span class="vpn-dot"></span>
+          <span class="vpn-status-label" id="vpnStateLabel">Déconnecté</span>
+        </div>
+        <div class="vpn-server-row">
+          <span class="flag" id="vpnActiveFlag">🌐</span>
+          <span id="vpnActiveName">Aucun serveur sélectionné</span>
+        </div>
+        <div class="vpn-metrics">
+          <div class="vpn-metric"><div class="k">Ping</div><div class="v" id="vpnMetricPing">—</div></div>
+          <div class="vpn-metric"><div class="k">IP VPN</div><div class="v" id="vpnMetricIp">—</div></div>
+          <div class="vpn-metric"><div class="k">Durée</div><div class="v" id="vpnMetricDuration">00:00:00</div></div>
+        </div>
+        <div class="vpn-error-banner hidden" id="vpnErrorBanner"></div>
+        <button class="btn btn-red" id="vpnConnectBtn" style="width:100%;background:#fff;color:var(--red-dark)">CONNECTER</button>
+        <button class="btn btn-light hidden" id="vpnDisconnectBtn" style="width:100%">DÉCONNECTER</button>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Serveurs</h3>
+          <label class="switch" title="Connexion automatique au meilleur serveur">
+            <input type="checkbox" id="vpnAutoToggle"><span class="slider"></span>
+          </label>
+        </div>
+        <div class="settings-row" style="border-bottom:none;padding-top:0">
+          <span style="font-size:12px;color:var(--muted);font-weight:600">⚡ Connexion automatique (meilleur serveur)</span>
+        </div>
+        <div class="server-list" id="vpnServerList">
+          <div class="empty"><div class="em">🔐</div><h4>Chargement des serveurs…</h4><p>Merci de patienter</p></div>
+        </div>
+      </div>
+    </section>
+
     <section class="screen" id="screen-settings">
       <div class="glass stats"><div><strong>⚙️ Paramètres</strong></div></div>
 
@@ -540,6 +618,7 @@
         <div class="settings-row"><span>ALBAN TV</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="huhu" checked><span class="slider"></span></label></div>
         <div class="settings-row"><span>Live Event</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="live-event" checked><span class="slider"></span></label></div>
         <div class="settings-row"><span>Favoris</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="favorites" checked><span class="slider"></span></label></div>
+        <div class="settings-row"><span>AET VPN</span><label class="switch"><input type="checkbox" class="navVisToggle" data-nav="vpn" checked><span class="slider"></span></label></div>
       </div>
 
       <div class="card">
@@ -1139,7 +1218,7 @@
         theme:'light', lang:'fr', autoplay:true, quality:'auto',
         uiScale:'n', clockShow:false, clockPos:'left', skipSeconds:30,
         relaunchFullscreen:true, forceLandscape:false,
-        navVisibility:{ 'live-tv':true, 'countries':true, 'youtube':true, 'huhu':true, 'live-event':true, 'favorites':true },
+        navVisibility:{ 'live-tv':true, 'countries':true, 'youtube':true, 'huhu':true, 'live-event':true, 'favorites':true, 'vpn':true },
         parentalEnabled:false, parentalPassword:'', parentalOnStart:false
       };
       const saved = safeParse(localStorage.getItem(SETTINGS_KEY), {});
@@ -1309,14 +1388,14 @@
 
     // Paramètres : thème, langue, lecture auto, qualité, données
     const I18N = {
-      fr:{ livetv:'Live TV', countries:'Pays', youtube:'YouTube', albantv:'ALBAN TV', player:'Lecteur', liveevent:'Live Event', favorites:'Favoris', settings:'Paramètres', worldchannels:'Chaînes du monde', reload:'Recharger les chaînes', share:'Partager',
-        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],'live-event':['LIVE EVENT','MATCHS'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS'],'settings':['ALBAN ELOH TECHNOLOGIE','PARAMÈTRES']} },
-      en:{ livetv:'Live TV', countries:'Countries', youtube:'YouTube', albantv:'ALBAN TV', player:'Player', liveevent:'Live Event', favorites:'Favorites', settings:'Settings', worldchannels:'World channels', reload:'Reload channels', share:'Share',
-        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','WORLD CHANNELS'],'countries':['ALBAN ELOH TECHNOLOGIE','COUNTRIES'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','PLAYER'],'live-event':['LIVE EVENT','MATCHES'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORITES'],'settings':['ALBAN ELOH TECHNOLOGIE','SETTINGS']} }
+      fr:{ livetv:'Live TV', countries:'Pays', youtube:'YouTube', albantv:'ALBAN TV', player:'Lecteur', liveevent:'Live Event', favorites:'Favoris', vpn:'AET VPN', settings:'Paramètres', worldchannels:'Chaînes du monde', reload:'Recharger les chaînes', share:'Partager',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','CHAÎNES DU MONDE'],'countries':['ALBAN ELOH TECHNOLOGIE','PAYS'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','LECTEUR'],'live-event':['LIVE EVENT','MATCHS'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORIS'],'vpn':['ALBAN ELOH TECHNOLOGIE','AET VPN'],'settings':['ALBAN ELOH TECHNOLOGIE','PARAMÈTRES']} },
+      en:{ livetv:'Live TV', countries:'Countries', youtube:'YouTube', albantv:'ALBAN TV', player:'Player', liveevent:'Live Event', favorites:'Favorites', vpn:'AET VPN', settings:'Settings', worldchannels:'World channels', reload:'Reload channels', share:'Share',
+        headers:{'live-tv':['ALBAN ELOH TECHNOLOGIE','WORLD CHANNELS'],'countries':['ALBAN ELOH TECHNOLOGIE','COUNTRIES'],'youtube':['ALBAN ELOH TECHNOLOGIE','YOUTUBE'],'huhu':['ALBAN ELOH TECHNOLOGIE','ALBAN TV'],'player':['ALBAN ELOH TECHNOLOGIE','PLAYER'],'live-event':['LIVE EVENT','MATCHES'],'favorites':['ALBAN ELOH TECHNOLOGIE','FAVORITES'],'vpn':['ALBAN ELOH TECHNOLOGIE','AET VPN'],'settings':['ALBAN ELOH TECHNOLOGIE','SETTINGS']} }
     };
     function applyLanguage(){
       const d = I18N[appSettings.lang] || I18N.fr;
-      const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'settings':d.settings };
+      const map = { 'live-tv':d.livetv, 'countries':d.countries, 'youtube':d.youtube, 'huhu':d.albantv, 'player':d.player, 'live-event':d.liveevent, 'favorites':d.favorites, 'vpn':d.vpn, 'settings':d.settings };
       if(remoteLabels.livetv) map['live-tv'] = remoteLabels.livetv;
       if(remoteLabels.countries) map['countries'] = remoteLabels.countries;
       if(remoteLabels.huhu) map['huhu'] = remoteLabels.huhu;
@@ -1950,8 +2029,137 @@
       lines.proxy3 = (r5.ok?'✅ ':'❌ ') + r5.label; render();
     });
 
+    // ================= AET VPN =================
+    let vpnServers = [];
+    let vpnSelectedId = null;
+    let vpnDurationTimer = null;
+    let vpnAvailable = false;
+
+    function fmtDuration(totalSeconds){
+      const s = Math.max(0, totalSeconds|0);
+      const hh = String(Math.floor(s/3600)).padStart(2,'0');
+      const mm = String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const ss = String(s%60).padStart(2,'0');
+      return `${hh}:${mm}:${ss}`;
+    }
+
+    function vpnStateLabel(state){
+      return { DISCONNECTED:'🔴 Déconnecté', CONNECTING:'🟡 Connexion…', CONNECTED:'🟢 Connecté', DISCONNECTING:'🟡 Déconnexion…', RECONNECTING:'🟡 Reconnexion…', ERROR:'🔴 Erreur' }[state] || '🔴 Déconnecté';
+    }
+
+    function renderVpnServerList(){
+      const wrap = $('vpnServerList');
+      $('vpnServerCount').textContent = `${vpnServers.length} serveur${vpnServers.length>1?'s':''}`;
+      if(!vpnServers.length){
+        wrap.innerHTML = '<div class="empty"><div class="em">🔐</div><h4>Aucun serveur disponible</h4><p>Réessaie plus tard</p></div>';
+        return;
+      }
+      wrap.innerHTML = vpnServers.map(s => {
+        const ping = (s.latencyMs!=null) ? `${s.latencyMs} ms` : '—';
+        const pingClass = (s.latencyMs!=null && s.latencyMs>120) ? 'ping high' : 'ping';
+        const load = (s.serverLoad!=null) ? Math.min(100, Math.max(0, s.serverLoad)) : null;
+        return `
+          <button class="server-item${s.id===vpnSelectedId?' selected':''}" data-server="${esc(s.id)}">
+            <span class="flag">${esc(s.flag||'🌐')}</span>
+            <span class="info">
+              <div class="name">${esc(s.name)}${s.active===false?' · indisponible':''}</div>
+              <div class="sub">${esc(s.country||'')}${load!=null?` · Charge ${load}%`:''}</div>
+              ${load!=null?`<div class="load-bar"><span style="width:${load}%"></span></div>`:''}
+            </span>
+            <span class="${pingClass}">${ping}</span>
+          </button>`;
+      }).join('');
+    }
+
+    function renderVpnStatus(status){
+      if(!status) return;
+      const card = $('vpnStatusCard');
+      card.className = 'vpn-status-card state-' + String(status.state||'DISCONNECTED').toLowerCase();
+      $('vpnStateLabel').textContent = vpnStateLabel(status.state);
+
+      const server = status.server;
+      $('vpnActiveFlag').textContent = server ? (server.flag || '🌐') : '🌐';
+      $('vpnActiveName').textContent = server ? server.name : 'Aucun serveur sélectionné';
+      $('vpnMetricPing').textContent = server && server.latencyMs!=null ? `${server.latencyMs} ms` : '—';
+      $('vpnMetricIp').textContent = status.vpnIp || '—';
+      $('vpnMetricDuration').textContent = fmtDuration(status.durationSeconds||0);
+
+      const connected = status.state === 'CONNECTED';
+      const busy = status.state === 'CONNECTING' || status.state === 'DISCONNECTING' || status.state === 'RECONNECTING';
+      $('vpnConnectBtn').classList.toggle('hidden', connected || busy);
+      $('vpnDisconnectBtn').classList.toggle('hidden', !connected && !busy);
+      $('vpnConnectBtn').disabled = !vpnSelectedId && !server;
+
+      const errBanner = $('vpnErrorBanner');
+      if(status.error){
+        errBanner.textContent = '⚠️ ' + status.error;
+        errBanner.classList.remove('hidden');
+      } else {
+        errBanner.classList.add('hidden');
+      }
+
+      if(server) vpnSelectedId = server.id;
+      renderVpnServerList();
+
+      clearInterval(vpnDurationTimer);
+      if(connected){
+        let secs = status.durationSeconds||0;
+        vpnDurationTimer = setInterval(()=>{ secs++; $('vpnMetricDuration').textContent = fmtDuration(secs); }, 1000);
+      }
+    }
+
+    function pickBestVpnServer(){
+      const candidates = vpnServers.filter(s => s.active!==false && s.latencyMs!=null);
+      if(!candidates.length) return vpnServers.find(s=>s.active!==false) || vpnServers[0] || null;
+      return candidates.slice().sort((a,b)=>a.latencyMs-b.latencyMs)[0];
+    }
+
+    function initVpn(triesLeft){
+      if(triesLeft===undefined) triesLeft = 30;
+      if(!window.AETVPN || !window.AETVPN.isAvailable || !window.AETVPN.isAvailable()){
+        if(triesLeft>0) return setTimeout(()=>initVpn(triesLeft-1), 250);
+        vpnAvailable = false;
+        $('vpnUnavailableCard').classList.remove('hidden');
+        $('vpnStatusCard').classList.add('hidden');
+        $('vpnServerList').closest('.card').classList.add('hidden');
+        return;
+      }
+      vpnAvailable = true;
+
+      window.AETVPN.onEvent(evt => {
+        if(!evt) return;
+        if(evt.type === 'servers'){ vpnServers = evt.servers||[]; renderVpnServerList(); }
+        else if(evt.type === 'status'){ renderVpnStatus(evt); }
+      });
+
+      const initial = window.AETVPN.status();
+      if(initial) renderVpnStatus(initial);
+      window.AETVPN.servers(); // déclenche le chargement async ; le résultat arrive via onEvent('servers')
+    }
+
+    $('vpnServerList').addEventListener('click', e=>{
+      const btn = e.target.closest('[data-server]');
+      if(!btn || !vpnAvailable) return;
+      vpnSelectedId = btn.dataset.server;
+      renderVpnServerList();
+      $('vpnConnectBtn').disabled = false;
+    });
+
+    $('vpnConnectBtn').addEventListener('click', ()=>{
+      if(!vpnAvailable) return toast("AET VPN nécessite l'application Android");
+      const targetId = $('vpnAutoToggle').checked ? (pickBestVpnServer()?.id) : vpnSelectedId;
+      if(!targetId) return toast('Choisis un serveur');
+      vpnSelectedId = targetId;
+      window.AETVPN.connect(targetId);
+    });
+
+    $('vpnDisconnectBtn').addEventListener('click', ()=>{
+      if(!vpnAvailable) return;
+      window.AETVPN.disconnect();
+    });
+
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
 </body>

@@ -1,0 +1,22 @@
+[Unit]
+Description=AET VPN - agent de synchronisation des peers WireGuard
+After=network-online.target wg-quick@wg0.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adapter les chemins/valeurs ci-dessous à chaque serveur avant d'activer.
+Environment=AET_VPN_SERVER_ID=CHANGE_ME
+Environment=AET_VPN_WG_INTERFACE=wg0
+Environment=AET_VPN_POLL_SECONDS=30
+Environment=GOOGLE_APPLICATION_CREDENTIALS=/etc/aet-vpn/service-account.json
+ExecStart=/usr/bin/python3 /opt/aet-vpn/aet-vpn-agent.py
+Restart=on-failure
+RestartSec=5
+# Durcissement minimal : l'agent n'a besoin d'aucun accès réseau sortant
+# hormis Firestore (HTTPS) et de pouvoir exécuter `wg` localement.
+NoNewPrivileges=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

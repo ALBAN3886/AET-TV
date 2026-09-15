@@ -4,6 +4,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- AET VPN : nécessaires pour établir et maintenir le tunnel WireGuard -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,6 +33,36 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+             AET VPN : service système requis par la bibliothèque officielle WireGuard
+             (com.wireguard.android:tunnel). GoBackend gère lui-même l'implémentation
+             android.net.VpnService ; on ne réécrit jamais le protocole ou la crypto ici.
+             AetVpnService (Kotlin, dans vpn/) ne fait qu'orchestrer cet objet et la
+             notification persistante — voir vpn/AetVpnService.kt.
+        -->
+        <!-- Orchestrateur AET VPN : notification persistante + cycle de vie du tunnel. -->
+        <service
+            android:name=".vpn.AetVpnService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="aet-vpn-status" />
+        </service>
+
+        <service
+            android:name="com.wireguard.android.backend.GoBackend$VpnService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:permission="android.permission.BIND_VPN_SERVICE">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="aet-vpn-tunnel" />
+        </service>
     </application>
 
 </manifest>

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Liste des serveurs : lecture par tout utilisateur authentifié,
+    // écriture uniquement via la console / Admin SDK (jamais depuis un client).
+    match /vpnServers/{serverId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // Profil VPN de l'utilisateur : lisible/écrivable par son seul propriétaire.
+    match /vpnUsers/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Allocation d'IP par serveur (compteurs internes) : jamais exposée aux
+    // clients, uniquement manipulée par la Cloud Function (Admin SDK, qui
+    // ignore les règles de sécurité côté serveur).
+    match /vpnAllocations/{serverId} {
+      allow read, write: if false;
+    }
+
+    // Attribution IP/PSK par (serveur, utilisateur) : contient une preshared
+    // key, jamais lisible depuis un client, même le propriétaire — seule la
+    // Cloud Function (qui répond au client par HTTPS) et l'agent serveur
+    // (compte de service dédié, hors règles Firestore) y accèdent.
+    match /vpnClients/{clientId} {
+      allow read, write: if false;
+    }
+  }
+}
