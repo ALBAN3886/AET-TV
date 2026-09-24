@@ -12,3 +12,7 @@ node_modules/
 *.jks
 *.keystore
 key.properties
+
+# Sauvegardes locales
+*.backup-*
+*.before-*
