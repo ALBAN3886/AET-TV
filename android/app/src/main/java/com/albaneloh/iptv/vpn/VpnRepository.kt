@@ -36,28 +36,7 @@ class VpnRepository(
     private val revokeEndpoint: String = "https://us-central1-aet-tv-5d58c.cloudfunctions.net/revokeVpnClient"
 ) {
 
-    /**
-     * Firestore refuse la lecture de vpnServers sans utilisateur Firebase.
-     * La session anonyme native est distincte de la session du site WebView.
-     */
-    private suspend fun ensureAuthenticated(): Boolean {
-        if (auth.currentUser != null) return true
-
-        return try {
-            auth.signInAnonymously().await()
-            auth.currentUser != null
-        } catch (error: Exception) {
-            Log.e(TAG, "Authentification Firebase anonyme impossible", error)
-            false
-        }
-    }
-
     suspend fun fetchServers(): List<VpnServer> {
-        if (!ensureAuthenticated()) {
-            Log.e(TAG, "fetchServers annulé : utilisateur non authentifié")
-            return emptyList()
-        }
-
         return try {
             val snapshot = firestore.collection("vpnServers")
                 .whereEqualTo("active", true)
