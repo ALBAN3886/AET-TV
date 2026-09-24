@@ -472,6 +472,8 @@
         <div class="card-h"><h3>ALBAN TV</h3></div>
         <div class="quick-tiles" id="huhuTiles">
           <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span></button>
+          <button class="tile dark" id="mhubOpenBtn" type="button"><span class="ti">📺</span><span class="tt">Utiliser MHub</span></button>
+          <button class="tile dark" id="mhubInstallBtn" type="button"><span class="ti">⬇️</span><span class="tt">Installer MHub</span></button>
         </div>
       </div>
       <div class="card">
@@ -1010,7 +1012,6 @@
         <button class="tile dark" data-huhu="${esc(l.url)}"><span class="ti">${esc(l.icon||'🔗')}</span><span class="tt">${esc(l.title)}</span></button>
       `).join('');
       if(extra) wrap.insertAdjacentHTML('beforeend', extra);
-      document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
     }
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
@@ -1809,7 +1810,32 @@
     $('ytSendBtn').addEventListener('click', ()=>{ const u=$('ytUrl').value.trim(); if(!ytId(u)) return toast('Lien YouTube invalide'); playItem({ name:'YouTube', url:u, group:'YouTube' }); });
     $('ytTiles').addEventListener('click', e=>{ const b=e.target.closest('[data-yt-open]'); if(!b) return; const u=b.dataset.ytOpen; if(!ytId(u)) return toast("Ce lien n'est pas une vidéo YouTube directe (lien de chaîne non pris en charge)"); playItem({ name:b.querySelector('.tt')?.textContent||'YouTube', url:u, group:'YouTube' }); });
 
-    document.querySelectorAll('[data-huhu]').forEach(b=>b.addEventListener('click', ()=>{ openUrl(b.dataset.huhu); }));
+    const MHUB_HELP_URL = 'https://www.mhub.mx/browser?from=hint';
+    const MHUB_PLAY_URL = 'https://play.google.com/store/apps/details?id=net.vypn.app';
+
+    // Gestion centralisée des raccourcis ALBAN TV et MHub.
+    $('huhuTiles').addEventListener('click', e=>{
+      const button = e.target.closest('button');
+      if(!button) return;
+
+      if(button.matches('[data-huhu]')){
+        openUrl(button.dataset.huhu);
+        return;
+      }
+
+      if(button.id === 'mhubOpenBtn'){
+        const url = $('huhuUrl').value.trim() || 'https://huhu.to/';
+        window.open(MHUB_HELP_URL, '_blank', 'noopener,noreferrer');
+        copyText(url);
+        toast('Lien HUHU copié — ouvre-le dans MHub');
+        return;
+      }
+
+      if(button.id === 'mhubInstallBtn'){
+        window.open(MHUB_PLAY_URL, '_blank', 'noopener,noreferrer');
+      }
+    });
+
     $('huhuOpenBtn').addEventListener('click', ()=>openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'));
     $('huhuCopyBtn').addEventListener('click', ()=>copyText($('huhuUrl').value.trim()));
     $('huhuReloadBtn').addEventListener('click', ()=>{
