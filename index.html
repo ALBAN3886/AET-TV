@@ -472,11 +472,6 @@
         <div class="card-h"><h3>ALBAN TV</h3></div>
         <div class="quick-tiles" id="huhuTiles">
           <button class="tile" data-huhu="https://huhu.to/"><span class="ti">🏠</span><span class="tt">Accueil</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/live"><span class="ti">📡</span><span class="tt">TV live</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/movies"><span class="ti">🎬</span><span class="tt">Films</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/series"><span class="ti">📺</span><span class="tt">Séries</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/search"><span class="ti">🔎</span><span class="tt">Recherche</span></button>
-          <button class="tile dark" data-huhu="https://huhu.to/trending"><span class="ti">🔥</span><span class="tt">Tendance</span></button>
         </div>
       </div>
       <div class="card">
@@ -841,7 +836,7 @@
 
       <div class="card">
         <div class="card-h"><h3>Alban TV — Raccourcis</h3></div>
-        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Remplacent les raccourcis par défaut (huhu.to) dès qu'il y en a au moins un.</p>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">Remplacent le raccourci par défaut dès qu'il y en a au moins un.</p>
         <div id="adminHuhuLinksWrap" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
         <div class="row">
           <div class="field"><label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Titre</label><input class="input" id="adminHuhuTitle" type="text" placeholder="Ex: Oha" /></div>
@@ -1688,7 +1683,7 @@
 
     function renderAdminHuhuLinks(){
       const wrap = $('adminHuhuLinksWrap');
-      if(!remoteHuhuLinks.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucun raccourci distant (les raccourcis huhu.to par défaut s\'affichent).</p>'; return; }
+      if(!remoteHuhuLinks.length){ wrap.innerHTML = '<p style="font-size:12px;color:var(--muted);margin:0">Aucun raccourci distant (le lien d’accueil par défaut s\'affiche).</p>'; return; }
       wrap.innerHTML = remoteHuhuLinks.map(l => `
         <div class="admin-kv">
           <span>${esc(l.icon||'🔗')} ${esc(l.title)}<br><code style="font-size:10px">${esc(l.url)}</code></span>
