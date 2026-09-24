@@ -1,0 +1,14 @@
+service-account.json
+node_modules/
+
+# Fichiers locaux et sensibles
+/service-account.json
+/.firebase/
+/node_modules/
+/current-repo.zip
+/package-lock.json
+.env
+.env.*
+*.jks
+*.keystore
+key.properties
