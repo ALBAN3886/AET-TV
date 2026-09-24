@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.18"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -1273,6 +1273,7 @@
       clearWatchdog();
       const stages = buildStages(currentItem);
       const stage = stages[hlsAttemptStage % stages.length];
+      hlsRetryCount = 0;
       proxyState.mode = stage==='direct' ? null : stage;
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
       if(hls){ try{ hls.destroy(); }catch{} hls=null; }
@@ -1282,8 +1283,8 @@
         if(idx < stages.length - 1){ toast(msg || 'Flux bloqué, nouvelle tentative…'); hlsAttemptStage = idx + 1; playHls(url); }
         else{ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué — appuie sur Forcer pour réessayer'); }
       };
-      // Filet de sécurité : si rien ne se charge en 9s, on bascule automatiquement à la méthode suivante
-      hlsWatchdog = setTimeout(()=>advance('Chargement trop long, bascule automatique…'), 9000);
+      // Filet de sécurité : si rien ne se charge en 15s, on bascule automatiquement à la méthode suivante
+      hlsWatchdog = setTimeout(()=>advance('Chargement trop long, bascule automatique…'), 15000);
       if(window.Hls && Hls.isSupported()){
         const startLevel = appSettings.quality==='eco' ? 0 : -1;
         hls = new Hls({
