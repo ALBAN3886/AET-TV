@@ -341,6 +341,17 @@
     }
   </style>
 
+  <style>
+    /* Interface améliorée du lecteur AET-TV */
+    .player-live-badge{position:absolute;top:10px;left:10px;z-index:8;padding:6px 9px;border-radius:999px;background:rgba(190,18,60,.92);color:#fff;font-size:10px;line-height:1;font-weight:900;letter-spacing:.06em;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.3)}
+    .player-retry{position:absolute;top:50%;left:50%;z-index:12;transform:translate(-50%,-50%);min-width:130px;min-height:48px;padding:10px 18px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(15,15,15,.88);color:#fff;font:inherit;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+    .player-retry.hidden,.player-live-badge.hidden{display:none!important}
+    .player-retry .retry-icon{font-size:22px;line-height:1}
+    .player-retry:active{transform:translate(-50%,-50%) scale(.96)}
+    .player-box:fullscreen,.player-box:-webkit-full-screen{width:100vw;height:100vh;max-height:none;border-radius:0;background:#000}
+    .player-box:fullscreen video,.player-box:fullscreen iframe,.player-box:-webkit-full-screen video,.player-box:-webkit-full-screen iframe{width:100%;height:100%;object-fit:contain}
+    @media(max-width:520px){.player-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.player-tools button{min-height:52px}}
+  </style>
 </head>
 <body>
   <div class="drawer-mask" id="drawerMask"></div>
@@ -487,6 +498,8 @@
         <div class="player-box" id="playerBox">
           <div class="wm">ALBAN ELOH TECHNOLOGIE</div>
           <button class="float-close" id="floatCloseBtn">✕</button>
+            <div class="player-live-badge hidden" id="playerLiveBadge">● EN DIRECT</div>
+            <button class="player-retry hidden" id="playerRetryBtn" type="button"><span class="retry-icon">↻</span><span>Réessayer</span></button>
           <div class="placeholder" id="playerPlaceholder"><div class="em">📺</div><h4>Lecteur prêt</h4></div>
           <video id="videoPlayer" class="hidden" controls playsinline preload="metadata"></video>
           <iframe id="embedPlayer" class="hidden" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -501,6 +514,7 @@
           <button id="floatBtn"><span class="ic">🗗</span>Flotter</button>
           <button id="resetViewBtn"><span class="ic">↺</span>Réinit.</button>
           <button id="forceBtn"><span class="ic">⚡</span>Forcer</button>
+            <button id="fullscreenBtn"><span class="ic">⛶</span>Plein écran</button>
         </div>
         <div class="meta">
           <div class="meta-item"><div class="k">Titre</div><div class="v" id="metaTitle">Aucun</div></div>
@@ -1296,6 +1310,9 @@
       $('videoPlayer').removeAttribute('src'); $('videoPlayer').load?.();
       $('embedPlayer').removeAttribute('src');
       $('videoPlayer').classList.add('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.remove('hidden'); $('playerLoading').classList.add('hidden');
+      // États de la nouvelle interface HLS
+      $('playerRetryBtn').classList.add('hidden');
+      $('playerLiveBadge').classList.add('hidden');
       zoomLevel = 1; rotateDeg = 0; $('videoPlayer').style.transform = ''; $('embedPlayer').style.transform = '';
     }
     function stopAllPlayback(){
@@ -1366,12 +1383,18 @@
       hlsRetryCount = 0;
       proxyState.mode = stage==='direct' ? null : stage;
       $('videoPlayer').classList.remove('hidden'); $('embedPlayer').classList.add('hidden'); $('playerPlaceholder').classList.add('hidden'); $('playerLoading').classList.remove('hidden');
+      $('playerRetryBtn').classList.add('hidden');
+      $('playerLiveBadge').classList.remove('hidden');
       if(hls){ try{ hls.destroy(); }catch{} hls=null; }
       const advance = (msg)=>{
         clearWatchdog();
         const idx = stages.indexOf(stage);
         if(idx < stages.length - 1){ toast(msg || 'Flux bloqué, nouvelle tentative…'); hlsAttemptStage = idx + 1; playHls(url); }
-        else{ $('playerLoading').classList.add('hidden'); toast('Flux indisponible ou bloqué — appuie sur Forcer pour réessayer'); }
+        else{
+          $('playerLoading').classList.add('hidden');
+          $('playerRetryBtn').classList.remove('hidden');
+          toast('Flux indisponible ou bloqué — appuie sur Réessayer');
+        }
       };
       // Filet de sécurité : si rien ne se charge en 15s, on bascule automatiquement à la méthode suivante
       hlsWatchdog = setTimeout(()=>advance('Chargement trop long, bascule automatique…'), 15000);
@@ -1385,7 +1408,17 @@
           loader: getProxyLoader() || undefined
         });
         hls.loadSource(url); hls.attachMedia($('videoPlayer'));
-        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); hlsRetryCount = 0; if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); });
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>{
+          clearWatchdog();
+          $('playerLoading').classList.add('hidden');
+          $('playerRetryBtn').classList.add('hidden');
+          hlsRetryCount = 0;
+          if(appSettings.autoplay){
+            $('videoPlayer').play().catch(()=>{
+              toast('Appuie sur Lecture pour démarrer');
+            });
+          }
+        });
         hls.on(Hls.Events.ERROR, (_, data)=>{
           if(!data?.fatal) return;
           if(data.type === Hls.ErrorTypes.NETWORK_ERROR && hlsRetryCount < 3){ hlsRetryCount++; try{ hls.startLoad(); return; }catch{} }
@@ -1403,9 +1436,23 @@
         else if(proxyState.mode==='proxy2'){ finalUrl = CORS_PROXY_2 + encodeURIComponent(url); }
         else if(proxyState.mode==='proxy3'){ finalUrl = CORS_PROXY_3 + encodeURIComponent(url); }
         $('videoPlayer').src = finalUrl;
-        $('videoPlayer').oncanplay = ()=>{ clearWatchdog(); $('playerLoading').classList.add('hidden'); if(appSettings.autoplay) $('videoPlayer').play().catch(()=>{}); };
+        $('videoPlayer').oncanplay = ()=>{
+          clearWatchdog();
+          $('playerLoading').classList.add('hidden');
+          $('playerRetryBtn').classList.add('hidden');
+          if(appSettings.autoplay){
+            $('videoPlayer').play().catch(()=>{
+              toast('Appuie sur Lecture pour démarrer');
+            });
+          }
+        };
         $('videoPlayer').onerror = ()=>advance();
-      }else{ clearWatchdog(); $('playerLoading').classList.add('hidden'); toast('HLS non supporté'); }
+      }else{
+        clearWatchdog();
+        $('playerLoading').classList.add('hidden');
+        $('playerRetryBtn').classList.remove('hidden');
+        toast('HLS non supporté');
+      }
     }
     function forceCurrentPlayback(){
       if(!currentItem?.url) return toast('Aucun flux sélectionné');
@@ -1736,7 +1783,8 @@
       const fsEl = document.fullscreenElement;
       if(fsEl && appSettings.forceLandscape && screen.orientation?.lock){ screen.orientation.lock('landscape').catch(()=>{}); }
       if(!fsEl && screen.orientation?.unlock){ try{ screen.orientation.unlock(); }catch{} }
-      if(appSettings.relaunchFullscreen && currentItem?.url){
+      $('fullscreenBtn')?.classList.toggle('on', !!fsEl);
+      if(!fsEl && appSettings.relaunchFullscreen && currentItem?.url){
         const type = currentItem.detectedType || detectType(currentItem.url);
         if(type==='hls') playHls(currentItem.url);
       }
@@ -1815,6 +1863,49 @@
     $('huhuReloadBtn').addEventListener('click', ()=>{
       if(!$('webOverlay').classList.contains('hidden')){ reloadWebOverlay(); }
       else{ openUrl($('huhuUrl').value.trim() || 'https://huhu.to/'); }
+    });
+
+    async function openPlayerFullscreen(){
+      const box = $('playerBox');
+      const video = $('videoPlayer');
+
+      if(!$('playerPlaceholder').classList.contains('hidden')){
+        toast('Sélectionnez d’abord une chaîne');
+        return;
+      }
+
+      try{
+        if(document.fullscreenElement){
+          await document.exitFullscreen();
+        }else if(box.requestFullscreen){
+          await box.requestFullscreen();
+        }else if(box.webkitRequestFullscreen){
+          box.webkitRequestFullscreen();
+        }else if(video.webkitEnterFullscreen){
+          video.webkitEnterFullscreen();
+        }else{
+          toast('Plein écran indisponible');
+        }
+      }catch(error){
+        console.error('Plein écran :', error);
+        toast('Impossible d’activer le plein écran');
+      }
+    }
+
+    $('fullscreenBtn').addEventListener(
+      'click',
+      openPlayerFullscreen
+    );
+
+    $('playerRetryBtn').addEventListener('click', ()=>{
+      $('playerRetryBtn').classList.add('hidden');
+
+      if(!currentItem?.url){
+        toast('Aucun flux à relancer');
+        return;
+      }
+
+      forceCurrentPlayback();
     });
 
     // Zoom / rotation / mode flottant du lecteur
