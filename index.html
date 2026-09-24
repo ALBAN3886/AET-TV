@@ -288,6 +288,59 @@
 
     @media (min-width:640px){.channels-grid{grid-template-columns:1fr 1fr}.meta{grid-template-columns:repeat(3,1fr)}}
   </style>
+
+  <style>
+    /* AET external VPN mobile fix */
+    #externalVpnStatusCard {
+      overflow: hidden;
+    }
+
+    #externalVpnStatusCard .vpn-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+    }
+
+    #externalVpnStatusCard .vpn-metric {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    #externalVpnStatusCard .vpn-metric .k,
+    #externalVpnStatusCard .vpn-metric .v {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    #externalVpnStatusCard .vpn-metric .v {
+      font-size: clamp(14px, 4vw, 22px);
+      line-height: 1.15;
+    }
+
+    #externalVpnMessage {
+      background: rgba(255, 255, 255, 0.18) !important;
+      color: #ffffff !important;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 520px) {
+      #externalVpnStatusCard .vpn-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #externalVpnStatusCard .vpn-metric:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+
+      #externalVpnStatusCard .vpn-metric .v {
+        font-size: 18px;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <div class="drawer-mask" id="drawerMask"></div>
@@ -484,52 +537,94 @@
     </section>
 
     <section class="screen" id="screen-vpn">
-      <div class="glass stats"><div><strong>🔐 AET VPN</strong></div><div class="pill" id="vpnServerCount">0 serveurs</div></div>
+        <div class="glass stats">
+          <div><strong>🔐 VPN externe</strong></div>
+          <div class="pill">Mode externe</div>
+        </div>
 
-      <div id="vpnUnavailableCard" class="card hidden">
-        <div class="card-h"><h3>Indisponible ici</h3></div>
-        <p style="font-size:12px;color:var(--muted);margin:0">
-          AET VPN nécessite l'application Android AET-TV (il utilise le VPN natif du
-          téléphone). Télécharge l'app pour l'activer.
-        </p>
-      </div>
+        <div class="card">
+          <div class="card-h">
+            <h3>Utiliser votre application VPN</h3>
+          </div>
 
-      <div id="vpnStatusCard" class="vpn-status-card state-disconnected">
-        <div class="vpn-status-top">
-          <span class="vpn-dot"></span>
-          <span class="vpn-status-label" id="vpnStateLabel">Déconnecté</span>
-        </div>
-        <div class="vpn-server-row">
-          <span class="flag" id="vpnActiveFlag">🌐</span>
-          <span id="vpnActiveName">Aucun serveur sélectionné</span>
-        </div>
-        <div class="vpn-metrics">
-          <div class="vpn-metric"><div class="k">Ping</div><div class="v" id="vpnMetricPing">—</div></div>
-          <div class="vpn-metric"><div class="k">IP VPN</div><div class="v" id="vpnMetricIp">—</div></div>
-          <div class="vpn-metric"><div class="k">Durée</div><div class="v" id="vpnMetricDuration">00:00:00</div></div>
-        </div>
-        <div class="vpn-error-banner hidden" id="vpnErrorBanner"></div>
-        <button class="btn btn-red" id="vpnConnectBtn" style="width:100%;background:#fff;color:var(--red-dark)">CONNECTER</button>
-        <button class="btn btn-light hidden" id="vpnDisconnectBtn" style="width:100%">DÉCONNECTER</button>
-      </div>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 12px">
+            AET-TV ne démarre pas directement le VPN. Connectez votre
+            application VPN habituelle, puis revenez ici pour comparer
+            votre adresse IP publique.
+          </p>
 
-      <div class="card">
-        <div class="card-h">
-          <h3>Serveurs</h3>
-          <label class="switch" title="Connexion automatique au meilleur serveur">
-            <input type="checkbox" id="vpnAutoToggle"><span class="slider"></span>
-          </label>
-        </div>
-        <div class="settings-row" style="border-bottom:none;padding-top:0">
-          <span style="font-size:12px;color:var(--muted);font-weight:600">⚡ Connexion automatique (meilleur serveur)</span>
-        </div>
-        <div class="server-list" id="vpnServerList">
-          <div class="empty"><div class="em">🔐</div><h4>Chargement des serveurs…</h4><p>Merci de patienter</p></div>
-        </div>
-      </div>
-    </section>
+          <div class="vpn-status-card state-disconnected"
+               id="externalVpnStatusCard">
+            <div class="vpn-status-top">
+              <span class="vpn-dot"></span>
+              <span class="vpn-status-label" id="externalVpnState">
+                VPN non vérifié
+              </span>
+            </div>
 
-    <section class="screen" id="screen-settings">
+            <div class="vpn-metrics">
+              <div class="vpn-metric">
+                <div class="k">IP de départ</div>
+                <div class="v" id="externalVpnBaselineIp">—</div>
+              </div>
+
+              <div class="vpn-metric">
+                <div class="k">IP actuelle</div>
+                <div class="v" id="externalVpnCurrentIp">—</div>
+              </div>
+
+              <div class="vpn-metric">
+                <div class="k">Résultat</div>
+                <div class="v" id="externalVpnResult">À vérifier</div>
+              </div>
+            </div>
+
+            <div class="vpn-error-banner hidden"
+                 id="externalVpnMessage"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>Étapes</h3></div>
+
+          <p style="font-size:12px;color:var(--muted);margin:0 0 12px">
+            1. Désactivez le VPN et mémorisez votre IP de départ.
+            <br><br>
+            2. Activez votre application VPN.
+            <br><br>
+            3. Revenez ici et vérifiez votre IP actuelle.
+          </p>
+
+          <button class="btn btn-light"
+                  id="vpnSaveBaselineBtn"
+                  style="width:100%;margin-bottom:8px">
+            1 · MÉMORISER MON IP SANS VPN
+          </button>
+
+          <button class="btn btn-red"
+                  id="vpnCheckIpBtn"
+                  style="width:100%;margin-bottom:8px">
+            2 · VÉRIFIER MON IP ACTUELLE
+          </button>
+
+          <button class="btn btn-soft"
+                  id="vpnGoTvBtn"
+                  style="width:100%">
+            3 · CONTINUER VERS LES CHAÎNES
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-h"><h3>Information</h3></div>
+          <p style="font-size:12px;color:var(--muted);margin:0">
+            Une adresse IP différente indique généralement que le VPN
+            est actif. Cette vérification ne garantit pas la sécurité
+            ou la qualité du fournisseur VPN.
+          </p>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-settings">
       <div class="glass stats"><div><strong>⚙️ Paramètres</strong></div></div>
 
       <div class="card">
@@ -2030,134 +2125,198 @@
       lines.proxy3 = (r5.ok?'✅ ':'❌ ') + r5.label; render();
     });
 
-    // ================= AET VPN =================
-    let vpnServers = [];
-    let vpnSelectedId = null;
-    let vpnDurationTimer = null;
-    let vpnAvailable = false;
+      // ================= VPN EXTERNE =================
+      const EXTERNAL_VPN_BASELINE_KEY =
+        'aet_external_vpn_baseline_ip';
 
-    function fmtDuration(totalSeconds){
-      const s = Math.max(0, totalSeconds|0);
-      const hh = String(Math.floor(s/3600)).padStart(2,'0');
-      const mm = String(Math.floor((s%3600)/60)).padStart(2,'0');
-      const ss = String(s%60).padStart(2,'0');
-      return `${hh}:${mm}:${ss}`;
-    }
-
-    function vpnStateLabel(state){
-      return { DISCONNECTED:'🔴 Déconnecté', CONNECTING:'🟡 Connexion…', CONNECTED:'🟢 Connecté', DISCONNECTING:'🟡 Déconnexion…', RECONNECTING:'🟡 Reconnexion…', ERROR:'🔴 Erreur' }[state] || '🔴 Déconnecté';
-    }
-
-    function renderVpnServerList(){
-      const wrap = $('vpnServerList');
-      $('vpnServerCount').textContent = `${vpnServers.length} serveur${vpnServers.length>1?'s':''}`;
-      if(!vpnServers.length){
-        wrap.innerHTML = '<div class="empty"><div class="em">🔐</div><h4>Aucun serveur disponible</h4><p>Réessaie plus tard</p></div>';
-        return;
-      }
-      wrap.innerHTML = vpnServers.map(s => {
-        const ping = (s.latencyMs!=null) ? `${s.latencyMs} ms` : '—';
-        const pingClass = (s.latencyMs!=null && s.latencyMs>120) ? 'ping high' : 'ping';
-        const load = (s.serverLoad!=null) ? Math.min(100, Math.max(0, s.serverLoad)) : null;
-        return `
-          <button class="server-item${s.id===vpnSelectedId?' selected':''}" data-server="${esc(s.id)}">
-            <span class="flag">${esc(s.flag||'🌐')}</span>
-            <span class="info">
-              <div class="name">${esc(s.name)}${s.active===false?' · indisponible':''}</div>
-              <div class="sub">${esc(s.country||'')}${load!=null?` · Charge ${load}%`:''}</div>
-              ${load!=null?`<div class="load-bar"><span style="width:${load}%"></span></div>`:''}
-            </span>
-            <span class="${pingClass}">${ping}</span>
-          </button>`;
-      }).join('');
-    }
-
-    function renderVpnStatus(status){
-      if(!status) return;
-      const card = $('vpnStatusCard');
-      card.className = 'vpn-status-card state-' + String(status.state||'DISCONNECTED').toLowerCase();
-      $('vpnStateLabel').textContent = vpnStateLabel(status.state);
-
-      const server = status.server;
-      $('vpnActiveFlag').textContent = server ? (server.flag || '🌐') : '🌐';
-      $('vpnActiveName').textContent = server ? server.name : 'Aucun serveur sélectionné';
-      $('vpnMetricPing').textContent = server && server.latencyMs!=null ? `${server.latencyMs} ms` : '—';
-      $('vpnMetricIp').textContent = status.vpnIp || '—';
-      $('vpnMetricDuration').textContent = fmtDuration(status.durationSeconds||0);
-
-      const connected = status.state === 'CONNECTED';
-      const busy = status.state === 'CONNECTING' || status.state === 'DISCONNECTING' || status.state === 'RECONNECTING';
-      $('vpnConnectBtn').classList.toggle('hidden', connected || busy);
-      $('vpnDisconnectBtn').classList.toggle('hidden', !connected && !busy);
-      $('vpnConnectBtn').disabled = !vpnSelectedId && !server;
-
-      const errBanner = $('vpnErrorBanner');
-      if(status.error){
-        errBanner.textContent = '⚠️ ' + status.error;
-        errBanner.classList.remove('hidden');
-      } else {
-        errBanner.classList.add('hidden');
+      function getSavedVpnBaseline(){
+        return localStorage.getItem(EXTERNAL_VPN_BASELINE_KEY) || '';
       }
 
-      if(server) vpnSelectedId = server.id;
-      renderVpnServerList();
+      function updateExternalVpnBaseline(){
+        const baseline = getSavedVpnBaseline();
 
-      clearInterval(vpnDurationTimer);
-      if(connected){
-        let secs = status.durationSeconds||0;
-        vpnDurationTimer = setInterval(()=>{ secs++; $('vpnMetricDuration').textContent = fmtDuration(secs); }, 1000);
+        $('externalVpnBaselineIp').textContent = baseline || '—';
+
+        if(baseline){
+          $('externalVpnState').textContent =
+            'Prêt pour la vérification';
+          $('externalVpnResult').textContent = 'À comparer';
+        }
       }
-    }
 
-    function pickBestVpnServer(){
-      const candidates = vpnServers.filter(s => s.active!==false && s.latencyMs!=null);
-      if(!candidates.length) return vpnServers.find(s=>s.active!==false) || vpnServers[0] || null;
-      return candidates.slice().sort((a,b)=>a.latencyMs-b.latencyMs)[0];
-    }
-
-    function initVpn(triesLeft){
-      if(triesLeft===undefined) triesLeft = 30;
-      if(!window.AETVPN || !window.AETVPN.isAvailable || !window.AETVPN.isAvailable()){
-        if(triesLeft>0) return setTimeout(()=>initVpn(triesLeft-1), 250);
-        vpnAvailable = false;
-        $('vpnUnavailableCard').classList.remove('hidden');
-        $('vpnStatusCard').classList.add('hidden');
-        $('vpnServerList').closest('.card').classList.add('hidden');
-        return;
+      function setExternalVpnBusy(busy){
+        $('vpnSaveBaselineBtn').disabled = busy;
+        $('vpnCheckIpBtn').disabled = busy;
       }
-      vpnAvailable = true;
 
-      window.AETVPN.onEvent(evt => {
-        if(!evt) return;
-        if(evt.type === 'servers'){ vpnServers = evt.servers||[]; renderVpnServerList(); }
-        else if(evt.type === 'status'){ renderVpnStatus(evt); }
+      function showExternalVpnMessage(message, error){
+        const banner = $('externalVpnMessage');
+
+        banner.textContent = message || '';
+        banner.classList.toggle('hidden', !message);
+
+        if(message){
+          banner.style.background = error
+            ? 'rgba(220,38,38,.12)'
+            : 'rgba(22,163,74,.12)';
+
+          banner.style.color = error ? '#b91c1c' : '#15803d';
+        }
+      }
+
+      async function fetchPublicIp(){
+        const controller = new AbortController();
+        const timeout = setTimeout(()=>controller.abort(), 10000);
+
+        try{
+          const response = await fetch(
+            'https://api.ipify.org?format=json&_=' + Date.now(),
+            {
+              cache: 'no-store',
+              signal: controller.signal
+            }
+          );
+
+          if(!response.ok){
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const data = await response.json();
+          const ip = String(data.ip || '').trim();
+
+          if(!ip){
+            throw new Error('Adresse IP vide');
+          }
+
+          return ip;
+        }finally{
+          clearTimeout(timeout);
+        }
+      }
+
+      async function saveExternalVpnBaseline(){
+        setExternalVpnBusy(true);
+        showExternalVpnMessage('', false);
+        $('externalVpnState').textContent = 'Vérification en cours…';
+
+        try{
+          const ip = await fetchPublicIp();
+
+          localStorage.setItem(EXTERNAL_VPN_BASELINE_KEY, ip);
+
+          $('externalVpnBaselineIp').textContent = ip;
+          $('externalVpnCurrentIp').textContent = ip;
+          $('externalVpnResult').textContent = 'IP mémorisée';
+          $('externalVpnState').textContent =
+            'IP sans VPN enregistrée';
+
+          showExternalVpnMessage(
+            'Activez maintenant votre application VPN, puis revenez vérifier votre IP.',
+            false
+          );
+
+          toast('IP de départ mémorisée');
+        }catch(error){
+          console.error('Lecture IP :', error);
+
+          $('externalVpnState').textContent =
+            'Vérification impossible';
+          $('externalVpnResult').textContent = 'Erreur';
+
+          showExternalVpnMessage(
+            'Impossible de récupérer votre IP. Vérifiez votre connexion Internet.',
+            true
+          );
+        }finally{
+          setExternalVpnBusy(false);
+        }
+      }
+
+      async function checkExternalVpn(){
+        setExternalVpnBusy(true);
+        showExternalVpnMessage('', false);
+        $('externalVpnState').textContent = 'Vérification en cours…';
+
+        try{
+          const currentIp = await fetchPublicIp();
+          const baselineIp = getSavedVpnBaseline();
+
+          $('externalVpnCurrentIp').textContent = currentIp;
+
+          if(!baselineIp){
+            $('externalVpnState').textContent = 'IP détectée';
+            $('externalVpnResult').textContent = 'Sans référence';
+
+            showExternalVpnMessage(
+              'Mémorisez d’abord votre IP lorsque le VPN est désactivé.',
+              true
+            );
+
+            return;
+          }
+
+          if(currentIp !== baselineIp){
+            $('externalVpnStatusCard').className =
+              'vpn-status-card state-connected';
+
+            $('externalVpnState').textContent =
+              'VPN probablement actif';
+            $('externalVpnResult').textContent = 'IP différente';
+
+            showExternalVpnMessage(
+              'Votre adresse IP a changé. Le VPN semble actif.',
+              false
+            );
+
+            toast('VPN probablement actif');
+          }else{
+            $('externalVpnStatusCard').className =
+              'vpn-status-card state-disconnected';
+
+            $('externalVpnState').textContent = 'VPN non détecté';
+            $('externalVpnResult').textContent = 'IP inchangée';
+
+            showExternalVpnMessage(
+              'Votre IP est inchangée. Vérifiez que le VPN est connecté et que le navigateur n’est pas exclu.',
+              true
+            );
+
+            toast('Adresse IP inchangée');
+          }
+        }catch(error){
+          console.error('Lecture IP :', error);
+
+          $('externalVpnState').textContent =
+            'Vérification impossible';
+          $('externalVpnResult').textContent = 'Erreur';
+
+          showExternalVpnMessage(
+            'Impossible de récupérer votre IP. Réessayez après avoir vérifié la connexion.',
+            true
+          );
+        }finally{
+          setExternalVpnBusy(false);
+        }
+      }
+
+      function initVpn(){
+        updateExternalVpnBaseline();
+      }
+
+      $('vpnSaveBaselineBtn').addEventListener(
+        'click',
+        saveExternalVpnBaseline
+      );
+
+      $('vpnCheckIpBtn').addEventListener(
+        'click',
+        checkExternalVpn
+      );
+
+      $('vpnGoTvBtn').addEventListener('click', ()=>{
+        switchScreen('live-tv');
       });
-
-      const initial = window.AETVPN.status();
-      if(initial) renderVpnStatus(initial);
-      window.AETVPN.servers(); // déclenche le chargement async ; le résultat arrive via onEvent('servers')
-    }
-
-    $('vpnServerList').addEventListener('click', e=>{
-      const btn = e.target.closest('[data-server]');
-      if(!btn || !vpnAvailable) return;
-      vpnSelectedId = btn.dataset.server;
-      renderVpnServerList();
-      $('vpnConnectBtn').disabled = false;
-    });
-
-    $('vpnConnectBtn').addEventListener('click', ()=>{
-      if(!vpnAvailable) return toast("AET VPN nécessite l'application Android");
-      const targetId = $('vpnAutoToggle').checked ? (pickBestVpnServer()?.id) : vpnSelectedId;
-      if(!targetId) return toast('Choisis un serveur');
-      vpnSelectedId = targetId;
-      window.AETVPN.connect(targetId);
-    });
-
-    $('vpnDisconnectBtn').addEventListener('click', ()=>{
-      if(!vpnAvailable) return;
-      window.AETVPN.disconnect();
-    });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
     function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
