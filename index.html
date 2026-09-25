@@ -406,6 +406,48 @@
     }
   </style>
 
+
+  <style>
+    /* Catalogue IPTV-ORG */
+    .iptv-org-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(145px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .iptv-org-card{
+      border:0;
+      border-radius:14px;
+      padding:12px;
+      background:var(--card,#fff);
+      color:var(--text,#222);
+      text-align:left;
+      cursor:pointer;
+      box-shadow:0 5px 16px rgba(0,0,0,.08);
+    }
+    .iptv-org-card:active{
+      transform:scale(.97);
+    }
+    .iptv-org-logo{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:contain;
+      border-radius:10px;
+      background:#f2f2f2;
+      margin-bottom:9px;
+    }
+    .iptv-org-name{
+      font-size:13px;
+      font-weight:800;
+      line-height:1.3;
+    }
+    .iptv-org-country{
+      margin-top:5px;
+      color:var(--muted,#777);
+      font-size:11px;
+    }
+  </style>
+
 </head>
 <body>
   <div class="drawer-mask" id="drawerMask"></div>
@@ -429,6 +471,7 @@
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
       <button class="drawer-item" data-screen="nasa"><span class="ico">🚀</span><span>NASA Videos</span></button>
+      <button class="drawer-item" data-screen="iptv-org"><span class="ico">📡</span><span>IPTV-ORG</span></button>
       <button class="drawer-item" data-screen="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
@@ -574,6 +617,59 @@
           style="width:100%;margin-top:12px"
         >
           Charger plus de vidéos
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-iptv-org">
+      <div class="glass stats">
+        <div><strong>📡 IPTV-ORG</strong></div>
+        <div class="pill" id="iptvOrgCount">0 chaîne</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Chaînes internationales publiques</h3>
+        </div>
+
+        <div class="field">
+          <input
+            class="input"
+            id="iptvOrgSearch"
+            type="search"
+            placeholder="Rechercher une chaîne"
+          />
+        </div>
+
+        <div class="row">
+          <button class="btn btn-red" id="iptvOrgSearchBtn">
+            Rechercher
+          </button>
+          <button class="btn btn-light" id="iptvOrgResetBtn">
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Catalogue</h3>
+        </div>
+
+        <div class="iptv-org-grid" id="iptvOrgGrid">
+          <div class="empty">
+            <div class="em">📡</div>
+            <h4>Chargement des chaînes…</h4>
+            <p>Merci de patienter</p>
+          </div>
+        </div>
+
+        <button
+          class="btn btn-light hidden"
+          id="iptvOrgMoreBtn"
+          style="width:100%;margin-top:12px"
+        >
+          Charger davantage
         </button>
       </div>
     </section>
@@ -1645,6 +1741,11 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'iptv-org'){
+        $('titleMain').textContent = 'ALBAN ELOH TECHNOLOGIE';
+        $('titleSub').textContent = 'IPTV-ORG';
+        return;
+      }
       if(screen === 'nasa'){
         $('titleMain').textContent = 'NASA';
         $('titleSub').textContent = 'VIDEOS';
@@ -2779,6 +2880,180 @@
       .querySelector('.drawer-item[data-screen="nasa"]')
       ?.addEventListener('click', ()=>{
         if(!nasaLoaded) loadNasaCatalog(true);
+      });
+
+
+    // ================= IPTV-ORG =================
+    const IPTV_ORG_API = 'https://www.mhub.mx/iptv-org';
+
+    let iptvOrgItems = [];
+    let iptvOrgCursor = null;
+    let iptvOrgLoading = false;
+    let iptvOrgLoaded = false;
+
+    function renderIptvOrg(){
+      const grid = $('iptvOrgGrid');
+
+      $('iptvOrgCount').textContent =
+        `${iptvOrgItems.length} chaîne${iptvOrgItems.length > 1 ? 's' : ''}`;
+
+      if(!iptvOrgItems.length){
+        grid.innerHTML =
+          '<div class="empty">' +
+          '<div class="em">📡</div>' +
+          '<h4>Aucune chaîne trouvée</h4>' +
+          '<p>Essaie une autre recherche</p>' +
+          '</div>';
+        return;
+      }
+
+      grid.innerHTML = iptvOrgItems.map((item, index)=>{
+        const logo = item.images?.logo || item.images?.poster || '';
+        const countries = Array.isArray(item.countries)
+          ? item.countries.join(', ')
+          : '';
+
+        return `
+          <button
+            class="iptv-org-card"
+            type="button"
+            data-iptv-org-index="${index}">
+            ${logo
+              ? `<img class="iptv-org-logo"
+                   src="${esc(logo)}"
+                   alt=""
+                   loading="lazy">`
+              : '<div class="iptv-org-logo"></div>'}
+            <div class="iptv-org-name">${esc(item.name || 'Sans titre')}</div>
+            <div class="iptv-org-country">${esc(countries || 'International')}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    async function loadIptvOrg(reset = true){
+      if(iptvOrgLoading) return;
+
+      if(reset){
+        iptvOrgItems = [];
+        iptvOrgCursor = null;
+        renderIptvOrg();
+      }
+
+      iptvOrgLoading = true;
+      $('iptvOrgMoreBtn').disabled = true;
+
+      if(!iptvOrgItems.length){
+        $('iptvOrgGrid').innerHTML =
+          '<div class="empty">' +
+          '<div class="em">📡</div>' +
+          '<h4>Chargement des chaînes…</h4>' +
+          '<p>Merci de patienter</p>' +
+          '</div>';
+      }
+
+      try{
+        const params = new URLSearchParams();
+        const search = $('iptvOrgSearch').value.trim();
+
+        if(search) params.set('search', search);
+        if(!reset && iptvOrgCursor != null){
+          params.set('cursor', iptvOrgCursor);
+        }
+
+        const suffix = params.toString() ? `?${params}` : '';
+        const response = await fetch(
+          `${IPTV_ORG_API}/catalog/live/channels.json${suffix}`,
+          { cache:'no-store' }
+        );
+
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const received = Array.isArray(data.items) ? data.items : [];
+
+        const knownIds = new Set(iptvOrgItems.map(item => String(item.id)));
+
+        for(const item of received){
+          if(item?.id == null || knownIds.has(String(item.id))) continue;
+          iptvOrgItems.push(item);
+          knownIds.add(String(item.id));
+        }
+
+        iptvOrgCursor = data.nextCursor ?? null;
+        iptvOrgLoaded = true;
+
+        renderIptvOrg();
+        $('iptvOrgMoreBtn').classList.toggle(
+          'hidden',
+          iptvOrgCursor == null
+        );
+      }catch(error){
+        console.error('IPTV-ORG :', error);
+
+        if(!iptvOrgItems.length){
+          $('iptvOrgGrid').innerHTML =
+            '<div class="empty">' +
+            '<div class="em">⚠️</div>' +
+            '<h4>Catalogue indisponible</h4>' +
+            '<p>Vérifie ta connexion puis réessaie</p>' +
+            '</div>';
+        }
+
+        toast('Impossible de charger IPTV-ORG');
+      }finally{
+        iptvOrgLoading = false;
+        $('iptvOrgMoreBtn').disabled = false;
+      }
+    }
+
+    $('iptvOrgGrid').addEventListener('click', event=>{
+      const card = event.target.closest('[data-iptv-org-index]');
+      if(!card) return;
+
+      const item = iptvOrgItems[Number(card.dataset.iptvOrgIndex)];
+
+      if(!item?.url){
+        toast('Cette chaîne ne possède pas de lien lisible');
+        return;
+      }
+
+      playItem({
+        id: `iptv-org-${item.id}`,
+        name: item.name || 'IPTV-ORG',
+        url: item.url,
+        group: Array.isArray(item.countries)
+          ? item.countries.join(', ')
+          : 'IPTV-ORG',
+        logo: item.images?.logo || item.images?.poster || ''
+      });
+    });
+
+    $('iptvOrgSearchBtn').addEventListener('click', ()=>{
+      loadIptvOrg(true);
+    });
+
+    $('iptvOrgSearch').addEventListener('keydown', event=>{
+      if(event.key === 'Enter') loadIptvOrg(true);
+    });
+
+    $('iptvOrgResetBtn').addEventListener('click', ()=>{
+      $('iptvOrgSearch').value = '';
+      loadIptvOrg(true);
+    });
+
+    $('iptvOrgMoreBtn').addEventListener('click', ()=>{
+      if(iptvOrgCursor != null) loadIptvOrg(false);
+    });
+
+    document
+      .querySelectorAll('[data-screen="iptv-org"]')
+      .forEach(button=>{
+        button.addEventListener('click', ()=>{
+          if(!iptvOrgLoaded) loadIptvOrg(true);
+        });
       });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
