@@ -1,113 +1,150 @@
-import fs from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 
-const apiKey = process.env.API_FOOTBALL_KEY;
+const API_KEY = process.env.FOOTBALL_DATA_KEY;
+const TIMEZONE = 'Africa/Lome';
+const OUTPUT = 'data/football-live.json';
 
-if (!apiKey) {
-  throw new Error('Secret API_FOOTBALL_KEY absent');
+if (!API_KEY) {
+  throw new Error('Secret FOOTBALL_DATA_KEY manquant');
 }
 
-const timezone = 'Africa/Lome';
+function dateInTimezone(timeZone) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
 
-const parts = new Intl.DateTimeFormat('en-GB', {
-  timeZone: timezone,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit'
-}).formatToParts(new Date());
+  const values = Object.fromEntries(
+    parts.map(part => [part.type, part.value])
+  );
 
-const dateParts = Object.fromEntries(
-  parts.map(part => [part.type, part.value])
-);
+  return `${values.year}-${values.month}-${values.day}`;
+}
 
-const date = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
+function eventState(status) {
+  if (['IN_PLAY', 'PAUSED'].includes(status)) return 'live';
+  if (['FINISHED', 'AWARDED'].includes(status)) return 'finished';
+  return 'scheduled';
+}
 
-const endpoint = new URL(
-  'https://v3.football.api-sports.io/fixtures'
-);
+function statusLabel(status) {
+  const labels = {
+    SCHEDULED: 'PROGRAMMÉ',
+    TIMED: 'À VENIR',
+    IN_PLAY: 'EN DIRECT',
+    PAUSED: 'MI-TEMPS',
+    FINISHED: 'TERMINÉ',
+    SUSPENDED: 'SUSPENDU',
+    POSTPONED: 'REPORTÉ',
+    CANCELLED: 'ANNULÉ',
+    AWARDED: 'TERMINÉ'
+  };
 
-endpoint.searchParams.set('date', date);
-endpoint.searchParams.set('timezone', timezone);
+  return labels[status] || status || 'À VENIR';
+}
+
+function scoreValue(match, side) {
+  const fullTime = match.score?.fullTime?.[side];
+
+  if (fullTime !== null && fullTime !== undefined) {
+    return fullTime;
+  }
+
+  const halfTime = match.score?.halfTime?.[side];
+
+  if (halfTime !== null && halfTime !== undefined) {
+    return halfTime;
+  }
+
+  return null;
+}
+
+const date = dateInTimezone(TIMEZONE);
+const endpoint = new URL('https://api.football-data.org/v4/matches');
+
+endpoint.searchParams.set('dateFrom', date);
+endpoint.searchParams.set('dateTo', date);
 
 const response = await fetch(endpoint, {
   headers: {
-    'x-apisports-key': apiKey
+    'X-Auth-Token': API_KEY,
+    Accept: 'application/json'
   }
 });
+
+const body = await response.json().catch(() => ({}));
 
 if (!response.ok) {
-  throw new Error(
-    `API Football : HTTP ${response.status}`
-  );
+  const message =
+    body.message ||
+    body.error ||
+    `Erreur HTTP ${response.status}`;
+
+  throw new Error(`football-data.org : ${message}`);
 }
 
-const data = await response.json();
+const matches = (body.matches || [])
+  .map(match => {
+    const state = eventState(match.status);
 
-if (
-  data.errors &&
-  Object.keys(data.errors).length > 0
-) {
-  throw new Error(
-    `API Football : ${JSON.stringify(data.errors)}`
-  );
-}
+    return {
+      id: `football-data-${match.id}`,
+      source: 'football-data.org',
 
-const liveStatuses = new Set([
-  '1H', 'HT', '2H', 'ET', 'BT',
-  'P', 'SUSP', 'INT', 'LIVE'
-]);
+      left: match.homeTeam?.shortName ||
+        match.homeTeam?.name ||
+        'Équipe domicile',
 
-const finishedStatuses = new Set([
-  'FT', 'AET', 'PEN'
-]);
+      right: match.awayTeam?.shortName ||
+        match.awayTeam?.name ||
+        'Équipe extérieure',
 
-const matches = (data.response || []).map(entry => {
-  const shortStatus = entry.fixture?.status?.short || 'NS';
+      leftLogo: match.homeTeam?.crest || '',
+      rightLogo: match.awayTeam?.crest || '',
 
-  let state = 'scheduled';
+      leftScore: scoreValue(match, 'home'),
+      rightScore: scoreValue(match, 'away'),
 
-  if (liveStatuses.has(shortStatus)) {
-    state = 'live';
-  } else if (finishedStatuses.has(shortStatus)) {
-    state = 'finished';
-  }
+      cup: match.competition?.name || 'Football',
+      league: match.competition?.name || '',
+      leagueLogo: match.competition?.emblem || '',
+      country: match.area?.name || '',
 
-  return {
-    id: String(entry.fixture?.id || ''),
-    left: entry.teams?.home?.name || 'Équipe domicile',
-    right: entry.teams?.away?.name || 'Équipe extérieure',
-    leftLogo: entry.teams?.home?.logo || '',
-    rightLogo: entry.teams?.away?.logo || '',
-    leftScore: entry.goals?.home ?? null,
-    rightScore: entry.goals?.away ?? null,
-    cup: entry.league?.name || 'Football',
-    leagueLogo: entry.league?.logo || '',
-    country: entry.league?.country || '',
-    status: entry.fixture?.status?.long || 'À venir',
-    state,
-    live: state === 'live',
-    minute: entry.fixture?.status?.elapsed ?? null,
-    startTime: entry.fixture?.date || '',
-    venue: entry.fixture?.venue?.name || '',
-    round: entry.league?.round || ''
-  };
-}).sort((a, b) => {
-  return new Date(a.startTime) - new Date(b.startTime);
-});
+      status: statusLabel(match.status),
+      state,
+      live: state === 'live',
+      minute: null,
+
+      startTime: match.utcDate || null,
+      venue: match.venue || '',
+      round:
+        match.stage ||
+        match.group ||
+        (match.matchday ? `Journée ${match.matchday}` : '')
+    };
+  })
+  .sort((a, b) => {
+    const first = new Date(a.startTime || 0).getTime();
+    const second = new Date(b.startTime || 0).getTime();
+    return first - second;
+  });
 
 const output = {
   generatedAt: new Date().toISOString(),
+  provider: 'football-data.org',
   date,
-  timezone,
+  timezone: TIMEZONE,
   count: matches.length,
   matches
 };
 
-fs.mkdirSync('data', { recursive: true });
-
-fs.writeFileSync(
-  'data/football-live.json',
-  JSON.stringify(output, null, 2) + '\n',
+await mkdir('data', { recursive: true });
+await writeFile(
+  OUTPUT,
+  `${JSON.stringify(output, null, 2)}\n`,
   'utf8'
 );
 
-console.log(`${matches.length} matchs enregistrés pour ${date}.`);
+console.log(`${matches.length} match(s) enregistré(s) dans ${OUTPUT}`);
