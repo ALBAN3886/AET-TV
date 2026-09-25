@@ -352,6 +352,60 @@
     .player-box:fullscreen video,.player-box:fullscreen iframe,.player-box:-webkit-full-screen video,.player-box:-webkit-full-screen iframe{width:100%;height:100%;object-fit:contain}
     @media(max-width:520px){.player-tools{grid-template-columns:repeat(3,minmax(0,1fr))}.player-tools button{min-height:52px}}
   </style>
+
+  <style>
+    /* NASA Videos */
+    #nasaGrid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:12px;
+    }
+
+    .nasa-card{
+      overflow:hidden;
+      padding:0;
+      border:0;
+      border-radius:14px;
+      background:var(--card);
+      color:var(--text);
+      text-align:left;
+      cursor:pointer;
+      box-shadow:0 5px 16px rgba(0,0,0,.12);
+    }
+
+    .nasa-card:active{
+      transform:scale(.98);
+    }
+
+    .nasa-poster{
+      display:block;
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#101827;
+    }
+
+    .nasa-info{
+      padding:10px;
+    }
+
+    .nasa-title{
+      display:-webkit-box;
+      overflow:hidden;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.35;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+    }
+
+    .nasa-date{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:11px;
+    }
+  </style>
+
 </head>
 <body>
   <div class="drawer-mask" id="drawerMask"></div>
@@ -374,6 +428,7 @@
       <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
+      <button class="drawer-item" data-screen="nasa"><span class="ico">🚀</span><span>NASA Videos</span></button>
       <button class="drawer-item" data-screen="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
@@ -474,6 +529,52 @@
       <div class="card">
         <div class="card-h"><h3>Raccourcis</h3></div>
         <div class="quick-tiles" id="ytTiles"></div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-nasa">
+      <div class="glass stats">
+        <div><strong>🚀 NASA Videos</strong></div>
+        <div class="pill" id="nasaCount">0 vidéo</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Rechercher dans les vidéos NASA</h3></div>
+        <div class="field">
+          <input
+            class="input"
+            id="nasaSearch"
+            type="search"
+            placeholder="Exemple : Moon, Mars, Artemis"
+          />
+        </div>
+        <div class="row">
+          <button class="btn btn-red" id="nasaSearchBtn">Rechercher</button>
+          <button class="btn btn-light" id="nasaSearchClear">Effacer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Catalogue public NASA</h3>
+          <small id="nasaStatus">Prêt</small>
+        </div>
+
+        <div id="nasaGrid">
+          <div class="empty">
+            <div class="em">🚀</div>
+            <h4>Chargement des vidéos NASA…</h4>
+            <p>Merci de patienter</p>
+          </div>
+        </div>
+
+        <button
+          class="btn btn-light hidden"
+          id="nasaMoreBtn"
+          style="width:100%;margin-top:12px"
+        >
+          Charger plus de vidéos
+        </button>
       </div>
     </section>
 
@@ -1544,6 +1645,11 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'nasa'){
+        $('titleMain').textContent = 'NASA';
+        $('titleSub').textContent = 'VIDEOS';
+        return;
+      }
       const d = I18N[appSettings.lang] || I18N.fr;
       const [a,b] = d.headers[screen] || d.headers['live-tv'];
       $('titleMain').textContent = a;
@@ -2402,6 +2508,277 @@
 
       $('vpnGoTvBtn').addEventListener('click', ()=>{
         switchScreen('live-tv');
+      });
+
+
+    // ================= NASA VIDEOS =================
+    const NASA_API_BASE = 'https://www.mhub.mx/nasa';
+
+    let nasaItems = [];
+    let nasaNextCursor = null;
+    let nasaLoaded = false;
+    let nasaLoading = false;
+
+    function setNasaStatus(message){
+      const status = $('nasaStatus');
+      if(status) status.textContent = message || '';
+    }
+
+    function formatNasaDate(value){
+      if(!value) return '';
+
+      const date = new Date(value);
+      if(Number.isNaN(date.getTime())){
+        return String(value).slice(0, 10);
+      }
+
+      return date.toLocaleDateString(
+        appSettings.lang === 'en' ? 'en-US' : 'fr-FR',
+        { year:'numeric', month:'short', day:'numeric' }
+      );
+    }
+
+    function renderNasaVideos(){
+      const grid = $('nasaGrid');
+      if(!grid) return;
+
+      $('nasaCount').textContent =
+        `${nasaItems.length} vidéo${nasaItems.length > 1 ? 's' : ''}`;
+
+      if(!nasaItems.length){
+        grid.innerHTML = `
+          <div class="empty">
+            <div class="em">🚀</div>
+            <h4>Aucune vidéo NASA</h4>
+            <p>Essaie une autre recherche</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = nasaItems.map((item, index)=>{
+        const poster = item.images?.poster || '';
+        const date = formatNasaDate(item.releaseDate);
+
+        return `
+          <button
+            class="nasa-card"
+            type="button"
+            data-nasa-index="${index}"
+          >
+            ${
+              poster
+                ? `<img
+                    class="nasa-poster"
+                    src="${esc(poster)}"
+                    alt=""
+                    loading="lazy"
+                  >`
+                : `<div class="nasa-poster"></div>`
+            }
+            <span class="nasa-info">
+              <span class="nasa-title">
+                ${esc(item.name || 'Vidéo NASA')}
+              </span>
+              ${
+                date
+                  ? `<span class="nasa-date">${esc(date)}</span>`
+                  : ''
+              }
+            </span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    async function loadNasaCatalog(reset = true){
+      if(nasaLoading) return;
+
+      if(!reset && nasaNextCursor == null) return;
+
+      nasaLoading = true;
+      $('nasaSearchBtn').disabled = true;
+      $('nasaMoreBtn').disabled = true;
+
+      if(reset){
+        nasaItems = [];
+        nasaNextCursor = null;
+        setNasaStatus('Chargement…');
+
+        $('nasaGrid').innerHTML = `
+          <div class="empty">
+            <div class="em">🚀</div>
+            <h4>Chargement des vidéos NASA…</h4>
+            <p>Merci de patienter</p>
+          </div>
+        `;
+      }else{
+        setNasaStatus('Chargement de la suite…');
+      }
+
+      try{
+        const params = new URLSearchParams();
+        const search = $('nasaSearch').value.trim();
+
+        if(search) params.set('search', search);
+
+        if(!reset && nasaNextCursor != null){
+          params.set('cursor', String(nasaNextCursor));
+        }
+
+        const suffix = params.toString()
+          ? `?${params.toString()}`
+          : '';
+
+        const response = await fetch(
+          `${NASA_API_BASE}/catalog/video/videos.json${suffix}`
+        );
+
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const received = Array.isArray(data.items) ? data.items : [];
+        const combined = reset
+          ? received
+          : [...nasaItems, ...received];
+
+        nasaItems = [
+          ...new Map(
+            combined
+              .filter(item => item?.id)
+              .map(item => [item.id, item])
+          ).values()
+        ];
+
+        nasaNextCursor =
+          data.nextCursor !== undefined &&
+          data.nextCursor !== null
+            ? data.nextCursor
+            : null;
+
+        nasaLoaded = true;
+        renderNasaVideos();
+
+        setNasaStatus(
+          nasaItems.length
+            ? `${nasaItems.length} vidéos chargées`
+            : 'Aucun résultat'
+        );
+
+        $('nasaMoreBtn').classList.toggle(
+          'hidden',
+          nasaNextCursor == null
+        );
+      }catch(error){
+        console.error('NASA Videos :', error);
+
+        if(reset) nasaItems = [];
+        renderNasaVideos();
+        setNasaStatus('Chargement impossible');
+        toast('Impossible de charger les vidéos NASA');
+      }finally{
+        nasaLoading = false;
+        $('nasaSearchBtn').disabled = false;
+        $('nasaMoreBtn').disabled = false;
+      }
+    }
+
+    function chooseNasaSource(sources){
+      if(!Array.isArray(sources) || !sources.length) return null;
+
+      const preferences = appSettings.quality === 'eco'
+        ? ['mobile', 'small', 'medium', 'large', 'original', 'preview']
+        : ['large', 'medium', 'small', 'mobile', 'original', 'preview'];
+
+      for(const preference of preferences){
+        const source = sources.find(entry =>{
+          const value = `${entry?.name || ''} ${entry?.url || ''}`
+            .toLowerCase();
+
+          return entry?.url && value.includes(preference);
+        });
+
+        if(source) return source;
+      }
+
+      return sources.find(source => source?.url) || null;
+    }
+
+    async function playNasaVideo(item, button){
+      if(!item?.id) return;
+
+      if(button) button.disabled = true;
+      setNasaStatus('Préparation de la vidéo…');
+
+      try{
+        const response = await fetch(
+          `${NASA_API_BASE}/source/video/` +
+          `${encodeURIComponent(item.id)}.json`
+        );
+
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const source = chooseNasaSource(data.sources);
+
+        if(!source?.url){
+          throw new Error('Aucune source vidéo');
+        }
+
+        playItem({
+          id: `nasa-${item.id}`,
+          name: item.name || 'NASA Video',
+          url: source.url,
+          group: 'NASA',
+          logo: item.images?.poster || ''
+        });
+      }catch(error){
+        console.error('Lecture NASA :', error);
+        setNasaStatus('Vidéo indisponible');
+        toast('Impossible de lire cette vidéo NASA');
+      }finally{
+        if(button) button.disabled = false;
+      }
+    }
+
+    $('nasaGrid').addEventListener('click', event =>{
+      const button = event.target.closest('[data-nasa-index]');
+      if(!button) return;
+
+      const index = Number(button.dataset.nasaIndex);
+      const item = nasaItems[index];
+
+      if(item) playNasaVideo(item, button);
+    });
+
+    $('nasaSearchBtn').addEventListener('click', ()=>{
+      loadNasaCatalog(true);
+    });
+
+    $('nasaSearch').addEventListener('keydown', event =>{
+      if(event.key === 'Enter'){
+        event.preventDefault();
+        loadNasaCatalog(true);
+      }
+    });
+
+    $('nasaSearchClear').addEventListener('click', ()=>{
+      $('nasaSearch').value = '';
+      loadNasaCatalog(true);
+    });
+
+    $('nasaMoreBtn').addEventListener('click', ()=>{
+      loadNasaCatalog(false);
+    });
+
+    document
+      .querySelector('.drawer-item[data-screen="nasa"]')
+      ?.addEventListener('click', ()=>{
+        if(!nasaLoaded) loadNasaCatalog(true);
       });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
