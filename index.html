@@ -1356,13 +1356,86 @@
     }
 
     let remoteEvents = [];
+
     async function loadRemoteEvents(){
-      if(!fbDb) return;
+      const events = [];
+
+      // Matchs provenant de l’API-Football via GitHub Actions.
       try{
-        const snap = await fbDb.collection('events').orderBy('createdAt','asc').get();
-        remoteEvents = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if(remoteEvents.length) renderEvents();
-      }catch(e){ console.warn('Matchs distants indisponibles', e); }
+        const response = await fetch(
+          `./data/football-live.json?v=${Date.now()}`,
+          { cache:'no-store' }
+        );
+
+        if(!response.ok){
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const matches = Array.isArray(data.matches)
+          ? data.matches
+          : [];
+
+        matches.forEach(match=>{
+          events.push({
+            ...match,
+            id:`api-football-${match.id}`,
+            source:'api-football'
+          });
+        });
+      }catch(error){
+        console.warn(
+          'Catalogue API-Football indisponible',
+          error
+        );
+      }
+
+      // Matchs ajoutés manuellement depuis Firebase.
+      if(fbDb){
+        try{
+          const snap = await fbDb
+            .collection('events')
+            .orderBy('createdAt','asc')
+            .get();
+
+          snap.docs.forEach(doc=>{
+            events.push({
+              id:`firebase-${doc.id}`,
+              ...doc.data(),
+              source:'firebase'
+            });
+          });
+        }catch(error){
+          console.warn(
+            'Matchs Firebase indisponibles',
+            error
+          );
+        }
+      }
+
+      // Les rencontres en direct apparaissent en premier.
+      const stateOrder = {
+        live:0,
+        scheduled:1,
+        finished:2
+      };
+
+      events.sort((a, b)=>{
+        const stateA = stateOrder[a.state] ?? 1;
+        const stateB = stateOrder[b.state] ?? 1;
+
+        if(stateA !== stateB){
+          return stateA - stateB;
+        }
+
+        const dateA = Date.parse(a.startTime || '') || 0;
+        const dateB = Date.parse(b.startTime || '') || 0;
+
+        return dateA - dateB;
+      });
+
+      remoteEvents = events;
+      renderEvents();
     }
 
     let remoteYoutube = {};
@@ -3451,7 +3524,7 @@
       });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents().then(()=>{ if(remoteEvents.length) switchScreen('live-event'); }); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
 </body>
