@@ -1,6 +1,7 @@
 {
-  "generatedAt": null,
-  "date": null,
+  "generatedAt": "2026-09-25T11:50:34.085Z",
+  "provider": "football-data.org",
+  "date": "2026-09-25",
   "timezone": "Africa/Lome",
   "count": 0,
   "matches": []
