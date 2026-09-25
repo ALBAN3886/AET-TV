@@ -70,7 +70,7 @@ function shiftDate(value, numberOfDays) {
 }
 
 const dateFrom = shiftDate(date, -1);
-const dateTo = shiftDate(date, 7);
+const dateTo = shiftDate(date, 30);
 
 const endpoint = new URL('https://api.football-data.org/v4/matches');
 
