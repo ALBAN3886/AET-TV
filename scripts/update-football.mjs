@@ -62,10 +62,20 @@ function scoreValue(match, side) {
 }
 
 const date = dateInTimezone(TIMEZONE);
+
+function shiftDate(value, numberOfDays) {
+  const result = new Date(`${value}T12:00:00Z`);
+  result.setUTCDate(result.getUTCDate() + numberOfDays);
+  return result.toISOString().slice(0, 10);
+}
+
+const dateFrom = shiftDate(date, -1);
+const dateTo = shiftDate(date, 7);
+
 const endpoint = new URL('https://api.football-data.org/v4/matches');
 
-endpoint.searchParams.set('dateFrom', date);
-endpoint.searchParams.set('dateTo', date);
+endpoint.searchParams.set('dateFrom', dateFrom);
+endpoint.searchParams.set('dateTo', dateTo);
 
 const response = await fetch(endpoint, {
   headers: {
@@ -135,6 +145,8 @@ const output = {
   generatedAt: new Date().toISOString(),
   provider: 'football-data.org',
   date,
+  dateFrom,
+  dateTo,
   timezone: TIMEZONE,
   count: matches.length,
   matches
