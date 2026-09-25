@@ -69,33 +69,55 @@ function shiftDate(value, numberOfDays) {
   return result.toISOString().slice(0, 10);
 }
 
-const dateFrom = shiftDate(date, -1);
-const dateTo = shiftDate(date, 30);
+const periods = [
+  [shiftDate(date, -1), shiftDate(date, 7)],
+  [shiftDate(date, 8), shiftDate(date, 16)],
+  [shiftDate(date, 17), shiftDate(date, 25)],
+  [shiftDate(date, 26), shiftDate(date, 30)]
+];
 
-const endpoint = new URL('https://api.football-data.org/v4/matches');
+let dateFrom = periods[0][0];
+let dateTo = periods[0][1];
+let apiMatches = [];
 
-endpoint.searchParams.set('dateFrom', dateFrom);
-endpoint.searchParams.set('dateTo', dateTo);
+for (const [from, to] of periods) {
+  const endpoint = new URL(
+    'https://api.football-data.org/v4/matches'
+  );
 
-const response = await fetch(endpoint, {
-  headers: {
-    'X-Auth-Token': API_KEY,
-    Accept: 'application/json'
+  endpoint.searchParams.set('dateFrom', from);
+  endpoint.searchParams.set('dateTo', to);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      'X-Auth-Token': API_KEY,
+      Accept: 'application/json'
+    }
+  });
+
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      body.message ||
+      body.error ||
+      `Erreur HTTP ${response.status}`;
+
+    throw new Error(`football-data.org : ${message}`);
   }
-});
 
-const body = await response.json().catch(() => ({}));
+  dateFrom = from;
+  dateTo = to;
+  apiMatches = body.matches || [];
 
-if (!response.ok) {
-  const message =
-    body.message ||
-    body.error ||
-    `Erreur HTTP ${response.status}`;
+  console.log(
+    `${from} → ${to} : ${apiMatches.length} match(s)`
+  );
 
-  throw new Error(`football-data.org : ${message}`);
+  if (apiMatches.length) break;
 }
 
-const matches = (body.matches || [])
+const matches = apiMatches
   .map(match => {
     const state = eventState(match.status);
 
