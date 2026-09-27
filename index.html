@@ -2375,6 +2375,87 @@
       toggleTvPlayback();
     }, true);
 
+
+    // Navigation entre les chaînes avec CH+ / CH-
+    function getTvChannelSequence(){
+      const filtered = filteredChannels()
+        .filter(channel => channel?.url);
+
+      if(
+        currentItem?.id &&
+        filtered.some(channel =>
+          String(channel.id) === String(currentItem.id)
+        )
+      ){
+        return filtered;
+      }
+
+      return channels.filter(channel => channel?.url);
+    }
+
+    function changeTvChannel(direction){
+      const list = getTvChannelSequence();
+
+      if(!list.length){
+        toast('Aucune chaîne disponible');
+        return false;
+      }
+
+      let currentIndex = list.findIndex(channel =>
+        (
+          currentItem?.id &&
+          String(channel.id) === String(currentItem.id)
+        ) ||
+        (
+          currentItem?.url &&
+          channel.url === currentItem.url
+        )
+      );
+
+      if(currentIndex < 0){
+        currentIndex = direction > 0 ? -1 : 0;
+      }
+
+      const nextIndex =
+        (currentIndex + direction + list.length) % list.length;
+
+      const nextChannel = list[nextIndex];
+
+      playItem(nextChannel);
+
+      toast(
+        `${direction > 0 ? 'CH+' : 'CH-'} · ` +
+        `${nextChannel.name || 'Chaîne'}`
+      );
+
+      return true;
+    }
+
+    document.addEventListener('keydown', event=>{
+      if(isEditableTvElement(document.activeElement)) return;
+      if(event.repeat) return;
+
+      const keyCode = event.keyCode || event.which;
+
+      const channelUp =
+        event.key === 'ChannelUp' ||
+        event.key === 'PageUp' ||
+        keyCode === 166;
+
+      const channelDown =
+        event.key === 'ChannelDown' ||
+        event.key === 'PageDown' ||
+        keyCode === 167;
+
+      if(!channelUp && !channelDown) return;
+
+      tvNavigationActive = true;
+      event.preventDefault();
+      event.stopPropagation();
+
+      changeTvChannel(channelUp ? 1 : -1);
+    }, true);
+
     const getFavs = ()=>safeParse(localStorage.getItem(FAV_KEY), []);
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
     function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
