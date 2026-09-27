@@ -2301,6 +2301,80 @@
       switchScreen('player');
     }
 
+    // Commande PLAY / PAUSE pour télécommande Smart TV
+    function toggleTvPlayback(){
+      const video = $('videoPlayer');
+
+      if(
+        !currentItem?.url ||
+        !video ||
+        video.classList.contains('hidden')
+      ){
+        toast('PLAY/PAUSE indisponible pour ce contenu');
+        return false;
+      }
+
+      if(video.paused || video.ended){
+        video.play()
+          .then(()=>toast('▶ Lecture'))
+          .catch(()=>toast('Lecture impossible'));
+      }else{
+        video.pause();
+        toast('⏸ Pause');
+      }
+
+      return true;
+    }
+
+    document.addEventListener('keydown', event=>{
+      const keyCode = event.keyCode || event.which;
+
+      const isPlayPause =
+        event.key === 'MediaPlayPause' ||
+        event.key === 'PlayPause' ||
+        keyCode === 85 ||
+        keyCode === 179 ||
+        keyCode === 10252;
+
+      const isPlay =
+        event.key === 'MediaPlay' ||
+        keyCode === 126;
+
+      const isPause =
+        event.key === 'MediaPause' ||
+        keyCode === 127;
+
+      if(!isPlayPause && !isPlay && !isPause) return;
+      if(event.repeat) return;
+      if(isEditableTvElement(document.activeElement)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const video = $('videoPlayer');
+
+      if(
+        !currentItem?.url ||
+        !video ||
+        video.classList.contains('hidden')
+      ){
+        toast('Commande multimédia indisponible');
+        return;
+      }
+
+      if(isPlay){
+        video.play().catch(()=>toast('Lecture impossible'));
+        return;
+      }
+
+      if(isPause){
+        video.pause();
+        return;
+      }
+
+      toggleTvPlayback();
+    }, true);
+
     const getFavs = ()=>safeParse(localStorage.getItem(FAV_KEY), []);
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
     function addFav(item){ if(favs.some(x=>x.url===item.url)) return toast('Déjà en favori'); saveFavs([{ id:uid(), name:item.name||'Sans titre', url:item.url, group:item.group||'' }, ...favs]); toast('Ajouté aux favoris'); }
