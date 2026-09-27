@@ -1594,10 +1594,88 @@
     const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
     function toast(msg){ const el=document.createElement('div'); el.textContent=msg; Object.assign(el.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'86px',background:'rgba(0,0,0,.92)',color:'#fff',padding:'12px 16px',borderRadius:'12px',fontWeight:'800',fontSize:'13px',zIndex:'999',boxShadow:'0 10px 24px rgba(0,0,0,.3)',maxWidth:'90%',textAlign:'center'}); document.body.appendChild(el); setTimeout(()=>el.remove(),2300); }
 
-    function openDrawer(){ $('drawer').classList.add('open'); $('drawerMask').classList.add('show'); }
-    function closeDrawer(){ $('drawer').classList.remove('open'); $('drawerMask').classList.remove('show'); }
+    const TV_FOCUS_SELECTOR = [
+      'button:not([disabled])',
+      'a[href]',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
 
-    function switchScreen(name){ screens.forEach(s=>s.classList.toggle('active', s.id==='screen-'+name)); bottomBtns.forEach(b=>b.classList.toggle('active', b.dataset.nav===name)); setHeader(name); closeDrawer(); window.scrollTo({top:0,behavior:'smooth'}); }
+    let tvNavigationActive = false;
+
+    function isVisibleFocusable(element){
+      if(!element || element.classList.contains('hidden')) return false;
+
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+
+      return (
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        rect.width > 0 &&
+        rect.height > 0
+      );
+    }
+
+    function focusFirstVisible(container){
+      if(!container) return false;
+
+      const target = [...container.querySelectorAll(TV_FOCUS_SELECTOR)]
+        .find(isVisibleFocusable);
+
+      if(!target) return false;
+
+      target.focus({ preventScroll:true });
+      target.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest',
+        inline:'nearest'
+      });
+
+      return true;
+    }
+
+    function openDrawer(){
+      $('drawer').classList.add('open');
+      $('drawerMask').classList.add('show');
+
+      setTimeout(()=>{
+        focusFirstVisible($('drawer'));
+      }, 80);
+    }
+
+    function closeDrawer(){
+      $('drawer').classList.remove('open');
+      $('drawerMask').classList.remove('show');
+    }
+
+    function switchScreen(name){
+      screens.forEach(screen=>{
+        screen.classList.toggle(
+          'active',
+          screen.id === 'screen-' + name
+        );
+      });
+
+      bottomBtns.forEach(button=>{
+        button.classList.toggle(
+          'active',
+          button.dataset.nav === name
+        );
+      });
+
+      setHeader(name);
+      closeDrawer();
+      window.scrollTo({ top:0, behavior:'smooth' });
+
+      if(tvNavigationActive){
+        setTimeout(()=>{
+          focusFirstVisible($('screen-' + name));
+        }, 80);
+      }
+    }
 
     function parseM3U(text){
       const lines = text.split(/\r?\n/);
