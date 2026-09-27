@@ -635,6 +635,68 @@
     }
   </style>
 
+
+  <style>
+    /* AET TV focus system v1 */
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    [tabindex]{
+      scroll-margin:120px 40px;
+    }
+
+    button:focus,
+    a:focus,
+    [role="button"]:focus,
+    [tabindex]:focus{
+      outline:4px solid #fff;
+      outline-offset:3px;
+      box-shadow:
+        0 0 0 7px var(--red, #e11d48),
+        0 14px 34px rgba(0,0,0,.38);
+      position:relative;
+      z-index:20;
+    }
+
+    button:focus,
+    [role="button"]:focus,
+    [tabindex]:focus{
+      transform:scale(1.045);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+      outline:3px solid #fff;
+      outline-offset:2px;
+      border-color:var(--red, #e11d48);
+      box-shadow:0 0 0 6px rgba(225,29,72,.85);
+      position:relative;
+      z-index:20;
+    }
+
+    button,
+    a,
+    [role="button"],
+    [tabindex]{
+      transition:
+        transform .14s ease,
+        box-shadow .14s ease,
+        outline-color .14s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      button,
+      a,
+      [role="button"],
+      [tabindex]{
+        transition:none;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <div class="drawer-mask" id="drawerMask"></div>
