@@ -2311,6 +2311,145 @@
       $('webOverlayFrame').src = 'about:blank';
     }
 
+    // AET TV spatial D-pad navigation v1
+    function getTvFocusableElements(){
+      const drawer = $('drawer');
+      const drawerOpen = drawer.classList.contains('open');
+      const scope = drawerOpen ? drawer : document;
+
+      return [...scope.querySelectorAll(TV_FOCUS_SELECTOR)]
+        .filter(element=>{
+          if(!isVisibleFocusable(element)) return false;
+
+          if(
+            !drawerOpen &&
+            element.closest('#drawer')
+          ){
+            return false;
+          }
+
+          return true;
+        });
+    }
+
+    function isEditableTvElement(element){
+      if(!element) return false;
+
+      return (
+        element.matches('input, textarea, select') ||
+        element.isContentEditable
+      );
+    }
+
+    function moveTvFocus(direction){
+      const elements = getTvFocusableElements();
+
+      if(!elements.length) return false;
+
+      const current = document.activeElement;
+
+      if(
+        !current ||
+        current === document.body ||
+        !elements.includes(current)
+      ){
+        const activeScreen =
+          document.querySelector('.screen.active');
+
+        return (
+          focusFirstVisible(activeScreen) ||
+          focusFirstVisible($('drawer')) ||
+          focusFirstVisible(document)
+        );
+      }
+
+      const currentRect = current.getBoundingClientRect();
+      const currentX = currentRect.left + currentRect.width / 2;
+      const currentY = currentRect.top + currentRect.height / 2;
+
+      let bestElement = null;
+      let bestScore = Infinity;
+
+      elements.forEach(candidate=>{
+        if(candidate === current) return;
+
+        const rect = candidate.getBoundingClientRect();
+        const candidateX = rect.left + rect.width / 2;
+        const candidateY = rect.top + rect.height / 2;
+
+        const deltaX = candidateX - currentX;
+        const deltaY = candidateY - currentY;
+
+        let primaryDistance;
+        let secondaryDistance;
+
+        if(direction === 'left'){
+          if(deltaX >= -4) return;
+          primaryDistance = Math.abs(deltaX);
+          secondaryDistance = Math.abs(deltaY);
+        }else if(direction === 'right'){
+          if(deltaX <= 4) return;
+          primaryDistance = Math.abs(deltaX);
+          secondaryDistance = Math.abs(deltaY);
+        }else if(direction === 'up'){
+          if(deltaY >= -4) return;
+          primaryDistance = Math.abs(deltaY);
+          secondaryDistance = Math.abs(deltaX);
+        }else{
+          if(deltaY <= 4) return;
+          primaryDistance = Math.abs(deltaY);
+          secondaryDistance = Math.abs(deltaX);
+        }
+
+        const alignmentPenalty =
+          secondaryDistance > primaryDistance * 2
+            ? 1000
+            : 0;
+
+        const score =
+          primaryDistance +
+          secondaryDistance * 0.7 +
+          alignmentPenalty;
+
+        if(score < bestScore){
+          bestScore = score;
+          bestElement = candidate;
+        }
+      });
+
+      if(!bestElement) return false;
+
+      bestElement.focus({ preventScroll:true });
+      bestElement.scrollIntoView({
+        behavior:'smooth',
+        block:'nearest',
+        inline:'nearest'
+      });
+
+      return true;
+    }
+
+    document.addEventListener('keydown', event=>{
+      const directions = {
+        ArrowLeft:'left',
+        ArrowRight:'right',
+        ArrowUp:'up',
+        ArrowDown:'down'
+      };
+
+      const direction = directions[event.key];
+
+      if(!direction) return;
+
+      if(isEditableTvElement(document.activeElement)){
+        return;
+      }
+
+      tvNavigationActive = true;
+      event.preventDefault();
+      moveTvFocus(direction);
+    }, true);
+
     // Events
     $('menuBtn').addEventListener('click', openDrawer);
     $('drawerMask').addEventListener('click', closeDrawer);
