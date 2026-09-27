@@ -1651,7 +1651,28 @@
       $('drawerMask').classList.remove('show');
     }
 
-    function switchScreen(name){
+    let tvCurrentScreen =
+      document.querySelector('.screen.active')?.id
+        ?.replace('screen-', '') || 'live-tv';
+
+    const tvScreenHistory = [];
+
+    function switchScreen(name, options = {}){
+      if(!name) return;
+
+      if(
+        options.remember !== false &&
+        tvCurrentScreen &&
+        tvCurrentScreen !== name
+      ){
+        tvScreenHistory.push(tvCurrentScreen);
+
+        if(tvScreenHistory.length > 20){
+          tvScreenHistory.shift();
+        }
+      }
+
+      tvCurrentScreen = name;
       screens.forEach(screen=>{
         screen.classList.toggle(
           'active',
@@ -2310,6 +2331,94 @@
       $('webOverlay').classList.add('hidden');
       $('webOverlayFrame').src = 'about:blank';
     }
+
+    // AET TV Back / Return navigation v1
+    function restoreTvFocus(element){
+      if(!element || !isVisibleFocusable(element)) return;
+
+      setTimeout(()=>{
+        element.focus({ preventScroll:true });
+        element.scrollIntoView({
+          behavior:'smooth',
+          block:'nearest',
+          inline:'nearest'
+        });
+      }, 80);
+    }
+
+    function handleTvBack(){
+      tvNavigationActive = true;
+
+      if(document.fullscreenElement){
+        document.exitFullscreen?.().catch(()=>{});
+        return true;
+      }
+
+      const webOverlay = $('webOverlay');
+
+      if(webOverlay && !webOverlay.classList.contains('hidden')){
+        closeWebOverlay();
+        restoreTvFocus($('menuBtn'));
+        return true;
+      }
+
+      const drawer = $('drawer');
+
+      if(drawer?.classList.contains('open')){
+        closeDrawer();
+        restoreTvFocus($('menuBtn'));
+        return true;
+      }
+
+      const previousScreen = tvScreenHistory.pop();
+
+      if(previousScreen){
+        switchScreen(previousScreen, { remember:false });
+        return true;
+      }
+
+      if(tvCurrentScreen !== 'live-tv'){
+        switchScreen('live-tv', { remember:false });
+        return true;
+      }
+
+      openDrawer();
+      return true;
+    }
+
+    document.addEventListener('keydown', event=>{
+      const backKeys = [
+        'Escape',
+        'BrowserBack',
+        'GoBack',
+        'Back',
+        'Backspace'
+      ];
+
+      const backKeyCodes = [
+        4,
+        27,
+        461,
+        10009
+      ];
+
+      const isBack =
+        backKeys.includes(event.key) ||
+        backKeyCodes.includes(event.keyCode);
+
+      if(!isBack) return;
+
+      if(
+        event.key === 'Backspace' &&
+        isEditableTvElement(document.activeElement)
+      ){
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      handleTvBack();
+    }, true);
 
     // AET TV spatial D-pad navigation v1
     function getTvFocusableElements(){
