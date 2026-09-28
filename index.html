@@ -3745,6 +3745,19 @@
       }
     });
 
+    $('homeLive').addEventListener('click', event=>{
+      const button = event.target.closest('[data-home-live]');
+      if(!button) return;
+
+      const channel = channels.find(item =>
+        String(item.id) === String(button.dataset.homeLive)
+      );
+
+      if(channel){
+        playItem(channel);
+      }
+    });
+
     $('homeFavorites').addEventListener('click', event=>{
       const button = event.target.closest('[data-home-favorite]');
       if(!button) return;
@@ -4654,7 +4667,56 @@
         });
       });
 
-    function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
+    function renderHomeLive(){
+      const container = $('homeLive');
+      if(!container) return;
+
+      const availableChannels = channels
+        .filter(channel => channel?.url)
+        .slice(0, 12);
+
+      if(!availableChannels.length){
+        container.innerHTML = `
+          <div class="card">
+            <div class="card-h">
+              <h3>📺 Live TV</h3>
+            </div>
+            <div class="empty">
+              <div class="em">📡</div>
+              <h4>Aucune chaîne disponible</h4>
+              <p>
+                Ajoutez une playlist dans Paramètres &gt; Playlists.
+              </p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-h">
+            <h3>📺 Live TV</h3>
+            <small>${channels.length} chaîne${channels.length > 1 ? 's' : ''}</small>
+          </div>
+
+          <div class="quick-tiles">
+            ${availableChannels.map(channel => `
+              <button
+                class="tile dark"
+                type="button"
+                data-home-live="${esc(String(channel.id))}">
+                <span class="ti">📺</span>
+                <span class="tt">${esc(channel.name || 'Sans titre')}</span>
+                <span class="ts">${esc(channel.group || 'Live TV')}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); }
     function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
