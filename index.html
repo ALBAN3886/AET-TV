@@ -2019,6 +2019,56 @@
       return '📂';
     }
 
+    function renderHomeCategories(){
+      const container = $('homeCategories');
+      if(!container) return;
+
+      const categories = countries.slice(0, 10);
+
+      if(!categories.length){
+        container.innerHTML = `
+          <div class="card">
+            <div class="card-h">
+              <h3>📂 Catégories</h3>
+            </div>
+
+            <div class="empty">
+              <div class="em">📂</div>
+              <h4>Aucune catégorie disponible</h4>
+              <p>Les catégories apparaîtront après le chargement des chaînes.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-h">
+            <h3>📂 Catégories</h3>
+            <small>${categories.length} affichées</small>
+          </div>
+
+          <div class="quick-tiles">
+            ${categories.map(category => `
+              <button
+                class="tile dark"
+                type="button"
+                data-home-category="${esc(category.name)}">
+                <span class="ti">
+                  ${COUNTRY_FLAGS[category.name] || category.flag || '📺'}
+                </span>
+                <span class="tt">${esc(category.name)}</span>
+                <span class="ts">
+                  ${category.count} chaîne${category.count > 1 ? 's' : ''}
+                </span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     function renderPlaylistNav(){
       const wrap = $('drawerPlaylistItems');
       if(!wrap) return;
@@ -3745,6 +3795,21 @@
       }
     });
 
+    $('homeCategories').addEventListener('click', event=>{
+      const button = event.target.closest('[data-home-category]');
+      if(!button) return;
+
+      currentFilter = button.dataset.homeCategory;
+      currentSearch = '';
+
+      $('channelSearch').value = '';
+      $('searchClear').classList.remove('show');
+
+      renderChips();
+      renderChannels();
+      switchScreen('live-tv');
+    });
+
     $('homeLive').addEventListener('click', event=>{
       const button = event.target.closest('[data-home-live]');
       if(!button) return;
@@ -4716,7 +4781,7 @@
       `;
     }
 
-    function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); }
+    function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); }
     function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
