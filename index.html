@@ -2096,7 +2096,16 @@
         try{ const r=await fetch(PLAYLIST_URL,{cache:force?'reload':'default'}); if(r.ok) text=await r.text(); }catch{}
         if(!text || !text.includes('#EXTINF')){ const r2=await fetch(CORS_PROXY+encodeURIComponent(PLAYLIST_URL)); text=await r2.text(); }
         let parsed = parseM3U(text);
-        for(const pl of remotePlaylists){
+
+        const activePlaylists = [
+          ...remotePlaylists,
+          ...userPlaylists.filter(playlist =>
+            playlist.enabled !== false &&
+            playlist.type !== 'xtream'
+          )
+        ];
+
+        for(const pl of activePlaylists){
           if(!pl.url) continue;
           try{
             let extraText='';
@@ -4072,7 +4081,7 @@
       closeUserPlaylistForm
     );
 
-    $('playlistSaveBtn').addEventListener('click', ()=>{
+    $('playlistSaveBtn').addEventListener('click', async ()=>{
       const name = $('userPlaylistName').value.trim();
       const url = $('userPlaylistUrl').value.trim();
       const epgUrl = $('userPlaylistEpg').value.trim();
@@ -4115,7 +4124,9 @@
 
       renderUserPlaylists();
       closeUserPlaylistForm();
-      toast('Playlist enregistrée');
+      toast('Playlist enregistrée — synchronisation…');
+
+      await loadPlaylist(true);
     });
 
     // Panneau Admin
