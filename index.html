@@ -1393,6 +1393,16 @@
       </div>
 
       <div class="card">
+        <div class="card-h"><h3>📺 Playlists</h3></div>
+        <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+          Ajoutez et gérez vos sources IPTV autorisées.
+        </p>
+        <button class="btn btn-red" id="openPlaylistsBtn" type="button" style="width:100%">
+          Gérer les playlists
+        </button>
+      </div>
+
+      <div class="card">
         <div class="card-h"><h3>Application</h3></div>
         <a href="https://github.com/ALBAN3886/AET-TV/releases/download/latest-debug/aet-tv-debug-latest.apk" class="btn btn-light" style="width:100%;display:block;text-align:center;text-decoration:none">⬇️ Télécharger l'app Android</a>
       </div>
@@ -1403,6 +1413,83 @@
           <a href="mailto:aetalban-technologie@hotmail.com" class="contact-row">✉️ aetalban-technologie@hotmail.com</a>
           <a href="tel:+22899812072" class="contact-row">📞 +228 99 81 20 72</a>
           <a href="https://wa.me/22899812072" target="_blank" rel="noopener" class="contact-row">💬 WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-playlists">
+      <button class="btn btn-light" id="playlistsBackBtn" type="button" style="margin-bottom:10px">
+        ← Retour aux Paramètres
+      </button>
+
+      <div class="glass stats">
+        <div><strong>📺 Playlists</strong></div>
+        <div class="pill" id="playlistCount">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Mes playlists</h3>
+        </div>
+
+        <div id="userPlaylistsWrap">
+          <div class="empty">
+            <div class="em">📡</div>
+            <h4>Aucune playlist ajoutée</h4>
+            <p>Ajoutez une source IPTV légale et autorisée.</p>
+          </div>
+        </div>
+
+        <button class="btn btn-red" id="playlistAddBtn" type="button" style="width:100%;margin-top:12px">
+          ➕ Ajouter une playlist
+        </button>
+      </div>
+      <div class="card hidden" id="playlistFormCard">
+        <div class="card-h">
+          <h3>Ajouter une playlist M3U</h3>
+        </div>
+
+        <div class="field">
+          <label for="userPlaylistName">Nom de la playlist</label>
+          <input
+            class="input"
+            id="userPlaylistName"
+            type="text"
+            placeholder="Exemple : Chaînes Togo"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="userPlaylistUrl">URL M3U</label>
+          <input
+            class="input"
+            id="userPlaylistUrl"
+            type="url"
+            placeholder="https://exemple.com/playlist.m3u"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="field">
+          <label for="userPlaylistEpg">URL EPG/XMLTV — facultative</label>
+          <input
+            class="input"
+            id="userPlaylistEpg"
+            type="url"
+            placeholder="https://exemple.com/guide.xml"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="row">
+          <button class="btn btn-red" id="playlistSaveBtn" type="button">
+            Enregistrer
+          </button>
+
+          <button class="btn btn-light" id="playlistCancelBtn" type="button">
+            Annuler
+          </button>
         </div>
       </div>
     </section>
@@ -1604,6 +1691,72 @@
     }
 
     let remotePlaylists = [];
+    let userPlaylists = [];
+
+    function getUserPlaylists(){
+      const saved = safeParse(
+        localStorage.getItem(USER_PLAYLISTS_KEY),
+        []
+      );
+
+      return Array.isArray(saved) ? saved : [];
+    }
+    function saveUserPlaylists(list){
+      userPlaylists = Array.isArray(list) ? list : [];
+
+      localStorage.setItem(
+        USER_PLAYLISTS_KEY,
+        JSON.stringify(userPlaylists)
+      );
+    }
+
+    function renderUserPlaylists(){
+      const wrap = $('userPlaylistsWrap');
+      const count = $('playlistCount');
+
+      if(!wrap || !count) return;
+
+      count.textContent =
+        `${userPlaylists.length} playlist${userPlaylists.length > 1 ? 's' : ''}`;
+
+      if(!userPlaylists.length){
+        wrap.innerHTML = `
+          <div class="empty">
+            <div class="em">📺</div>
+            <h4>Aucune playlist</h4>
+            <p>Ajoutez une playlist M3U pour afficher vos chaînes.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = userPlaylists.map(playlist => {
+        const name =
+          playlist.name ||
+          playlist.label ||
+          'Playlist sans nom';
+
+        const type =
+          playlist.type === 'xtream'
+            ? 'Xtream Codes'
+            : playlist.type === 'file'
+              ? 'Fichier M3U'
+              : 'URL M3U';
+
+        const state =
+          playlist.enabled === false
+            ? 'Désactivée'
+            : 'Active';
+
+        return `
+          <div class="fav-item">
+            <h4>📺 ${esc(name)}</h4>
+            <p>${esc(type)} · ${esc(state)}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
     async function loadRemotePlaylists(){
       if(!fbDb) return [];
       try{
@@ -1745,6 +1898,7 @@
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
     const HISTORY_KEY = 'aet_v1_history';
+    const USER_PLAYLISTS_KEY = 'aet_v1_user_playlists';
     const SETTINGS_KEY = 'aet_v5_settings';
     const CACHE_MS = 6 * 60 * 60 * 1000;
 
@@ -3311,6 +3465,11 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'playlists'){
+        $('titleMain').textContent = 'AET TV';
+        $('titleSub').textContent = 'PLAYLISTS';
+        return;
+      }
       if(screen === 'home'){
         $('titleMain').textContent = 'AET TV';
         $('titleSub').textContent = 'ACCUEIL';
@@ -3882,6 +4041,81 @@
 
       saveWatchHistory([]);
       toast('Historique effacé');
+    });
+
+    // Navigation de l’écran Playlists
+    $('openPlaylistsBtn').addEventListener('click', ()=>{
+      switchScreen('playlists');
+    });
+
+    $('playlistsBackBtn').addEventListener('click', ()=>{
+      switchScreen('settings');
+    });
+
+    function closeUserPlaylistForm(){
+      $('playlistFormCard').classList.add('hidden');
+      $('userPlaylistName').value = '';
+      $('userPlaylistUrl').value = '';
+      $('userPlaylistEpg').value = '';
+    }
+
+    $('playlistAddBtn').addEventListener('click', ()=>{
+      $('playlistFormCard').classList.remove('hidden');
+
+      setTimeout(()=>{
+        $('userPlaylistName').focus();
+      }, 80);
+    });
+
+    $('playlistCancelBtn').addEventListener(
+      'click',
+      closeUserPlaylistForm
+    );
+
+    $('playlistSaveBtn').addEventListener('click', ()=>{
+      const name = $('userPlaylistName').value.trim();
+      const url = $('userPlaylistUrl').value.trim();
+      const epgUrl = $('userPlaylistEpg').value.trim();
+
+      if(!url){
+        toast('URL M3U obligatoire');
+        $('userPlaylistUrl').focus();
+        return;
+      }
+
+      try{
+        const parsedUrl = new URL(url);
+
+        if(!['http:', 'https:'].includes(parsedUrl.protocol)){
+          throw new Error('Protocole invalide');
+        }
+      }catch{
+        toast('URL M3U invalide');
+        $('userPlaylistUrl').focus();
+        return;
+      }
+
+      const playlist = {
+        id: uid(),
+        name: name || 'Ma playlist',
+        type: 'm3u-url',
+        url,
+        epgUrl,
+        enabled: true,
+        status: 'not-tested',
+        channelCount: 0,
+        lastSync: null,
+        createdAt: Date.now()
+      };
+
+      saveUserPlaylists([
+        playlist,
+        ...userPlaylists
+      ]);
+
+      renderUserPlaylists();
+      closeUserPlaylistForm();
+      toast('Playlist enregistrée');
     });
 
     // Panneau Admin
@@ -4782,7 +5016,7 @@
     }
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); }
-    function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
+    function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); userPlaylists=getUserPlaylists(); renderUserPlaylists(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
 </body>
