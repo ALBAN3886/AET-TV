@@ -855,6 +855,7 @@
       <button class="drawer-item" data-screen="player"><span class="ico">🎥</span><span>Lecteur</span></button>
       <button class="drawer-item" data-screen="live-event"><span class="ico">🏆</span><span>Live Event</span></button>
       <button class="drawer-item" data-screen="favorites"><span class="ico">⭐</span><span>Favoris</span></button>
+      <button class="drawer-item" data-screen="history"><span class="ico">🕘</span><span>Historique</span></button>
       <button class="drawer-item" data-screen="vpn"><span class="ico">🔐</span><span>AET VPN</span></button>
       <div id="drawerPlaylistItems"></div>
       <button class="drawer-item" data-screen="settings"><span class="ico">⚙️</span><span>Paramètres</span></button>
@@ -1160,6 +1161,30 @@
     <section class="screen" id="screen-favorites">
       <div class="glass stats"><div><strong>⭐ Mes favoris</strong></div><div class="pill" id="favCount">0</div></div>
       <div class="fav-list" id="favWrap"></div>
+    </section>
+
+    <section class="screen" id="screen-history">
+      <div class="glass stats">
+        <div><strong>🕘 Historique</strong></div>
+        <div class="pill" id="historyCount">0</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Continuer à regarder</h3>
+          <button class="btn btn-soft" id="historyClearBtn" type="button">
+            🗑 Effacer tout
+          </button>
+        </div>
+
+        <div class="fav-list" id="historyWrap">
+          <div class="empty">
+            <div class="em">🕘</div>
+            <h4>Historique vide</h4>
+            <p>Les contenus regardés apparaîtront ici.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="screen" id="screen-vpn">
@@ -2813,6 +2838,60 @@
       safeParse(localStorage.getItem(HISTORY_KEY), []);
 
     function renderWatchHistory(){
+      const historyWrap = $('historyWrap');
+      const historyCount = $('historyCount');
+
+      if(historyCount){
+        historyCount.textContent =
+          `${watchHistory.length} élément${watchHistory.length > 1 ? 's' : ''}`;
+      }
+
+      if(historyWrap){
+        if(!watchHistory.length){
+          historyWrap.innerHTML = `
+            <div class="empty">
+              <div class="em">🕘</div>
+              <h4>Historique vide</h4>
+              <p>Les chaînes et vidéos regardées apparaîtront ici.</p>
+            </div>
+          `;
+        }else{
+          historyWrap.innerHTML = watchHistory.map((item, index)=>{
+            const watchedDate = item.watchedAt
+              ? new Date(item.watchedAt).toLocaleString(
+                  appSettings.lang === 'en' ? 'en-GB' : 'fr-FR'
+                )
+              : '';
+
+            return `
+              <div class="fav-item">
+                <h4>${esc(item.name || 'Sans titre')}</h4>
+                <p>
+                  ${esc(item.group || 'Contenu regardé')}
+                  ${watchedDate ? ` · ${esc(watchedDate)}` : ''}
+                </p>
+
+                <div class="row3">
+                  <button
+                    class="btn btn-red"
+                    type="button"
+                    data-history-play="${index}">
+                    ▶ Reprendre
+                  </button>
+
+                  <button
+                    class="btn btn-soft"
+                    type="button"
+                    data-history-delete="${index}">
+                    ✕ Supprimer
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
       const container = $('homeContinue');
       if(!container) return;
 
@@ -3675,6 +3754,56 @@
       );
 
       if(favorite) playItem(favorite);
+    });
+
+    $('historyWrap').addEventListener('click', event=>{
+      const playButton =
+        event.target.closest('[data-history-play]');
+
+      const deleteButton =
+        event.target.closest('[data-history-delete]');
+
+      if(playButton){
+        const index = Number(playButton.dataset.historyPlay);
+        const item = watchHistory[index];
+
+        if(item){
+          playItem(item);
+        }
+
+        return;
+      }
+
+      if(deleteButton){
+        const index = Number(deleteButton.dataset.historyDelete);
+
+        if(
+          !Number.isInteger(index) ||
+          !watchHistory[index]
+        ) return;
+
+        saveWatchHistory(
+          watchHistory.filter(
+            (_, itemIndex) => itemIndex !== index
+          )
+        );
+
+        toast('Supprimé de l’historique');
+      }
+    });
+
+    $('historyClearBtn').addEventListener('click', ()=>{
+      if(!watchHistory.length){
+        toast('Historique déjà vide');
+        return;
+      }
+
+      if(!window.confirm('Effacer tout l’historique ?')){
+        return;
+      }
+
+      saveWatchHistory([]);
+      toast('Historique effacé');
     });
 
     // Panneau Admin
