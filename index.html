@@ -845,6 +845,7 @@
       <button class="drawer-close" id="drawerClose">✕</button>
     </div>
     <div class="drawer-body">
+      <button class="drawer-item" data-screen="home"><span class="ico">🏠</span><span>Accueil</span></button>
       <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
@@ -909,7 +910,32 @@
       <button class="dl-banner-close" id="updateBannerClose" aria-label="Fermer">✕</button>
     </div>
 
-    <section class="screen active" id="screen-live-tv">
+    <section class="screen active" id="screen-home">
+      <div class="glass stats">
+        <div><strong>🏠 AET TV</strong></div>
+        <div class="pill">Accueil</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>ALBAN ELOH TECHNOLOGIE</h3>
+        </div>
+        <p style="margin:0;color:var(--muted)">
+          Votre plateforme Smart TV.
+        </p>
+      </div>
+
+      <div id="homeContinue"></div>
+      <div id="homeFavorites"></div>
+      <div id="homeRecent"></div>
+      <div id="homeLive"></div>
+      <div id="homeCategories"></div>
+      <div id="homeMovies"></div>
+      <div id="homeSeries"></div>
+      <div id="homeGuide"></div>
+    </section>
+
+    <section class="screen" id="screen-live-tv">
       <div class="glass stats"><div><strong>🌍 IPTV mondiale</strong></div><div class="pill" id="totalCount">…</div></div>
       <div class="search-wrap">
         <svg class="search-ico" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1462,7 +1488,7 @@
     </section>
 
     <nav class="bottom-nav">
-      <button class="bottom-btn active" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
+      <button class="bottom-btn" data-nav="live-tv"><span class="ico">📺</span><span>Live TV</span></button>
       <button class="bottom-btn" data-nav="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="bottom-btn" data-nav="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
       <button class="bottom-btn" data-nav="huhu"><span class="ico">🎬</span><span>ALBAN TV</span></button>
@@ -3035,6 +3061,11 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'home'){
+        $('titleMain').textContent = 'AET TV';
+        $('titleSub').textContent = 'ACCUEIL';
+        return;
+      }
       if(screen === 'iptv-org'){
         $('titleMain').textContent = 'ALBAN ELOH TECHNOLOGIE';
         $('titleSub').textContent = 'IPTV-ORG';
@@ -4351,7 +4382,7 @@
       });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('live-tv'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
+    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
 </body>
