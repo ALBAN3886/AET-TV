@@ -2269,6 +2269,46 @@
 
     function renderFavs(){
       $('favCount').textContent = `${favs.length}`;
+      const homeFavorites = $('homeFavorites');
+
+      if(homeFavorites){
+        if(!favs.length){
+          homeFavorites.innerHTML = `
+            <div class="card">
+              <div class="card-h">
+                <h3>⭐ Mes favoris</h3>
+              </div>
+              <div class="empty">
+                <div class="em">⭐</div>
+                <h4>Aucune chaîne favorite</h4>
+                <p>Ajoutez une chaîne depuis le lecteur.</p>
+              </div>
+            </div>
+          `;
+        }else{
+          homeFavorites.innerHTML = `
+            <div class="card">
+              <div class="card-h">
+                <h3>⭐ Mes favoris</h3>
+                <small>${favs.length}</small>
+              </div>
+              <div class="quick-tiles">
+                ${favs.slice(0, 8).map(f => `
+                  <button
+                    class="tile dark"
+                    type="button"
+                    data-home-favorite="${esc(f.id)}">
+                    <span class="ti">📺</span>
+                    <span class="tt">${esc(f.name)}</span>
+                    <span class="ts">${esc(f.group || 'Favori')}</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+      }
+
       if(!favs.length){ $('favWrap').innerHTML = '<div class="empty"><div class="em">⭐</div><h4>Aucun favori</h4><p>Ajoutez une chaîne depuis le lecteur</p></div>'; return; }
       $('favWrap').innerHTML = favs.map(f => `
         <div class="fav-item">
@@ -3531,6 +3571,17 @@
       if(pid){ const f=favs.find(x=>x.id===pid); if(f) playItem(f); }
       if(cid){ const f=favs.find(x=>x.id===cid); if(f) copyText(f.url); }
       if(did){ saveFavs(favs.filter(x=>x.id!==did)); toast('Supprimé'); }
+    });
+
+    $('homeFavorites').addEventListener('click', event=>{
+      const button = event.target.closest('[data-home-favorite]');
+      if(!button) return;
+
+      const favorite = favs.find(item =>
+        String(item.id) === String(button.dataset.homeFavorite)
+      );
+
+      if(favorite) playItem(favorite);
     });
 
     // Panneau Admin
