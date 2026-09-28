@@ -1719,6 +1719,7 @@
     const CACHE_KEY = 'aet_v5_playlist';
     const CACHE_TIME_KEY = 'aet_v5_playlist_time';
     const FAV_KEY = 'aet_v5_favs';
+    const HISTORY_KEY = 'aet_v1_history';
     const SETTINGS_KEY = 'aet_v5_settings';
     const CACHE_MS = 6 * 60 * 60 * 1000;
 
@@ -1758,6 +1759,7 @@
     let currentSearch = '';
     let currentItem = null;
     let favs = [];
+    let watchHistory = [];
     let hls = null;
 
     const safeParse = (v,f)=>{ try{return JSON.parse(v)??f}catch{return f} };
@@ -2507,6 +2509,7 @@
       stopAllPlayback(); if(!item?.url) return toast('URL manquante');
       hlsAttemptStage = 0; hlsRetryCount = 0;
       const type = detectType(item.url); currentItem = { ...item, detectedType:type };
+      addToWatchHistory(currentItem);
       $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
       if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
       switchScreen('player');
@@ -2805,6 +2808,84 @@
 
       changeTvChannel(channelUp ? 1 : -1);
     }, true);
+
+    const getWatchHistory = () =>
+      safeParse(localStorage.getItem(HISTORY_KEY), []);
+
+    function renderWatchHistory(){
+      const container = $('homeContinue');
+      if(!container) return;
+
+      if(!watchHistory.length){
+        container.innerHTML = `
+          <div class="card">
+            <div class="card-h">
+              <h3>▶ Continuer à regarder</h3>
+            </div>
+            <div class="empty">
+              <div class="em">🕘</div>
+              <h4>Aucun contenu récent</h4>
+              <p>Les chaînes et vidéos regardées apparaîtront ici.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-h">
+            <h3>▶ Continuer à regarder</h3>
+            <small>${watchHistory.length} récent${watchHistory.length > 1 ? 's' : ''}</small>
+          </div>
+
+          <div class="quick-tiles">
+            ${watchHistory.slice(0, 8).map((item, index) => `
+              <button
+                class="tile dark"
+                type="button"
+                data-home-history="${index}">
+                <span class="ti">📺</span>
+                <span class="tt">${esc(item.name)}</span>
+                <span class="ts">${esc(item.group || 'Récemment regardé')}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function saveWatchHistory(list){
+      watchHistory = list.slice(0, 30);
+
+      localStorage.setItem(
+        HISTORY_KEY,
+        JSON.stringify(watchHistory)
+      );
+
+      renderWatchHistory();
+    }
+
+    function addToWatchHistory(item){
+      if(!item?.url) return;
+
+      const entry = {
+        id: item.id || uid(),
+        name: item.name || 'Sans titre',
+        url: item.url,
+        group: item.group || '',
+        logo: item.logo || '',
+        type: item.detectedType || detectType(item.url),
+        watchedAt: Date.now()
+      };
+
+      const nextHistory = [
+        entry,
+        ...watchHistory.filter(saved => saved.url !== entry.url)
+      ];
+
+      saveWatchHistory(nextHistory);
+    }
 
     const getFavs = ()=>safeParse(localStorage.getItem(FAV_KEY), []);
     const saveFavs = list => { favs = list; localStorage.setItem(FAV_KEY, JSON.stringify(list)); renderFavs(); };
@@ -3571,6 +3652,18 @@
       if(pid){ const f=favs.find(x=>x.id===pid); if(f) playItem(f); }
       if(cid){ const f=favs.find(x=>x.id===cid); if(f) copyText(f.url); }
       if(did){ saveFavs(favs.filter(x=>x.id!==did)); toast('Supprimé'); }
+    });
+
+    $('homeContinue').addEventListener('click', event=>{
+      const button = event.target.closest('[data-home-history]');
+      if(!button) return;
+
+      const index = Number(button.dataset.homeHistory);
+      const item = watchHistory[index];
+
+      if(item){
+        playItem(item);
+      }
     });
 
     $('homeFavorites').addEventListener('click', event=>{
@@ -4433,7 +4526,7 @@
       });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); }
-    function boot(){ favs=getFavs(); renderFavs(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
+    function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
 </body>
