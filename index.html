@@ -1472,6 +1472,16 @@
         </div>
 
         <div class="field">
+          <label for="userPlaylistFile">Fichier M3U local — facultatif</label>
+          <input
+            class="input"
+            id="userPlaylistFile"
+            type="file"
+            accept=".m3u,.m3u8,application/x-mpegURL,application/vnd.apple.mpegurl,text/plain"
+          />
+        </div>
+
+        <div class="field">
           <label for="userPlaylistEpg">URL EPG/XMLTV — facultative</label>
           <input
             class="input"
@@ -1693,6 +1703,152 @@
     let remotePlaylists = [];
     let userPlaylists = [];
     let editingUserPlaylistId = null;
+
+    const USER_PLAYLIST_DB_NAME = 'aet-tv-user-playlists';
+    const USER_PLAYLIST_DB_VERSION = 1;
+    const USER_PLAYLIST_FILE_STORE = 'm3u-files';
+
+    function openUserPlaylistDatabase(){
+      return new Promise((resolve, reject)=>{
+        if(!('indexedDB' in window)){
+          reject(new Error('IndexedDB indisponible'));
+          return;
+        }
+
+        const request = indexedDB.open(
+          USER_PLAYLIST_DB_NAME,
+          USER_PLAYLIST_DB_VERSION
+        );
+
+        request.onupgradeneeded = ()=>{
+          const database = request.result;
+
+          if(!database.objectStoreNames.contains(USER_PLAYLIST_FILE_STORE)){
+            database.createObjectStore(
+              USER_PLAYLIST_FILE_STORE,
+              { keyPath:'id' }
+            );
+          }
+        };
+
+        request.onsuccess = ()=>resolve(request.result);
+
+        request.onerror = ()=>{
+          reject(
+            request.error ||
+            new Error('Ouverture du stockage impossible')
+          );
+        };
+      });
+    }
+
+    async function storeUserPlaylistFile(id, file){
+      if(!id || !file){
+        throw new Error('Fichier M3U manquant');
+      }
+
+      const maximumSize = 25 * 1024 * 1024;
+
+      if(file.size > maximumSize){
+        throw new Error('Le fichier M3U dépasse 25 Mo');
+      }
+
+      const content = await file.text();
+
+      if(!content.includes('#EXTINF')){
+        throw new Error('Le fichier ne contient aucune chaîne M3U');
+      }
+
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_FILE_STORE,
+          'readwrite'
+        );
+
+        transaction.objectStore(USER_PLAYLIST_FILE_STORE).put({
+          id,
+          fileName: file.name || 'playlist.m3u',
+          content,
+          updatedAt: Date.now()
+        });
+
+        transaction.oncomplete = ()=>{
+          database.close();
+          resolve();
+        };
+
+        transaction.onerror = ()=>{
+          database.close();
+          reject(
+            transaction.error ||
+            new Error('Enregistrement du fichier impossible')
+          );
+        };
+
+        transaction.onabort = ()=>{
+          database.close();
+          reject(new Error('Enregistrement du fichier annulé'));
+        };
+      });
+    }
+
+    async function readUserPlaylistFile(id){
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_FILE_STORE,
+          'readonly'
+        );
+
+        const request = transaction
+          .objectStore(USER_PLAYLIST_FILE_STORE)
+          .get(id);
+
+        request.onsuccess = ()=>{
+          database.close();
+          resolve(request.result || null);
+        };
+
+        request.onerror = ()=>{
+          database.close();
+          reject(
+            request.error ||
+            new Error('Lecture du fichier impossible')
+          );
+        };
+      });
+    }
+
+    async function removeUserPlaylistFile(id){
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_FILE_STORE,
+          'readwrite'
+        );
+
+        transaction
+          .objectStore(USER_PLAYLIST_FILE_STORE)
+          .delete(id);
+
+        transaction.oncomplete = ()=>{
+          database.close();
+          resolve();
+        };
+
+        transaction.onerror = ()=>{
+          database.close();
+          reject(
+            transaction.error ||
+            new Error('Suppression du fichier impossible')
+          );
+        };
+      });
+    }
 
     function getUserPlaylists(){
       const saved = safeParse(
@@ -2149,15 +2305,57 @@
         ];
 
         for(const pl of activePlaylists){
-          if(!pl.url) continue;
           try{
-            let extraText='';
-            try{ const r3=await fetch(pl.url,{cache:force?'reload':'default'}); if(r3.ok) extraText=await r3.text(); }catch{}
-            if(!extraText || !extraText.includes('#EXTINF')){ const r4=await fetch(CORS_PROXY+encodeURIComponent(pl.url)); extraText=await r4.text(); }
+            let extraText = '';
+
+            if(pl.type === 'file'){
+              const storedFile = await readUserPlaylistFile(pl.id);
+              extraText = storedFile?.content || '';
+
+              if(!extraText.includes('#EXTINF')){
+                throw new Error('Fichier M3U local introuvable ou invalide');
+              }
+            }else{
+              if(!pl.url) continue;
+
+              try{
+                const r3 = await fetch(
+                  pl.url,
+                  { cache:force ? 'reload' : 'default' }
+                );
+
+                if(r3.ok){
+                  extraText = await r3.text();
+                }
+              }catch{}
+
+              if(!extraText || !extraText.includes('#EXTINF')){
+                const r4 = await fetch(
+                  CORS_PROXY + encodeURIComponent(pl.url)
+                );
+
+                extraText = await r4.text();
+              }
+            }
+
             const extraParsed = parseM3U(extraText);
-            extraParsed.forEach(c => { c.source = pl.id; });
+
+            if(!extraParsed.length){
+              throw new Error('Playlist vide');
+            }
+
+            extraParsed.forEach(channel => {
+              channel.source = pl.id;
+            });
+
             parsed = parsed.concat(extraParsed);
-          }catch(e){ console.warn('Playlist additionnelle échouée:', pl.url, e); }
+          }catch(error){
+            console.warn(
+              'Playlist additionnelle échouée:',
+              pl.name || pl.label || pl.url || pl.id,
+              error
+            );
+          }
         }
         if(!parsed.length) throw new Error('Playlist vide');
         channels = await enrichWithStreamHeaders(parsed);
@@ -4109,6 +4307,7 @@
       $('playlistFormCard').classList.add('hidden');
       $('userPlaylistName').value = '';
       $('userPlaylistUrl').value = '';
+      $('userPlaylistFile').value = '';
       $('userPlaylistEpg').value = '';
     }
 
@@ -4126,38 +4325,76 @@
     );
 
     $('playlistSaveBtn').addEventListener('click', async ()=>{
-      const name = $('userPlaylistName').value.trim();
-      const url = $('userPlaylistUrl').value.trim();
-      const epgUrl = $('userPlaylistEpg').value.trim();
-
-      if(!url){
-        toast('URL M3U obligatoire');
-        $('userPlaylistUrl').focus();
-        return;
-      }
-
-      try{
-        const parsedUrl = new URL(url);
-
-        if(!['http:', 'https:'].includes(parsedUrl.protocol)){
-          throw new Error('Protocole invalide');
-        }
-      }catch{
-        toast('URL M3U invalide');
-        $('userPlaylistUrl').focus();
-        return;
-      }
-
       const existingPlaylist = userPlaylists.find(item =>
         String(item.id) === String(editingUserPlaylistId)
       );
 
+      const name = $('userPlaylistName').value.trim();
+      const url = $('userPlaylistUrl').value.trim();
+      const epgUrl = $('userPlaylistEpg').value.trim();
+      const file = $('userPlaylistFile').files?.[0] || null;
+      const hasStoredFile = existingPlaylist?.type === 'file';
+
+      if(!url && !file && !hasStoredFile){
+        toast('Ajoutez une URL ou sélectionnez un fichier M3U');
+        $('userPlaylistUrl').focus();
+        return;
+      }
+
+      if(url){
+        try{
+          const parsedUrl = new URL(url);
+
+          if(!['http:', 'https:'].includes(parsedUrl.protocol)){
+            throw new Error('Protocole invalide');
+          }
+        }catch{
+          toast('URL M3U invalide');
+          $('userPlaylistUrl').focus();
+          return;
+        }
+      }
+
+      const playlistId = existingPlaylist?.id || uid();
+
+      if(file){
+        try{
+          await storeUserPlaylistFile(playlistId, file);
+        }catch(error){
+          toast(error.message || 'Impossible d’enregistrer le fichier M3U');
+          return;
+        }
+      }else if(existingPlaylist?.type === 'file' && url){
+        try{
+          await removeUserPlaylistFile(playlistId);
+        }catch(error){
+          console.warn(
+            'Suppression de l’ancien fichier M3U impossible',
+            error
+          );
+        }
+      }
+
+      const playlistType = file
+        ? 'file'
+        : url
+          ? 'm3u-url'
+          : existingPlaylist?.type || 'm3u-url';
+
       const playlist = {
         ...(existingPlaylist || {}),
-        id: existingPlaylist?.id || uid(),
-        name: name || 'Ma playlist',
-        type: 'm3u-url',
-        url,
+        id: playlistId,
+        name:
+          name ||
+          file?.name ||
+          existingPlaylist?.name ||
+          'Ma playlist',
+        type: playlistType,
+        url: playlistType === 'file' ? '' : url,
+        fileName:
+          file?.name ||
+          existingPlaylist?.fileName ||
+          '',
         epgUrl,
         enabled: existingPlaylist?.enabled !== false,
         status: 'not-tested',
@@ -4230,7 +4467,12 @@
         String(item.id) === String(testButton.dataset.userPlaylistTest)
       );
 
-      if(!playlist?.url){
+      if(!playlist){
+        toast('Playlist introuvable');
+        return;
+      }
+
+      if(playlist.type !== 'file' && !playlist.url){
         toast('URL de playlist introuvable');
         return;
       }
@@ -4241,27 +4483,36 @@
       try{
         let playlistText = '';
 
-        try{
-          const response = await fetch(playlist.url, {
-            cache:'no-store'
-          });
+        if(playlist.type === 'file'){
+          const storedFile = await readUserPlaylistFile(playlist.id);
+          playlistText = storedFile?.content || '';
 
-          if(response.ok){
-            playlistText = await response.text();
+          if(!playlistText.includes('#EXTINF')){
+            throw new Error('Fichier M3U local introuvable ou invalide');
           }
-        }catch{}
+        }else{
+          try{
+            const response = await fetch(playlist.url, {
+              cache:'no-store'
+            });
 
-        if(!playlistText.includes('#EXTINF')){
-          const proxyResponse = await fetch(
-            CORS_PROXY + encodeURIComponent(playlist.url),
-            { cache:'no-store' }
-          );
+            if(response.ok){
+              playlistText = await response.text();
+            }
+          }catch{}
 
-          if(!proxyResponse.ok){
-            throw new Error(`HTTP ${proxyResponse.status}`);
+          if(!playlistText.includes('#EXTINF')){
+            const proxyResponse = await fetch(
+              CORS_PROXY + encodeURIComponent(playlist.url),
+              { cache:'no-store' }
+            );
+
+            if(!proxyResponse.ok){
+              throw new Error(`HTTP ${proxyResponse.status}`);
+            }
+
+            playlistText = await proxyResponse.text();
           }
-
-          playlistText = await proxyResponse.text();
         }
 
         const parsedChannels = parseM3U(playlistText);
@@ -4316,6 +4567,17 @@
 
       if(!confirmed) return;
 
+      if(playlist.type === 'file'){
+        try{
+          await removeUserPlaylistFile(playlist.id);
+        }catch(error){
+          console.warn(
+            'Suppression du fichier M3U local impossible',
+            error
+          );
+        }
+      }
+
       saveUserPlaylists(
         userPlaylists.filter(item =>
           String(item.id) !== String(playlist.id)
@@ -4340,7 +4602,12 @@
         String(refreshButton.dataset.userPlaylistRefresh)
       );
 
-      if(!playlist?.url){
+      if(!playlist){
+        toast('Playlist introuvable');
+        return;
+      }
+
+      if(playlist.type !== 'file' && !playlist.url){
         toast('URL de playlist introuvable');
         return;
       }
@@ -4351,27 +4618,36 @@
       try{
         let playlistText = '';
 
-        try{
-          const response = await fetch(
-            playlist.url,
-            { cache:'reload' }
-          );
+        if(playlist.type === 'file'){
+          const storedFile = await readUserPlaylistFile(playlist.id);
+          playlistText = storedFile?.content || '';
 
-          if(response.ok){
-            playlistText = await response.text();
+          if(!playlistText.includes('#EXTINF')){
+            throw new Error('Fichier M3U local introuvable ou invalide');
           }
-        }catch{}
+        }else{
+          try{
+            const response = await fetch(
+              playlist.url,
+              { cache:'reload' }
+            );
 
-        if(!playlistText.includes('#EXTINF')){
-          const proxyResponse = await fetch(
-            CORS_PROXY + encodeURIComponent(playlist.url)
-          );
+            if(response.ok){
+              playlistText = await response.text();
+            }
+          }catch{}
 
-          if(!proxyResponse.ok){
-            throw new Error(`HTTP ${proxyResponse.status}`);
+          if(!playlistText.includes('#EXTINF')){
+            const proxyResponse = await fetch(
+              CORS_PROXY + encodeURIComponent(playlist.url)
+            );
+
+            if(!proxyResponse.ok){
+              throw new Error(`HTTP ${proxyResponse.status}`);
+            }
+
+            playlistText = await proxyResponse.text();
           }
-
-          playlistText = await proxyResponse.text();
         }
 
         const parsedChannels = parseM3U(playlistText);
