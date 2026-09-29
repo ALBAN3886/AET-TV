@@ -1692,6 +1692,7 @@
 
     let remotePlaylists = [];
     let userPlaylists = [];
+    let editingUserPlaylistId = null;
 
     function getUserPlaylists(){
       const saved = safeParse(
@@ -1751,7 +1752,49 @@
         return `
           <div class="fav-item">
             <h4>📺 ${esc(name)}</h4>
-            <p>${esc(type)} · ${esc(state)}</p>
+            <p>
+              ${esc(type)} · ${esc(state)} ·
+              ${Number(playlist.channelCount) || 0} chaîne(s)
+            </p>
+
+            <div class="row3">
+              <button
+                class="btn btn-light"
+                type="button"
+                data-user-playlist-toggle="${esc(String(playlist.id))}">
+                ${playlist.enabled === false ? 'Activer' : 'Désactiver'}
+              </button>
+
+              <button
+                class="btn btn-light"
+                type="button"
+                data-user-playlist-test="${esc(String(playlist.id))}">
+                Tester
+              </button>
+
+              <button
+                class="btn btn-light"
+                type="button"
+                data-user-playlist-edit="${esc(String(playlist.id))}">
+                Modifier
+              </button>
+            </div>
+
+            <div class="row" style="margin-top:8px">
+              <button
+                class="btn btn-red"
+                type="button"
+                data-user-playlist-refresh="${esc(String(playlist.id))}">
+                Actualiser
+              </button>
+
+              <button
+                class="btn btn-soft"
+                type="button"
+                data-user-playlist-delete="${esc(String(playlist.id))}">
+                Supprimer
+              </button>
+            </div>
           </div>
         `;
       }).join('');
@@ -4062,6 +4105,7 @@
     });
 
     function closeUserPlaylistForm(){
+      editingUserPlaylistId = null;
       $('playlistFormCard').classList.add('hidden');
       $('userPlaylistName').value = '';
       $('userPlaylistUrl').value = '';
@@ -4104,29 +4148,303 @@
         return;
       }
 
+      const existingPlaylist = userPlaylists.find(item =>
+        String(item.id) === String(editingUserPlaylistId)
+      );
+
       const playlist = {
-        id: uid(),
+        ...(existingPlaylist || {}),
+        id: existingPlaylist?.id || uid(),
         name: name || 'Ma playlist',
         type: 'm3u-url',
         url,
         epgUrl,
-        enabled: true,
+        enabled: existingPlaylist?.enabled !== false,
         status: 'not-tested',
-        channelCount: 0,
-        lastSync: null,
-        createdAt: Date.now()
+        channelCount: existingPlaylist?.channelCount || 0,
+        lastSync: existingPlaylist?.lastSync || null,
+        createdAt: existingPlaylist?.createdAt || Date.now(),
+        updatedAt: Date.now()
       };
 
-      saveUserPlaylists([
-        playlist,
-        ...userPlaylists
-      ]);
+      const nextPlaylists = existingPlaylist
+        ? userPlaylists.map(item =>
+            String(item.id) === String(existingPlaylist.id)
+              ? playlist
+              : item
+          )
+        : [playlist, ...userPlaylists];
+
+      saveUserPlaylists(nextPlaylists);
 
       renderUserPlaylists();
       closeUserPlaylistForm();
-      toast('Playlist enregistrée — synchronisation…');
+
+      toast(
+        existingPlaylist
+          ? 'Playlist modifiée — synchronisation…'
+          : 'Playlist enregistrée — synchronisation…'
+      );
 
       await loadPlaylist(true);
+    });
+
+    $('userPlaylistsWrap').addEventListener('click', async event=>{
+      const button = event.target.closest(
+        '[data-user-playlist-toggle]'
+      );
+
+      if(!button) return;
+
+      const playlist = userPlaylists.find(item =>
+        String(item.id) === String(button.dataset.userPlaylistToggle)
+      );
+
+      if(!playlist){
+        toast('Playlist introuvable');
+        return;
+      }
+
+      playlist.enabled = playlist.enabled === false;
+
+      saveUserPlaylists([...userPlaylists]);
+      renderUserPlaylists();
+
+      toast(
+        playlist.enabled
+          ? 'Playlist activée'
+          : 'Playlist désactivée'
+      );
+
+      await loadPlaylist(true);
+    });
+
+    $('userPlaylistsWrap').addEventListener('click', async event=>{
+      const testButton = event.target.closest(
+        '[data-user-playlist-test]'
+      );
+
+      if(!testButton) return;
+
+      const playlist = userPlaylists.find(item =>
+        String(item.id) === String(testButton.dataset.userPlaylistTest)
+      );
+
+      if(!playlist?.url){
+        toast('URL de playlist introuvable');
+        return;
+      }
+
+      testButton.disabled = true;
+      testButton.textContent = 'Test…';
+
+      try{
+        let playlistText = '';
+
+        try{
+          const response = await fetch(playlist.url, {
+            cache:'no-store'
+          });
+
+          if(response.ok){
+            playlistText = await response.text();
+          }
+        }catch{}
+
+        if(!playlistText.includes('#EXTINF')){
+          const proxyResponse = await fetch(
+            CORS_PROXY + encodeURIComponent(playlist.url),
+            { cache:'no-store' }
+          );
+
+          if(!proxyResponse.ok){
+            throw new Error(`HTTP ${proxyResponse.status}`);
+          }
+
+          playlistText = await proxyResponse.text();
+        }
+
+        const parsedChannels = parseM3U(playlistText);
+
+        if(!parsedChannels.length){
+          throw new Error('Aucune chaîne détectée');
+        }
+
+        playlist.status = 'connected';
+        playlist.channelCount = parsedChannels.length;
+        playlist.lastSync = Date.now();
+
+        saveUserPlaylists([...userPlaylists]);
+        renderUserPlaylists();
+
+        toast(
+          `Connexion réussie · ${parsedChannels.length} chaîne` +
+          `${parsedChannels.length > 1 ? 's' : ''}`
+        );
+      }catch(error){
+        console.warn('Test de playlist échoué :', error);
+
+        playlist.status = 'error';
+        playlist.lastSync = Date.now();
+
+        saveUserPlaylists([...userPlaylists]);
+        renderUserPlaylists();
+
+        toast('Connexion à la playlist impossible');
+      }
+    });
+
+    $('userPlaylistsWrap').addEventListener('click', async event=>{
+      const button = event.target.closest(
+        '[data-user-playlist-delete]'
+      );
+
+      if(!button) return;
+
+      const playlist = userPlaylists.find(item =>
+        String(item.id) === String(button.dataset.userPlaylistDelete)
+      );
+
+      if(!playlist){
+        toast('Playlist introuvable');
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Supprimer la playlist « ${playlist.name || 'Sans nom'} » ?`
+      );
+
+      if(!confirmed) return;
+
+      saveUserPlaylists(
+        userPlaylists.filter(item =>
+          String(item.id) !== String(playlist.id)
+        )
+      );
+
+      renderUserPlaylists();
+      toast('Playlist supprimée');
+
+      await loadPlaylist(true);
+    });
+
+    $('userPlaylistsWrap').addEventListener('click', async event=>{
+      const refreshButton = event.target.closest(
+        '[data-user-playlist-refresh]'
+      );
+
+      if(!refreshButton) return;
+
+      const playlist = userPlaylists.find(item =>
+        String(item.id) ===
+        String(refreshButton.dataset.userPlaylistRefresh)
+      );
+
+      if(!playlist?.url){
+        toast('URL de playlist introuvable');
+        return;
+      }
+
+      refreshButton.disabled = true;
+      refreshButton.textContent = 'Actualisation…';
+
+      try{
+        let playlistText = '';
+
+        try{
+          const response = await fetch(
+            playlist.url,
+            { cache:'reload' }
+          );
+
+          if(response.ok){
+            playlistText = await response.text();
+          }
+        }catch{}
+
+        if(!playlistText.includes('#EXTINF')){
+          const proxyResponse = await fetch(
+            CORS_PROXY + encodeURIComponent(playlist.url)
+          );
+
+          if(!proxyResponse.ok){
+            throw new Error(`HTTP ${proxyResponse.status}`);
+          }
+
+          playlistText = await proxyResponse.text();
+        }
+
+        const parsedChannels = parseM3U(playlistText);
+
+        if(!parsedChannels.length){
+          throw new Error('Playlist vide ou invalide');
+        }
+
+        playlist.status = 'connected';
+        playlist.channelCount = parsedChannels.length;
+        playlist.lastSync = Date.now();
+
+        saveUserPlaylists([...userPlaylists]);
+        renderUserPlaylists();
+
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_TIME_KEY);
+
+        await loadPlaylist(true);
+
+        toast(
+          `Playlist actualisée · ${parsedChannels.length} chaîne(s)`
+        );
+      }catch(error){
+        console.error(
+          'Actualisation de playlist échouée',
+          error
+        );
+
+        playlist.status = 'error';
+        playlist.lastSync = Date.now();
+
+        saveUserPlaylists([...userPlaylists]);
+        renderUserPlaylists();
+
+        toast('Actualisation impossible');
+      }
+    });
+
+    $('userPlaylistsWrap').addEventListener('click', event=>{
+      const editButton = event.target.closest(
+        '[data-user-playlist-edit]'
+      );
+
+      if(!editButton) return;
+
+      const playlist = userPlaylists.find(item =>
+        String(item.id) === String(
+          editButton.dataset.userPlaylistEdit
+        )
+      );
+
+      if(!playlist){
+        toast('Playlist introuvable');
+        return;
+      }
+
+      editingUserPlaylistId = playlist.id;
+
+      $('userPlaylistName').value =
+        playlist.name || playlist.label || '';
+
+      $('userPlaylistUrl').value =
+        playlist.url || '';
+
+      $('userPlaylistEpg').value =
+        playlist.epgUrl || '';
+
+      $('playlistFormCard').classList.remove('hidden');
+
+      setTimeout(()=>{
+        $('userPlaylistName').focus();
+      }, 80);
     });
 
     // Panneau Admin
