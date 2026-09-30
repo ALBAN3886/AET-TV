@@ -847,6 +847,7 @@
     <div class="drawer-body">
       <button class="drawer-item" data-screen="home"><span class="ico">🏠</span><span>Accueil</span></button>
       <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
+      <button class="drawer-item" data-screen="guide"><span class="ico">📅</span><span>Guide TV</span></button>
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
       <button class="drawer-item" data-screen="nasa"><span class="ico">🚀</span><span>NASA Videos</span></button>
@@ -934,6 +935,28 @@
       <div id="homeMovies"></div>
       <div id="homeSeries"></div>
       <div id="homeGuide"></div>
+    </section>
+
+    <section class="screen" id="screen-guide">
+      <div class="glass stats">
+        <div><strong>📅 Guide TV</strong></div>
+        <div class="pill" id="guideCount">0 programme</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>Programmes TV</h3>
+          <small id="guideStatus">Chargement du guide…</small>
+        </div>
+
+        <div id="guideWrap">
+          <div class="empty">
+            <div class="em">📅</div>
+            <h4>Guide TV indisponible</h4>
+            <p>Ajoutez une URL EPG/XMLTV à une playlist pour afficher les programmes.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="screen" id="screen-live-tv">
@@ -2273,6 +2296,9 @@
 
     let channels = [];
     let countries = [];
+    let epgPrograms = [];
+    let epgByChannel = new Map();
+    let epgLoaded = false;
     let currentFilter = 'ALL';
     let currentSearch = '';
     let currentItem = null;
@@ -2398,9 +2424,11 @@
         if (!line) continue;
         if (line.startsWith('#EXTINF')){
           const name = line.split(',').slice(-1)[0]?.trim() || 'Sans titre';
+          const tvgId = (line.match(/tvg-id="([^"]*)"/)||[])[1] || '';
+          const tvgName = (line.match(/tvg-name="([^"]*)"/)||[])[1] || '';
           const logo = (line.match(/tvg-logo="([^"]*)"/)||[])[1] || '';
           const group = (line.match(/group-title="([^"]*)"/)||[])[1] || 'Autres';
-          info = { id: uid(), name, logo, group, referrer:'', userAgent:'' };
+          info = { id: uid(), name, tvgId, tvgName, logo, group, referrer:'', userAgent:'' };
         } else if (line.startsWith('#EXTVLCOPT') && info){
           const ref = line.match(/http-referrer\s*=\s*(.+)$/i);
           const ua = line.match(/http-user-agent\s*=\s*(.+)$/i);
@@ -2420,8 +2448,101 @@
       return out;
     }
 
+    function parseXMLTV(xmlText){
+      if(!xmlText) return [];
+
+      const documentXml =
+        new DOMParser().parseFromString(xmlText, 'application/xml');
+
+      if(documentXml.querySelector('parsererror')){
+        throw new Error('XMLTV invalide');
+      }
+
+      return [...documentXml.querySelectorAll('programme')]
+        .map(programme => ({
+          channel: programme.getAttribute('channel') || '',
+          start: programme.getAttribute('start') || '',
+          stop: programme.getAttribute('stop') || '',
+          title: programme.querySelector('title')?.textContent?.trim() || '',
+          description:
+            programme.querySelector('desc')?.textContent?.trim() || '',
+          category:
+            programme.querySelector('category')?.textContent?.trim() || ''
+        }))
+        .filter(programme => programme.channel && programme.title);
+    }
+
+    async function loadEpgForPlaylist(playlist){
+      const epgUrl = String(playlist?.epgUrl || '').trim();
+      if(!epgUrl) return [];
+
+      let xmlText = '';
+
+      try{
+        const response = await fetch(
+          epgUrl,
+          { cache:'no-store' }
+        );
+
+        if(response.ok){
+          xmlText = await response.text();
+        }
+      }catch{}
+
+      if(!xmlText || !xmlText.includes('<programme')){
+        const response = await fetch(
+          CORS_PROXY + encodeURIComponent(epgUrl),
+          { cache:'no-store' }
+        );
+
+        if(!response.ok){
+          throw new Error(`EPG HTTP ${response.status}`);
+        }
+
+        xmlText = await response.text();
+      }
+
+      return parseXMLTV(xmlText);
+    }
+
+    async function loadAllEpg(){
+      epgPrograms = [];
+      epgByChannel = new Map();
+      epgLoaded = false;
+
+      const playlists = [
+        ...remotePlaylists,
+        ...userPlaylists.filter(item => item.enabled !== false)
+      ].filter(item => item?.epgUrl);
+
+      for(const playlist of playlists){
+        try{
+          const programs = await loadEpgForPlaylist(playlist);
+          epgPrograms.push(...programs);
+        }catch(error){
+          console.warn(
+            'EPG indisponible:',
+            playlist.name || playlist.label || playlist.id,
+            error
+          );
+        }
+      }
+
+      for(const program of epgPrograms){
+        if(!epgByChannel.has(program.channel)){
+          epgByChannel.set(program.channel, []);
+        }
+
+        epgByChannel.get(program.channel).push(program);
+      }
+
+      epgLoaded = epgPrograms.length > 0;
+      return epgPrograms;
+    }
+
     async function loadPlaylist(force=false){
       await loadRemotePlaylists();
+      await loadAllEpg();
       renderPlaylistNav();
       const cached = localStorage.getItem(CACHE_KEY);
       const t = parseInt(localStorage.getItem(CACHE_TIME_KEY)||'0',10);
@@ -3896,6 +4017,12 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'guide'){
+        $('titleMain').textContent = 'AET TV';
+        $('titleSub').textContent = 'GUIDE TV';
+        return;
+      }
+
       if(screen === 'playlists'){
         $('titleMain').textContent = 'AET TV';
         $('titleSub').textContent = 'PLAYLISTS';
@@ -6068,7 +6195,155 @@
       `;
     }
 
-    function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); }
+    function parseGuideDate(value){
+      const raw = String(value || '').trim();
+      if(!raw) return NaN;
+
+      const match = raw.match(
+        /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})?/
+      );
+
+      if(match){
+        const iso =
+          `${match[1]}-${match[2]}-${match[3]}T` +
+          `${match[4]}:${match[5]}:${match[6] || '00'}Z`;
+
+        const timestamp = Date.parse(iso);
+        if(!Number.isNaN(timestamp)) return timestamp;
+      }
+
+      const timestamp = Date.parse(raw);
+      return Number.isNaN(timestamp) ? NaN : timestamp;
+    }
+
+    function guideTime(value){
+      const timestamp = parseGuideDate(value);
+      if(Number.isNaN(timestamp)) return '—';
+
+      return new Date(timestamp).toLocaleTimeString(
+        [],
+        { hour:'2-digit', minute:'2-digit' }
+      );
+    }
+
+    function getChannelGuide(channel){
+      const keys = [
+        channel?.tvgId,
+        channel?.tvgName,
+        channel?.name
+      ]
+        .filter(Boolean)
+        .map(value => String(value).trim().toLowerCase());
+
+      return epgPrograms
+        .filter(program =>
+          keys.includes(String(program.channel || '').trim().toLowerCase())
+        )
+        .sort((a,b) =>
+          parseGuideDate(a.start) - parseGuideDate(b.start)
+        );
+    }
+
+    function renderGuide(){
+      const wrap = $('guideWrap');
+      const count = $('guideCount');
+      const status = $('guideStatus');
+
+      if(!wrap) return;
+
+      if(!epgLoaded || !epgPrograms.length){
+        if(count) count.textContent = '0 programme';
+        if(status) status.textContent = 'Guide indisponible';
+        wrap.innerHTML = `
+          <div class="empty">
+            <div class="em">📅</div>
+            <h4>Aucun programme disponible</h4>
+            <p>Ajoutez une URL EPG/XMLTV à une playlist.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const now = Date.now();
+      const rows = [];
+
+      channels
+        .filter(channel => channel?.url)
+        .slice(0, 100)
+        .forEach(channel=>{
+          const programs = getChannelGuide(channel);
+
+          const current = programs.find(program=>{
+            const start = parseGuideDate(program.start);
+            const stop = parseGuideDate(program.stop);
+            return !Number.isNaN(start) &&
+              !Number.isNaN(stop) &&
+              start <= now &&
+              stop > now;
+          });
+
+          const next = programs.find(program =>
+            parseGuideDate(program.start) > now
+          );
+
+          if(current || next){
+            rows.push({ channel, current, next });
+          }
+        });
+
+      if(count){
+        count.textContent =
+          `${rows.length} chaîne${rows.length > 1 ? 's' : ''}`;
+      }
+
+      if(status){
+        status.textContent =
+          `${epgPrograms.length} programme` +
+          `${epgPrograms.length > 1 ? 's' : ''} chargé` +
+          `${epgPrograms.length > 1 ? 's' : ''}`;
+      }
+
+      if(!rows.length){
+        wrap.innerHTML = `
+          <div class="empty">
+            <div class="em">📺</div>
+            <h4>Aucun programme en cours</h4>
+            <p>Les chaînes sont chargées, mais aucun programme ne correspond.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = rows.map(({channel, current, next})=>`
+        <div class="card guide-row">
+          <div class="card-h">
+            <h3>📺 ${esc(channel.name || 'Chaîne')}</h3>
+            <button
+              class="btn btn-red"
+              type="button"
+              data-guide-play="${esc(String(channel.id))}">
+              Lire
+            </button>
+          </div>
+
+          <div class="guide-program">
+            <strong>EN DIRECT</strong>
+            ${current
+              ? `${guideTime(current.start)} · ${esc(current.title || 'Programme en cours')}`
+              : 'Programme actuel indisponible'}
+          </div>
+
+          <div class="guide-program">
+            <strong>SUIVANT</strong>
+            ${next
+              ? `${guideTime(next.start)} · ${esc(next.title || 'Programme suivant')}`
+              : 'Programme suivant indisponible'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); renderGuide(); }
     function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); userPlaylists=getUserPlaylists(); renderUserPlaylists(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
   </script>
