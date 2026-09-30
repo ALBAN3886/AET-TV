@@ -6343,6 +6343,18 @@
       `).join('');
     }
 
+    $('guideWrap').addEventListener('click', event=>{
+      const button = event.target.closest('[data-guide-play]');
+      if(!button) return;
+
+      const channel = channels.find(item =>
+        String(item.id) === String(button.dataset.guidePlay)
+      );
+
+      if(channel) playItem(channel);
+      else toast('Chaîne introuvable');
+    });
+
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); renderGuide(); }
     function boot(){ favs=getFavs(); watchHistory=getWatchHistory(); userPlaylists=getUserPlaylists(); renderUserPlaylists(); renderFavs(); renderWatchHistory(); renderEvents(); renderYTTiles(); loadPlaylist(); applySettingsUI(); setHeader('home'); checkParentalLock(); loadRemoteProxyConfig(); loadRemoteLabels(); loadRemoteEvents(); checkAppUpdate(); loadRemoteYoutube(); loadRemoteYtShortcuts(); loadRemoteHuhuLinks(); initVpn(); }
     boot();
