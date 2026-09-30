@@ -1450,6 +1450,15 @@
         </div>
 
         <div class="field">
+          <label for="userPlaylistType">Type de source</label>
+          <select class="select" id="userPlaylistType">
+            <option value="m3u-url">URL M3U</option>
+            <option value="file">Fichier M3U local</option>
+            <option value="xtream">Xtream Codes</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label for="userPlaylistName">Nom de la playlist</label>
           <input
             class="input"
@@ -1479,6 +1488,27 @@
             type="file"
             accept=".m3u,.m3u8,application/x-mpegURL,application/vnd.apple.mpegurl,text/plain"
           />
+        </div>
+
+        <div id="xtreamFields" class="hidden">
+          <div class="field">
+            <label for="userXtreamServer">Adresse du serveur</label>
+            <input class="input" id="userXtreamServer" type="url"
+                   placeholder="https://serveur.example.com"
+                   autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="userXtreamUsername">Nom d’utilisateur</label>
+            <input class="input" id="userXtreamUsername" type="text"
+                   autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="userXtreamPassword">Mot de passe</label>
+            <input class="input" id="userXtreamPassword" type="password"
+                   autocomplete="new-password" />
+          </div>
         </div>
 
         <div class="field">
@@ -1705,8 +1735,9 @@
     let editingUserPlaylistId = null;
 
     const USER_PLAYLIST_DB_NAME = 'aet-tv-user-playlists';
-    const USER_PLAYLIST_DB_VERSION = 1;
+    const USER_PLAYLIST_DB_VERSION = 2;
     const USER_PLAYLIST_FILE_STORE = 'm3u-files';
+    const USER_PLAYLIST_XTREAM_STORE = 'xtream-credentials';
 
     function openUserPlaylistDatabase(){
       return new Promise((resolve, reject)=>{
@@ -1726,6 +1757,13 @@
           if(!database.objectStoreNames.contains(USER_PLAYLIST_FILE_STORE)){
             database.createObjectStore(
               USER_PLAYLIST_FILE_STORE,
+              { keyPath:'id' }
+            );
+          }
+
+          if(!database.objectStoreNames.contains(USER_PLAYLIST_XTREAM_STORE)){
+            database.createObjectStore(
+              USER_PLAYLIST_XTREAM_STORE,
               { keyPath:'id' }
             );
           }
@@ -1845,6 +1883,108 @@
           reject(
             transaction.error ||
             new Error('Suppression du fichier impossible')
+          );
+        };
+      });
+    }
+
+    async function storeUserXtreamCredentials(id, credentials){
+      if(
+        !id ||
+        !credentials?.server ||
+        !credentials?.username ||
+        !credentials?.password
+      ){
+        throw new Error('Identifiants Xtream incomplets');
+      }
+
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_XTREAM_STORE,
+          'readwrite'
+        );
+
+        transaction.objectStore(USER_PLAYLIST_XTREAM_STORE).put({
+          id,
+          server: credentials.server,
+          username: credentials.username,
+          password: credentials.password,
+          updatedAt: Date.now()
+        });
+
+        transaction.oncomplete = ()=>{
+          database.close();
+          resolve();
+        };
+
+        transaction.onerror = ()=>{
+          database.close();
+          reject(
+            transaction.error ||
+            new Error('Enregistrement des identifiants Xtream impossible')
+          );
+        };
+
+        transaction.onabort = ()=>{
+          database.close();
+          reject(new Error('Enregistrement des identifiants Xtream annulé'));
+        };
+      });
+    }
+
+    async function readUserXtreamCredentials(id){
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_XTREAM_STORE,
+          'readonly'
+        );
+
+        const request = transaction
+          .objectStore(USER_PLAYLIST_XTREAM_STORE)
+          .get(id);
+
+        request.onsuccess = ()=>{
+          database.close();
+          resolve(request.result || null);
+        };
+
+        request.onerror = ()=>{
+          database.close();
+          reject(
+            request.error ||
+            new Error('Lecture des identifiants Xtream impossible')
+          );
+        };
+      });
+    }
+
+    async function removeUserXtreamCredentials(id){
+      const database = await openUserPlaylistDatabase();
+
+      return new Promise((resolve, reject)=>{
+        const transaction = database.transaction(
+          USER_PLAYLIST_XTREAM_STORE,
+          'readwrite'
+        );
+
+        transaction
+          .objectStore(USER_PLAYLIST_XTREAM_STORE)
+          .delete(id);
+
+        transaction.oncomplete = ()=>{
+          database.close();
+          resolve();
+        };
+
+        transaction.onerror = ()=>{
+          database.close();
+          reject(
+            transaction.error ||
+            new Error('Suppression des identifiants Xtream impossible')
           );
         };
       });
@@ -2299,8 +2439,7 @@
         const activePlaylists = [
           ...remotePlaylists,
           ...userPlaylists.filter(playlist =>
-            playlist.enabled !== false &&
-            playlist.type !== 'xtream'
+            playlist.enabled !== false
           )
         ];
 
@@ -2314,6 +2453,48 @@
 
               if(!extraText.includes('#EXTINF')){
                 throw new Error('Fichier M3U local introuvable ou invalide');
+              }
+            }else if(pl.type === 'xtream'){
+              const credentials =
+                await readUserXtreamCredentials(pl.id);
+
+              if(
+                !credentials?.server ||
+                !credentials?.username ||
+                !credentials?.password
+              ){
+                throw new Error('Identifiants Xtream incomplets');
+              }
+
+              const server =
+                credentials.server.replace(/\/+$/, '');
+
+              const params = new URLSearchParams({
+                username: credentials.username,
+                password: credentials.password,
+                type: 'm3u_plus',
+                output: 'm3u8'
+              });
+
+              const xtreamUrl =
+                `${server}/get.php?${params.toString()}`;
+
+              const response = await fetch(xtreamUrl, {
+                cache: force ? 'reload' : 'default'
+              });
+
+              if(!response.ok){
+                throw new Error(
+                  `Connexion Xtream impossible · HTTP ${response.status}`
+                );
+              }
+
+              extraText = await response.text();
+
+              if(!extraText.includes('#EXTINF')){
+                throw new Error(
+                  'Le serveur Xtream n’a retourné aucune chaîne'
+                );
               }
             }else{
               if(!pl.url) continue;
@@ -4302,13 +4483,37 @@
       switchScreen('settings');
     });
 
+    function updateUserPlaylistTypeFields(){
+      const type = $('userPlaylistType').value;
+      const urlField = $('userPlaylistUrl').closest('.field');
+      const fileField = $('userPlaylistFile').closest('.field');
+
+      urlField.classList.toggle('hidden', type !== 'm3u-url');
+      fileField.classList.toggle('hidden', type !== 'file');
+      $('xtreamFields').classList.toggle('hidden', type !== 'xtream');
+    }
+
+    $('userPlaylistType').addEventListener(
+      'change',
+      updateUserPlaylistTypeFields
+    );
+
+    updateUserPlaylistTypeFields();
+
     function closeUserPlaylistForm(){
       editingUserPlaylistId = null;
+
       $('playlistFormCard').classList.add('hidden');
+      $('userPlaylistType').value = 'm3u-url';
       $('userPlaylistName').value = '';
       $('userPlaylistUrl').value = '';
       $('userPlaylistFile').value = '';
       $('userPlaylistEpg').value = '';
+      $('userXtreamServer').value = '';
+      $('userXtreamUsername').value = '';
+      $('userXtreamPassword').value = '';
+
+      updateUserPlaylistTypeFields();
     }
 
     $('playlistAddBtn').addEventListener('click', ()=>{
@@ -4329,19 +4534,33 @@
         String(item.id) === String(editingUserPlaylistId)
       );
 
+      const selectedType = $('userPlaylistType').value;
       const name = $('userPlaylistName').value.trim();
       const url = $('userPlaylistUrl').value.trim();
       const epgUrl = $('userPlaylistEpg').value.trim();
       const file = $('userPlaylistFile').files?.[0] || null;
-      const hasStoredFile = existingPlaylist?.type === 'file';
 
-      if(!url && !file && !hasStoredFile){
-        toast('Ajoutez une URL ou sélectionnez un fichier M3U');
-        $('userPlaylistUrl').focus();
-        return;
-      }
+      const xtreamServer = $('userXtreamServer')
+        .value
+        .trim()
+        .replace(/\/+$/, '');
 
-      if(url){
+      const xtreamUsername = $('userXtreamUsername').value.trim();
+      const xtreamPassword = $('userXtreamPassword').value;
+
+      const hasStoredFile =
+        existingPlaylist?.type === 'file' &&
+        selectedType === 'file';
+
+      let xtreamCredentials = null;
+
+      if(selectedType === 'm3u-url'){
+        if(!url){
+          toast('URL M3U obligatoire');
+          $('userPlaylistUrl').focus();
+          return;
+        }
+
         try{
           const parsedUrl = new URL(url);
 
@@ -4355,16 +4574,110 @@
         }
       }
 
+      if(selectedType === 'file' && !file && !hasStoredFile){
+        toast('Sélectionnez un fichier M3U');
+        $('userPlaylistFile').focus();
+        return;
+      }
+
+      if(selectedType === 'xtream'){
+        if(existingPlaylist?.type === 'xtream'){
+          try{
+            xtreamCredentials =
+              await readUserXtreamCredentials(existingPlaylist.id);
+          }catch(error){
+            console.warn(
+              'Lecture des identifiants Xtream impossible',
+              error
+            );
+          }
+        }
+
+        const server =
+          xtreamServer ||
+          xtreamCredentials?.server ||
+          '';
+
+        const username =
+          xtreamUsername ||
+          xtreamCredentials?.username ||
+          '';
+
+        const password =
+          xtreamPassword ||
+          xtreamCredentials?.password ||
+          '';
+
+        if(!server){
+          toast('Adresse du serveur Xtream obligatoire');
+          $('userXtreamServer').focus();
+          return;
+        }
+
+        try{
+          const parsedServer = new URL(server);
+
+          if(!['http:', 'https:'].includes(parsedServer.protocol)){
+            throw new Error('Protocole invalide');
+          }
+        }catch{
+          toast('Adresse du serveur Xtream invalide');
+          $('userXtreamServer').focus();
+          return;
+        }
+
+        if(!username){
+          toast('Nom d’utilisateur Xtream obligatoire');
+          $('userXtreamUsername').focus();
+          return;
+        }
+
+        if(!password){
+          toast('Mot de passe Xtream obligatoire');
+          $('userXtreamPassword').focus();
+          return;
+        }
+
+        xtreamCredentials = {
+          server,
+          username,
+          password
+        };
+      }
+
       const playlistId = existingPlaylist?.id || uid();
 
-      if(file){
+      if(selectedType === 'file' && file){
         try{
           await storeUserPlaylistFile(playlistId, file);
         }catch(error){
-          toast(error.message || 'Impossible d’enregistrer le fichier M3U');
+          toast(
+            error.message ||
+            'Impossible d’enregistrer le fichier M3U'
+          );
           return;
         }
-      }else if(existingPlaylist?.type === 'file' && url){
+      }
+
+      if(selectedType === 'xtream'){
+        try{
+          await storeUserXtreamCredentials(
+            playlistId,
+            xtreamCredentials
+          );
+        }catch(error){
+          toast(
+            error.message ||
+            'Impossible d’enregistrer les identifiants Xtream'
+          );
+          return;
+        }
+      }
+
+      if(
+        existingPlaylist?.type === 'file' &&
+        selectedType !== 'file'
+      ){
         try{
           await removeUserPlaylistFile(playlistId);
         }catch(error){
@@ -4375,11 +4688,19 @@
         }
       }
 
-      const playlistType = file
-        ? 'file'
-        : url
-          ? 'm3u-url'
-          : existingPlaylist?.type || 'm3u-url';
+      if(
+        existingPlaylist?.type === 'xtream' &&
+        selectedType !== 'xtream'
+      ){
+        try{
+          await removeUserXtreamCredentials(playlistId);
+        }catch(error){
+          console.warn(
+            'Suppression des anciens identifiants Xtream impossible',
+            error
+          );
+        }
+      }
 
       const playlist = {
         ...(existingPlaylist || {}),
@@ -4388,13 +4709,21 @@
           name ||
           file?.name ||
           existingPlaylist?.name ||
-          'Ma playlist',
-        type: playlistType,
-        url: playlistType === 'file' ? '' : url,
+          (
+            selectedType === 'xtream'
+              ? 'Ma connexion Xtream'
+              : 'Ma playlist'
+          ),
+        type: selectedType,
+        url: selectedType === 'm3u-url' ? url : '',
         fileName:
-          file?.name ||
-          existingPlaylist?.fileName ||
-          '',
+          selectedType === 'file'
+            ? (
+                file?.name ||
+                existingPlaylist?.fileName ||
+                ''
+              )
+            : '',
         epgUrl,
         enabled: existingPlaylist?.enabled !== false,
         status: 'not-tested',
@@ -4472,7 +4801,7 @@
         return;
       }
 
-      if(playlist.type !== 'file' && !playlist.url){
+      if(playlist.type === 'm3u-url' && !playlist.url){
         toast('URL de playlist introuvable');
         return;
       }
@@ -4489,6 +4818,40 @@
 
           if(!playlistText.includes('#EXTINF')){
             throw new Error('Fichier M3U local introuvable ou invalide');
+          }
+        }else if(playlist.type === 'xtream'){
+          const credentials =
+            await readUserXtreamCredentials(playlist.id);
+
+          if(
+            !credentials?.server ||
+            !credentials?.username ||
+            !credentials?.password
+          ){
+            throw new Error('Identifiants Xtream incomplets');
+          }
+
+          const server = credentials.server.replace(/\/+$/, '');
+          const params = new URLSearchParams({
+            username: credentials.username,
+            password: credentials.password,
+            type: 'm3u_plus',
+            output: 'm3u8'
+          });
+
+          const response = await fetch(
+            `${server}/get.php?${params.toString()}`,
+            { cache:'no-store' }
+          );
+
+          if(!response.ok){
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          playlistText = await response.text();
+
+          if(!playlistText.includes('#EXTINF')){
+            throw new Error('Réponse Xtream invalide');
           }
         }else{
           try{
@@ -4578,6 +4941,17 @@
         }
       }
 
+      if(playlist.type === 'xtream'){
+        try{
+          await removeUserXtreamCredentials(playlist.id);
+        }catch(error){
+          console.warn(
+            'Suppression des identifiants Xtream impossible',
+            error
+          );
+        }
+      }
+
       saveUserPlaylists(
         userPlaylists.filter(item =>
           String(item.id) !== String(playlist.id)
@@ -4607,7 +4981,7 @@
         return;
       }
 
-      if(playlist.type !== 'file' && !playlist.url){
+      if(playlist.type === 'm3u-url' && !playlist.url){
         toast('URL de playlist introuvable');
         return;
       }
@@ -4624,6 +4998,39 @@
 
           if(!playlistText.includes('#EXTINF')){
             throw new Error('Fichier M3U local introuvable ou invalide');
+          }
+        }else if(playlist.type === 'xtream'){
+          const credentials =
+            await readUserXtreamCredentials(playlist.id);
+
+          if(
+            !credentials?.server ||
+            !credentials?.username ||
+            !credentials?.password
+          ){
+            throw new Error('Identifiants Xtream incomplets');
+          }
+
+          const server = credentials.server.replace(/\/+$/, '');
+
+          const xtreamUrl =
+            `${server}/get.php?username=` +
+            `${encodeURIComponent(credentials.username)}` +
+            `&password=${encodeURIComponent(credentials.password)}` +
+            `&type=m3u_plus&output=m3u8`;
+
+          const response = await fetch(xtreamUrl, {
+            cache:'reload'
+          });
+
+          if(!response.ok){
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          playlistText = await response.text();
+
+          if(!playlistText.includes('#EXTINF')){
+            throw new Error('Réponse Xtream invalide');
           }
         }else{
           try{
@@ -4687,7 +5094,7 @@
       }
     });
 
-    $('userPlaylistsWrap').addEventListener('click', event=>{
+    $('userPlaylistsWrap').addEventListener('click', async event=>{
       const editButton = event.target.closest(
         '[data-user-playlist-edit]'
       );
@@ -4707,14 +5114,55 @@
 
       editingUserPlaylistId = playlist.id;
 
+      $('userPlaylistType').value =
+        playlist.type || 'm3u-url';
+
       $('userPlaylistName').value =
         playlist.name || playlist.label || '';
 
       $('userPlaylistUrl').value =
         playlist.url || '';
 
+      $('userPlaylistFile').value = '';
+
       $('userPlaylistEpg').value =
         playlist.epgUrl || '';
+
+      $('userXtreamServer').value = '';
+      $('userXtreamUsername').value = '';
+      $('userXtreamPassword').value = '';
+
+      updateUserPlaylistTypeFields();
+
+      if(playlist.type === 'xtream'){
+        try{
+          const credentials =
+            await readUserXtreamCredentials(playlist.id);
+
+          $('userXtreamServer').value =
+            credentials?.server || '';
+
+          $('userXtreamUsername').value =
+            credentials?.username || '';
+
+          // Le mot de passe reste masqué.
+          // S'il n'est pas modifié, l'ancien sera conservé.
+          $('userXtreamPassword').value = '';
+          $('userXtreamPassword').placeholder =
+            credentials?.password
+              ? 'Mot de passe enregistré'
+              : '';
+        }catch(error){
+          console.warn(
+            'Lecture des identifiants Xtream impossible',
+            error
+          );
+
+          toast('Identifiants Xtream indisponibles');
+        }
+      }else{
+        $('userXtreamPassword').placeholder = '';
+      }
 
       $('playlistFormCard').classList.remove('hidden');
 
