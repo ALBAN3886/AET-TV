@@ -3301,20 +3301,37 @@
 
     function updateTvMiniGuide(){
       const item = currentItem || {};
+      const programs = getChannelGuide(item);
+      const now = Date.now();
+
+      const currentProgram = programs.find(program => {
+        const start = parseGuideDate(program.start);
+        const stop = parseGuideDate(program.stop);
+
+        return start <= now && stop > now;
+      });
+
+      const nextProgram = programs.find(program =>
+        parseGuideDate(program.start) > now
+      );
 
       $('tvMiniGuideTitle').textContent =
         item.name || 'Aucune chaîne sélectionnée';
 
       $('tvMiniGuideNow').textContent =
-        item.now ||
-        item.currentProgram ||
-        item.program ||
-        'Programme actuel indisponible';
+        currentProgram
+          ? `${guideTime(currentProgram.start)} · ${currentProgram.title || 'Programme en cours'}`
+          : item.now ||
+            item.currentProgram ||
+            item.program ||
+            'Programme actuel indisponible';
 
       $('tvMiniGuideNext').textContent =
-        item.next ||
-        item.nextProgram ||
-        'Programme suivant indisponible';
+        nextProgram
+          ? `${guideTime(nextProgram.start)} · ${nextProgram.title || 'Programme suivant'}`
+          : item.next ||
+            item.nextProgram ||
+            'Programme suivant indisponible';
     }
 
     function scheduleTvMiniGuideClose(){
