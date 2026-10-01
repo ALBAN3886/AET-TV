@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T02:16:06.457Z",
+  "generatedAt": "2026-10-01T09:12:31.491Z",
   "provider": "football-data.org",
   "date": "2026-10-01",
   "dateFrom": "2026-09-30",
@@ -50,12 +50,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555027",
+      "id": "football-data-555025",
       "source": "football-data.org",
-      "left": "Clube do Remo",
-      "right": "Grêmio",
-      "leftLogo": "https://crests.football-data.org/4287.png",
-      "rightLogo": "https://crests.football-data.org/1767.png",
+      "left": "Internacional",
+      "right": "Corinthians",
+      "leftLogo": "https://crests.football-data.org/6684.png",
+      "rightLogo": "https://crests.football-data.org/1779.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
@@ -92,12 +92,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555025",
+      "id": "football-data-555027",
       "source": "football-data.org",
-      "left": "Internacional",
-      "right": "Corinthians",
-      "leftLogo": "https://crests.football-data.org/6684.png",
-      "rightLogo": "https://crests.football-data.org/1779.png",
+      "left": "Clube do Remo",
+      "right": "Grêmio",
+      "leftLogo": "https://crests.football-data.org/4287.png",
+      "rightLogo": "https://crests.football-data.org/1767.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
