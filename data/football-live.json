@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T01:13:39.281Z",
+  "generatedAt": "2026-10-02T07:12:27.591Z",
   "provider": "football-data.org",
   "date": "2026-10-02",
   "dateFrom": "2026-10-01",
@@ -50,12 +50,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555027",
+      "id": "football-data-555022",
       "source": "football-data.org",
-      "left": "Clube do Remo",
-      "right": "Grêmio",
-      "leftLogo": "https://crests.football-data.org/4287.png",
-      "rightLogo": "https://crests.football-data.org/1767.png",
+      "left": "Bragantino",
+      "right": "Mirassol",
+      "leftLogo": "https://crests.football-data.org/4286.png",
+      "rightLogo": "https://crests.football-data.org/4364.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
@@ -92,12 +92,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555022",
+      "id": "football-data-555027",
       "source": "football-data.org",
-      "left": "Bragantino",
-      "right": "Mirassol",
-      "leftLogo": "https://crests.football-data.org/4286.png",
-      "rightLogo": "https://crests.football-data.org/4364.png",
+      "left": "Clube do Remo",
+      "right": "Grêmio",
+      "leftLogo": "https://crests.football-data.org/4287.png",
+      "rightLogo": "https://crests.football-data.org/1767.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
