@@ -848,6 +848,7 @@
       <button class="drawer-item" data-screen="home"><span class="ico">🏠</span><span>Accueil</span></button>
       <button class="drawer-item" data-screen="live-tv"><span class="ico">📺</span><span>Chaînes du monde</span></button>
       <button class="drawer-item" data-screen="guide"><span class="ico">📅</span><span>Guide TV</span></button>
+      <button class="drawer-item" data-screen="search"><span class="ico">🔎</span><span>Recherche</span></button>
       <button class="drawer-item" data-screen="countries"><span class="ico">🌍</span><span>Pays</span></button>
       <button class="drawer-item" data-screen="youtube"><span class="ico">▶️</span><span>YouTube</span></button>
       <button class="drawer-item" data-screen="nasa"><span class="ico">🚀</span><span>NASA Videos</span></button>
@@ -955,6 +956,42 @@
             <h4>Guide TV indisponible</h4>
             <p>Ajoutez une URL EPG/XMLTV à une playlist pour afficher les programmes.</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-search">
+      <div class="glass stats">
+        <div><strong>🔎 Recherche</strong></div>
+        <div class="pill" id="globalSearchCount">0 résultat</div>
+      </div>
+
+      <div class="search-wrap">
+        <span class="search-ico">🔎</span>
+        <input
+          class="search-input"
+          id="globalSearchInput"
+          type="search"
+          placeholder="Rechercher une chaîne, catégorie ou playlist"
+          autocomplete="off"
+        />
+        <button class="search-clear" id="globalSearchClear" type="button">✕</button>
+      </div>
+
+      <div class="chips" id="globalSearchFilters">
+        <button class="chip active" data-global-filter="all">Tout</button>
+        <button class="chip" data-global-filter="channels">Chaînes</button>
+        <button class="chip" data-global-filter="favorites">Favoris</button>
+        <button class="chip" data-global-filter="history">Historique</button>
+        <button class="chip" data-global-filter="playlists">Playlists</button>
+        <button class="chip" data-global-filter="categories">Catégories</button>
+      </div>
+
+      <div id="globalSearchResults">
+        <div class="empty">
+          <div class="em">🔎</div>
+          <h4>Que souhaitez-vous regarder ?</h4>
+          <p>Saisissez le nom d’une chaîne, d’une catégorie ou d’une playlist.</p>
         </div>
       </div>
     </section>
@@ -2301,6 +2338,8 @@
     let epgLoaded = false;
     let currentFilter = 'ALL';
     let currentSearch = '';
+    let globalSearchQuery = '';
+    let globalSearchFilter = 'all';
     let currentItem = null;
     let favs = [];
     let watchHistory = [];
@@ -3194,6 +3233,39 @@
       };
       return ProxyLoaderClass;
     }
+    // Lecteur natif Android (ExoPlayer/Media3) : ni CORS, ni contenu mixte,
+    // et les en-tetes User-Agent / Referer sont transmis au serveur.
+    function hasNativePlayer(){
+      return !!(window.NativePlayer && typeof window.NativePlayer.openPlayer === 'function');
+    }
+    function playNative(item, type){
+      if(!hasNativePlayer()) return false;
+      if(type === 'youtube' || type === 'twitch' || type === 'embed') return false;
+      try{
+        const headers = {};
+        if(item && item.userAgent) headers['User-Agent'] = item.userAgent;
+        if(item && item.referrer) headers['Referer'] = item.referrer;
+        window.NativePlayer.openPlayer(JSON.stringify({
+          url: item.url,
+          title: item.name || 'Lecture',
+          channelName: item.name || 'Chaine',
+          channelGroup: item.group || '',
+          type: type || '',
+          headers: headers
+        }));
+        return true;
+      }catch(e){
+        console.warn('Lecteur natif indisponible', e);
+        return false;
+      }
+    }
+    // Contenu mixte : une page HTTPS refuse toute ressource http://.
+    // Les apps natives (Televizo, VLC) n'ont pas cette contrainte, d'ou la difference.
+    const FORCE_HTTPS_STREAMS = location.protocol === 'https:' || /[?&]forcehttps=1/.test(location.search);
+    function upgradeStreamUrl(url){
+      if(typeof url !== 'string' || !FORCE_HTTPS_STREAMS) return url;
+      return url.replace(/^http:\/\//i, 'https://');
+    }
     function clearWatchdog(){ if(hlsWatchdog){ clearTimeout(hlsWatchdog); hlsWatchdog=null; } }
     function playHls(url){
       clearWatchdog();
@@ -3289,10 +3361,12 @@
     function playItem(item){
       stopAllPlayback(); if(!item?.url) return toast('URL manquante');
       hlsAttemptStage = 0; hlsRetryCount = 0;
-      const type = detectType(item.url); currentItem = { ...item, detectedType:type };
+      const srcUrl = hasNativePlayer() ? item.url : upgradeStreamUrl(item.url);
+      const type = detectType(srcUrl); currentItem = { ...item, url:srcUrl, detectedType:type };
       addToWatchHistory(currentItem);
       $('playerTitle').textContent = item.name || 'Lecture'; $('playerType').textContent = type.toUpperCase(); $('metaTitle').textContent = item.name || 'Sans titre'; $('metaCountry').textContent = item.group || '—'; $('metaType').textContent = type.toUpperCase();
-      if(type==='hls') playHls(item.url); else if(type==='video') playVideo(item.url); else if(type==='youtube') playEmbed(ytEmbed(item.url)); else if(type==='twitch') playEmbed(twitchEmbed(item.url)); else playEmbed(item.url);
+      if(playNative(currentItem, type)) return;
+      if(type==='hls') playHls(srcUrl); else if(type==='video') playVideo(srcUrl); else if(type==='youtube') playEmbed(ytEmbed(srcUrl)); else if(type==='twitch') playEmbed(twitchEmbed(srcUrl)); else playEmbed(srcUrl);
       switchScreen('player');
     }
 
@@ -4010,7 +4084,13 @@
     });
     $('categoryChannelsWrap').addEventListener('click', e=>{ const c=e.target.closest('[data-catplay]'); if(!c) return; const item = channels.find(x=>x.id===c.dataset.catplay); if(item) playItem(item); });
     bottomBtns.forEach(b=>b.addEventListener('click', ()=>switchScreen(b.dataset.nav)));
-    $('searchTopBtn').addEventListener('click', ()=>{ switchScreen('live-tv'); setTimeout(()=>$('channelSearch').focus(),150); });
+    $('searchTopBtn').addEventListener('click', ()=>{
+      switchScreen('search');
+
+      setTimeout(()=>{
+        $('globalSearchInput').focus();
+      }, 150);
+    });
     $('reloadBtn').addEventListener('click', ()=>loadPlaylist(true));
     $('shareBtn').addEventListener('click', async ()=>{ const data={title:'ALBAN ELOH TECHNOLOGIE',text:'Chaînes du monde et YouTube',url:location.href}; if(navigator.share){try{await navigator.share(data)}catch{}} else copyText(location.href); });
 
@@ -4034,6 +4114,11 @@
       $('shareBtn').querySelector('span:last-child').textContent = d.share;
     }
     function setHeader(screen){
+      if(screen === 'search'){
+        $('titleMain').textContent = 'AET TV';
+        $('titleSub').textContent = 'RECHERCHE';
+        return;
+      }
       if(screen === 'guide'){
         $('titleMain').textContent = 'AET TV';
         $('titleSub').textContent = 'GUIDE TV';
@@ -6370,6 +6455,227 @@
 
       if(channel) playItem(channel);
       else toast('Chaîne introuvable');
+    });
+
+    function renderGlobalSearch(){
+      const wrap = $('globalSearchResults');
+      const count = $('globalSearchCount');
+
+      if(!wrap || !count) return;
+
+      const query = globalSearchQuery.toLowerCase().trim();
+
+      if(!query){
+        count.textContent = '0 résultat';
+        wrap.innerHTML = `
+          <div class="empty">
+            <div class="em">🔎</div>
+            <h4>Rechercher dans AET TV</h4>
+            <p>Saisissez le nom d’une chaîne, d’un favori, d’une playlist ou d’une catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const matches = (value)=>
+        String(value || '').toLowerCase().includes(query);
+
+      const results = [];
+
+      if(globalSearchFilter === 'all' || globalSearchFilter === 'channels'){
+        channels.forEach(channel=>{
+          if(matches(channel.name) || matches(channel.group)){
+            results.push({
+              kind:'channel',
+              id:channel.id,
+              icon:'📺',
+              title:channel.name || 'Chaîne',
+              subtitle:channel.group || 'Live TV'
+            });
+          }
+        });
+      }
+
+      if(globalSearchFilter === 'all' || globalSearchFilter === 'favorites'){
+        favs.forEach(favorite=>{
+          if(matches(favorite.name) || matches(favorite.group)){
+            results.push({
+              kind:'favorite',
+              id:favorite.id,
+              icon:'⭐',
+              title:favorite.name || 'Favori',
+              subtitle:favorite.group || 'Favoris'
+            });
+          }
+        });
+      }
+
+      if(globalSearchFilter === 'all' || globalSearchFilter === 'history'){
+        watchHistory.forEach((item, index)=>{
+          if(matches(item.name) || matches(item.group)){
+            results.push({
+              kind:'history',
+              id:index,
+              icon:'🕘',
+              title:item.name || 'Historique',
+              subtitle:item.group || 'Récemment regardé'
+            });
+          }
+        });
+      }
+
+      if(globalSearchFilter === 'all' || globalSearchFilter === 'playlists'){
+        userPlaylists.forEach(playlist=>{
+          if(matches(playlist.name) || matches(playlist.label)){
+            results.push({
+              kind:'playlist',
+              id:playlist.id,
+              icon:'📡',
+              title:playlist.name || playlist.label || 'Playlist',
+              subtitle:
+                playlist.type === 'xtream'
+                  ? 'Xtream Codes'
+                  : playlist.type === 'file'
+                    ? 'Fichier M3U'
+                    : 'URL M3U'
+            });
+          }
+        });
+      }
+
+      if(globalSearchFilter === 'all' || globalSearchFilter === 'categories'){
+        countries.forEach(category=>{
+          if(matches(category.name)){
+            results.push({
+              kind:'category',
+              id:category.name,
+              icon:category.flag || '📂',
+              title:category.name,
+              subtitle:`${category.count || 0} chaîne(s)`
+            });
+          }
+        });
+      }
+
+      count.textContent =
+        `${results.length} résultat${results.length > 1 ? 's' : ''}`;
+
+      if(!results.length){
+        wrap.innerHTML = `
+          <div class="empty">
+            <div class="em">🔍</div>
+            <h4>Aucun résultat</h4>
+            <p>Essayez un autre mot-clé ou un autre filtre.</p>
+          </div>
+        `;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <div class="channels-grid">
+          ${results.slice(0, 80).map(result => `
+            <button
+              class="channel"
+              type="button"
+              data-global-kind="${esc(result.kind)}"
+              data-global-id="${esc(String(result.id))}">
+              <div class="logo">${result.icon}</div>
+              <div class="cinf">
+                <div class="cname">${esc(result.title)}</div>
+                <div class="cmeta">
+                  <span class="badge">${esc(result.subtitle)}</span>
+                </div>
+              </div>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    $('globalSearchInput').addEventListener('input', event=>{
+      globalSearchQuery = event.target.value;
+
+      $('globalSearchClear').classList.toggle(
+        'show',
+        !!globalSearchQuery.trim()
+      );
+
+      renderGlobalSearch();
+    });
+
+    $('globalSearchClear').addEventListener('click', ()=>{
+      globalSearchQuery = '';
+      $('globalSearchInput').value = '';
+      $('globalSearchClear').classList.remove('show');
+      renderGlobalSearch();
+      $('globalSearchInput').focus();
+    });
+
+    $('globalSearchFilters').addEventListener('click', event=>{
+      const button = event.target.closest('[data-global-filter]');
+      if(!button) return;
+
+      globalSearchFilter = button.dataset.globalFilter || 'all';
+
+      $('globalSearchFilters')
+        .querySelectorAll('[data-global-filter]')
+        .forEach(item=>{
+          item.classList.toggle('active', item === button);
+        });
+
+      renderGlobalSearch();
+    });
+
+    $('globalSearchResults').addEventListener('click', event=>{
+      const result = event.target.closest(
+        '[data-global-kind][data-global-id]'
+      );
+
+      if(!result) return;
+
+      const kind = result.dataset.globalKind;
+      const id = result.dataset.globalId;
+
+      if(kind === 'channel'){
+        const channel = channels.find(item =>
+          String(item.id) === String(id)
+        );
+
+        if(channel) playItem(channel);
+        return;
+      }
+
+      if(kind === 'favorite'){
+        const favorite = favs.find(item =>
+          String(item.id) === String(id)
+        );
+
+        if(favorite) playItem(favorite);
+        return;
+      }
+
+      if(kind === 'history'){
+        const item = watchHistory[Number(id)];
+
+        if(item) playItem(item);
+        return;
+      }
+
+      if(kind === 'playlist'){
+        switchScreen('playlists');
+        return;
+      }
+
+      if(kind === 'category'){
+        currentFilter = id;
+        currentSearch = '';
+        $('channelSearch').value = '';
+        $('searchClear').classList.remove('show');
+
+        renderChips();
+        renderChannels();
+        switchScreen('live-tv');
+      }
     });
 
     function renderAll(){ renderChips(); renderChannels(); renderCountries(); renderHomeLive(); renderHomeCategories(); renderGuide(); }
