@@ -3151,6 +3151,8 @@
       if(v.includes('twitch.tv')) return 'twitch';
       if(v.includes('.m3u8')) return 'hls';
       if(/\.(mp4|webm|ogg|mov)(\?|#|$)/.test(v)) return 'video';
+      if(/\.(mpd|ts|mkv)(\?|#|$)/.test(v)) return 'hls';
+      if(/^(rtsp|rtmp|udp):/.test(v)) return 'hls';
       return 'embed';
     }
     function ytId(url){
@@ -3240,7 +3242,10 @@
     }
     function playNative(item, type){
       if(!hasNativePlayer()) return false;
-      if(type === 'youtube' || type === 'twitch' || type === 'embed') return false;
+      if(type === 'youtube' || type === 'twitch') return false;
+      // ExoPlayer identifie le flux par son contenu : on lui confie tout,
+      // sauf les vraies pages web destinees a une iframe.
+      if(type === 'embed' && /\.(html?|php|aspx)(\?|#|$)/i.test(item.url || '')) return false;
       try{
         const headers = {};
         if(item && item.userAgent) headers['User-Agent'] = item.userAgent;
