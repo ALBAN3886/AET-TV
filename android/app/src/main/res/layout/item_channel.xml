@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/channelRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:focusable="true"
+    android:clickable="true">
+
+    <TextView
+        android:id="@+id/textChannelNumber"
+        android:layout_width="34dp"
+        android:layout_height="wrap_content"
+        android:textColor="#8A8A8E"
+        android:textSize="13sp"
+        android:gravity="center"
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="10dp">
+
+        <TextView
+            android:id="@+id/textChannelName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/textChannelGroupItem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#8A8A8E"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textNowPlaying"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="▶"
+        android:textColor="#E50914"
+        android:textSize="14sp"
+        android:visibility="gone" />
+</LinearLayout>

@@ -12,17 +12,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.media3.common.util.UnstableApi
 import com.albaneloh.iptv.databinding.ActivityPlayerBinding
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.albaneloh.iptv.model.PlayerRequest
 
 @UnstableApi
 class PlayerActivity : AppCompatActivity(), IptvPlayerManager.Callback {
 
     private lateinit var binding: ActivityPlayerBinding
-    private lateinit var request: PlayerRequest
+    private var request: PlayerRequest = PlayerRequest("", "", "")
     private lateinit var playerManager: IptvPlayerManager
     private lateinit var connectivityManager: ConnectivityManager
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var immersiveEnabled = true
+    private var channelAdapter: ChannelAdapter? = null
+    private var channelIndex: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +41,19 @@ class PlayerActivity : AppCompatActivity(), IptvPlayerManager.Callback {
         playerManager = IptvPlayerManager(this, this)
         playerManager.attach(binding.playerView)
 
+        channelIndex = request.channelIndex
         applyChannelInfo(request)
         bindUi()
+        setupChannelPanel()
         toggleImmersiveMode(true)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                finish()
+                if (binding.channelPanel.visibility == android.view.View.VISIBLE) {
+                    toggleChannelPanel(false)
+                } else {
+                    finish()
+                }
             }
         })
     }
@@ -193,4 +202,55 @@ class PlayerActivity : AppCompatActivity(), IptvPlayerManager.Callback {
                 .putExtra(EXTRA_REQUEST, request)
         }
     }
+
+    private fun setupChannelPanel() {
+        val list = request.channels
+        if (list.isEmpty()) return
+        val adapter = ChannelAdapter(list) { position -> playChannelAt(position) }
+        adapter.updateCurrent(channelIndex)
+        binding.channelRecycler.layoutManager = LinearLayoutManager(this)
+        binding.channelRecycler.adapter = adapter
+        binding.channelRecycler.scrollToPosition(channelIndex)
+        channelAdapter = adapter
+        binding.textPanelTitle.text = "Chaines (" + list.size + ")"
+    }
+
+    private fun toggleChannelPanel(show: Boolean) {
+        if (request.channels.isEmpty()) return
+        binding.channelPanel.visibility =
+            if (show) android.view.View.VISIBLE else android.view.View.GONE
+        if (show) binding.channelRecycler.scrollToPosition(channelIndex)
+    }
+
+    private fun playChannelAt(position: Int) {
+        val list = request.channels
+        if (position !in list.indices) return
+        val channel = list[position]
+        val headers = linkedMapOf<String, String>()
+        if (channel.userAgent.isNotBlank()) headers["User-Agent"] = channel.userAgent
+        if (channel.referer.isNotBlank()) headers["Referer"] = channel.referer
+        channelIndex = position
+        request = request.copy(
+            url = channel.url,
+            title = channel.name,
+            channelName = channel.name,
+            channelGroup = channel.group,
+            headers = if (headers.isEmpty()) request.headers else headers,
+            channelIndex = position
+        )
+        channelAdapter?.updateCurrent(position)
+        applyChannelInfo(request)
+        playerManager.play(request)
+        toggleChannelPanel(false)
+    }
+
+    private fun changeChannel(delta: Int) {
+        val list = request.channels
+        if (list.isEmpty()) return
+        var next = channelIndex + delta
+        if (next < 0) next = list.size - 1
+        if (next >= list.size) next = 0
+        playChannelAt(next)
+    }
+
 }

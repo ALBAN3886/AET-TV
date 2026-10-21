@@ -140,4 +140,36 @@
         </LinearLayout>
     </LinearLayout>
 
+
+    <LinearLayout
+        android:id="@+id/channelPanel"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        android:background="#F0101014"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textPanelTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chaines"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="12dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/channelRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="12dp" />
+    </LinearLayout>
+
 </FrameLayout>
