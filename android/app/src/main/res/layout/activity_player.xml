@@ -88,6 +88,16 @@
             android:orientation="horizontal">
 
             <ImageButton
+                android:id="@+id/buttonChannels"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginEnd="10dp"
+                android:background="#66000000"
+                android:contentDescription="Liste des chaines"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                android:tint="#FFFFFF" />
+
+            <ImageButton
                 android:id="@+id/buttonPlayPause"
                 android:layout_width="52dp"
                 android:layout_height="52dp"

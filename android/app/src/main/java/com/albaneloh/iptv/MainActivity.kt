@@ -294,6 +294,6 @@ class MainActivity : AppCompatActivity() {
          * réinstallée par les utilisateurs. Comparé côté web à settings/appUpdate
          * dans Firestore pour afficher (ou non) la bannière de mise à jour.
          */
-        private const val APP_BUILD_VERSION = 6
+        private const val APP_BUILD_VERSION = 7
     }
 }

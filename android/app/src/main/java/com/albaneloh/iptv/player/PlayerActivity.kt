@@ -87,6 +87,10 @@ class PlayerActivity : AppCompatActivity(), IptvPlayerManager.Callback {
     private fun bindUi() = with(binding) {
         buttonBack.setOnClickListener { finish() }
 
+        buttonChannels.setOnClickListener {
+            toggleChannelPanel(channelPanel.visibility != android.view.View.VISIBLE)
+        }
+
         buttonPlayPause.setOnClickListener {
             playerManager.togglePlayback()
             syncPlayPauseIcon(playerManager.isPlaying())
@@ -251,6 +255,28 @@ class PlayerActivity : AppCompatActivity(), IptvPlayerManager.Callback {
         if (next < 0) next = list.size - 1
         if (next >= list.size) next = 0
         playChannelAt(next)
+    }
+
+
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (request.channels.isEmpty()) return super.onKeyDown(keyCode, event)
+        val panelOpen = binding.channelPanel.visibility == android.view.View.VISIBLE
+        return when (keyCode) {
+            android.view.KeyEvent.KEYCODE_CHANNEL_UP -> {
+                changeChannel(-1); true
+            }
+            android.view.KeyEvent.KEYCODE_CHANNEL_DOWN -> {
+                changeChannel(1); true
+            }
+            android.view.KeyEvent.KEYCODE_DPAD_LEFT -> {
+                if (!panelOpen) { toggleChannelPanel(true); true }
+                else super.onKeyDown(keyCode, event)
+            }
+            android.view.KeyEvent.KEYCODE_MENU -> {
+                toggleChannelPanel(!panelOpen); true
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
     }
 
 }
