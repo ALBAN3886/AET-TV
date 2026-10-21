@@ -3240,6 +3240,36 @@
     function hasNativePlayer(){
       return !!(window.NativePlayer && typeof window.NativePlayer.openPlayer === 'function');
     }
+    // Liste envoyee au lecteur natif : on reste dans le meme groupe et on
+    // plafonne a 300 entrees, le pont JS->Kotlin ne supportant pas de gros volumes.
+    let nativeChannelIndex = 0;
+    function buildNativeChannelList(item){
+      nativeChannelIndex = 0;
+      try{
+        if(!Array.isArray(channels) || !channels.length) return [];
+        const group = item && item.group ? item.group : '';
+        let list = group ? channels.filter(c => c.group === group) : [];
+        if(list.length < 2) list = channels.slice();
+        if(list.length > 300){
+          const pos = Math.max(0, list.findIndex(c => c.url === item.url));
+          const start = Math.max(0, Math.min(pos - 150, list.length - 300));
+          list = list.slice(start, start + 300);
+        }
+        const idx = list.findIndex(c => c.url === item.url);
+        nativeChannelIndex = idx < 0 ? 0 : idx;
+        return list.map(c => ({
+          url: c.url || '',
+          name: c.name || 'Chaine',
+          group: c.group || '',
+          logo: c.logo || '',
+          userAgent: c.userAgent || '',
+          referer: c.referrer || ''
+        })).filter(c => c.url);
+      }catch(e){
+        console.warn('Liste native indisponible', e);
+        return [];
+      }
+    }
     function playNative(item, type){
       if(!hasNativePlayer()) return false;
       if(type === 'youtube' || type === 'twitch') return false;
@@ -3256,7 +3286,9 @@
           channelName: item.name || 'Chaine',
           channelGroup: item.group || '',
           type: type || '',
-          headers: headers
+          headers: headers,
+          channels: buildNativeChannelList(item),
+          index: nativeChannelIndex
         }));
         return true;
       }catch(e){
