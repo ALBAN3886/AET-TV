@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T07:30:39.920Z",
+  "generatedAt": "2026-11-13T15:49:45.164Z",
   "provider": "football-data.org",
   "date": "2026-11-13",
   "dateFrom": "2026-11-12",
@@ -134,12 +134,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555080",
+      "id": "football-data-555084",
       "source": "football-data.org",
-      "left": "Corinthians",
-      "right": "Botafogo",
-      "leftLogo": "https://crests.football-data.org/1779.png",
-      "rightLogo": "https://crests.football-data.org/1770.png",
+      "left": "Grêmio",
+      "right": "Bahia",
+      "leftLogo": "https://crests.football-data.org/1767.png",
+      "rightLogo": "https://crests.football-data.org/1777.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
@@ -155,12 +155,12 @@
       "round": "REGULAR_SEASON"
     },
     {
-      "id": "football-data-555084",
+      "id": "football-data-555080",
       "source": "football-data.org",
-      "left": "Grêmio",
-      "right": "Bahia",
-      "leftLogo": "https://crests.football-data.org/1767.png",
-      "rightLogo": "https://crests.football-data.org/1777.png",
+      "left": "Corinthians",
+      "right": "Botafogo",
+      "leftLogo": "https://crests.football-data.org/1779.png",
+      "rightLogo": "https://crests.football-data.org/1770.png",
       "leftScore": null,
       "rightScore": null,
       "cup": "Campeonato Brasileiro Série A",
